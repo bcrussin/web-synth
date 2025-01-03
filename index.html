@@ -19,10 +19,23 @@
           <label for="Triangle">Triangle</label>
         </div>
 
-        <div id="octave-container" class="synth-controls">
-          <button id="octave-down" onclick="changeOctave(-1)">-</button>
-          <span id="octave"></span>
-          <button id="octave-up" onclick="changeOctave(1)">+</button>
+        <div class="synth-controls">
+          <div id="volume-container" class="synth-controls">
+            <input
+              id="volume"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+              onchange="setVolume(this.value)"
+            />
+          </div>
+
+          <div id="octave-container" class="synth-controls">
+            <button id="octave-down" onclick="changeOctave(-1)">-</button>
+            <span id="octave"></span>
+            <button id="octave-up" onclick="changeOctave(1)">+</button>
+          </div>
         </div>
 
         <div id="synth-keys"></div>

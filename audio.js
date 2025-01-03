@@ -55,13 +55,15 @@ const KEYS = {
 };
 
 const OCTAVE_TEXT = document.getElementById("octave");
+const VOLUME_SLIDER = document.getElementById("volume");
 
 const audioContext = new AudioContext();
 let oscillators = {};
 let mainGainNode = null;
 mainGainNode = audioContext.createGain();
 mainGainNode.connect(audioContext.destination);
-mainGainNode.gain.value = 0.1;
+// mainGainNode.gain.value = 0.1;
+setVolume(localStorage.getItem("masterVolume") ?? 50);
 
 let globalOctave = 3;
 
@@ -142,4 +144,10 @@ function setOctave(octave) {
 
 function changeOctave(delta) {
   setOctave(globalOctave + delta);
+}
+
+function setVolume(volume) {
+  mainGainNode.gain.value = volume / 200;
+  VOLUME_SLIDER.value = volume;
+  localStorage.setItem("masterVolume", volume);
 }
