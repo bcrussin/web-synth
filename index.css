@@ -1,0 +1,57 @@
+html, body {
+    margin: 0;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: stretch;
+    align-items: stretch;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#synth-container {
+    margin: 8px;
+    text-align: center;
+    color: white;
+    background-color: #222222;
+    border-radius: 2px;
+}
+
+#synth-keys {
+    display: flex;
+    align-items: flex-start;
+}
+
+.key {
+    width: 30px;
+    height: 220px;
+    background-color: white;
+    border: 2px solid black;
+}
+
+.key ~ .key.black {
+    margin: 0 -17px;
+}
+
+.key.black {
+    height: 140px;
+    margin: 0;
+    background-color: black;
+    border: 2px solid white;
+}
+
+
+#wave-type-container {
+    padding: 8px 0;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}

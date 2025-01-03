@@ -4,15 +4,25 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Waveforms</title>
+
+    <link rel="stylesheet" href="index.css" />
   </head>
   <body>
-    <input type="radio" id="sine" name="wave-type" value="sine" checked />
-    <label for="Sine">Sine</label><br />
-    <input type="radio" id="sawtooth" name="wave-type" value="sawtooth" />
-    <label for="sawtooth">Sawtooth</label><br />
-    <input type="radio" id="triangle" name="wave-type" value="triangle" />
-    <label for="Triangle">Triangle</label>
+    <main>
+      <div id="synth-container">
+        <div id="wave-type-container">
+          <input type="radio" id="sine" name="wave-type" value="sine" checked />
+          <label for="Sine">Sine</label><br />
+          <input type="radio" id="sawtooth" name="wave-type" value="sawtooth" />
+          <label for="sawtooth">Sawtooth</label><br />
+          <input type="radio" id="triangle" name="wave-type" value="triangle" />
+          <label for="Triangle">Triangle</label>
+        </div>
+        <div id="synth-keys"></div>
+      </div>
+    </main>
 
-    <script src="index.js"></script>
+    <script src="audio.js"></script>
+    <script src="interface.js"></script>
   </body>
 </html>

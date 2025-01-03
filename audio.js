@@ -74,18 +74,24 @@ function playTone(freq) {
   return osc;
 }
 
+function getFrequency(note, octave) {
+  return NOTES[note]?.[octave];
+}
+
 function playNote(note, octave) {
   if (note == undefined || octave == undefined) return;
 
   let noteOct = note + octave;
   console.log("playing " + noteOct);
-  let freq = NOTES[note]?.[octave];
+  let freq = getFrequency(note, octave);
 
   console.log(oscillators[noteOct]);
   if (freq == undefined || !!oscillators[noteOct]) return;
 
   let oscillator = playTone(freq);
   oscillators[noteOct] = oscillator;
+
+  return oscillator;
 }
 
 function stopNote(note, octave) {
@@ -99,20 +105,22 @@ function stopNote(note, octave) {
     oscillator.stop();
     delete oscillators[noteOct];
   }
+
+  return oscillator;
 }
 
 document.addEventListener("keydown", (e) => {
-  e.preventDefault();
   let key = KEYS[e.key.toUpperCase()];
   if (key == undefined) return;
 
   playNote(key[0], key[1] + 3);
+  e.preventDefault();
 });
 
 document.addEventListener("keyup", (e) => {
-  e.preventDefault();
   let key = KEYS[e.key.toUpperCase()];
   if (key == undefined) return;
 
   stopNote(key[0], key[1] + 3);
+  e.preventDefault();
 });
