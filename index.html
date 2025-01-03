@@ -10,7 +10,7 @@
   <body>
     <main>
       <div id="synth-container">
-        <div id="wave-type-container">
+        <div id="wave-type-container" class="synth-controls">
           <input type="radio" id="sine" name="wave-type" value="sine" checked />
           <label for="Sine">Sine</label><br />
           <input type="radio" id="sawtooth" name="wave-type" value="sawtooth" />
@@ -18,6 +18,13 @@
           <input type="radio" id="triangle" name="wave-type" value="triangle" />
           <label for="Triangle">Triangle</label>
         </div>
+
+        <div id="octave-container" class="synth-controls">
+          <button id="octave-down" onclick="changeOctave(-1)">-</button>
+          <span id="octave"></span>
+          <button id="octave-up" onclick="changeOctave(1)">+</button>
+        </div>
+
         <div id="synth-keys"></div>
       </div>
     </main>

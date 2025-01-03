@@ -54,12 +54,16 @@ const KEYS = {
   "[": ["F", 3],
 };
 
+const OCTAVE_TEXT = document.getElementById("octave");
+
 const audioContext = new AudioContext();
-const oscillators = {};
+let oscillators = {};
 let mainGainNode = null;
 mainGainNode = audioContext.createGain();
 mainGainNode.connect(audioContext.destination);
 mainGainNode.gain.value = 0.1;
+
+let globalOctave = 3;
 
 function playTone(freq) {
   const osc = audioContext.createOscillator();
@@ -109,11 +113,16 @@ function stopNote(note, octave) {
   return oscillator;
 }
 
+function stopAll() {
+  Object.values(oscillators).forEach((oscillator) => oscillator.stop());
+  oscillators = {};
+}
+
 document.addEventListener("keydown", (e) => {
   let key = KEYS[e.key.toUpperCase()];
-  if (key == undefined) return;
+  if (e.repeat || key == undefined) return;
 
-  playNote(key[0], key[1] + 3);
+  playNote(key[0], key[1] + globalOctave);
   e.preventDefault();
 });
 
@@ -121,6 +130,16 @@ document.addEventListener("keyup", (e) => {
   let key = KEYS[e.key.toUpperCase()];
   if (key == undefined) return;
 
-  stopNote(key[0], key[1] + 3);
+  stopNote(key[0], key[1] + globalOctave);
   e.preventDefault();
 });
+
+function setOctave(octave) {
+  globalOctave = octave;
+  OCTAVE_TEXT.textContent = globalOctave;
+  stopAll();
+}
+
+function changeOctave(delta) {
+  setOctave(globalOctave + delta);
+}

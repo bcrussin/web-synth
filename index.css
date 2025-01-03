@@ -19,13 +19,15 @@ main {
 
 #synth-container {
     margin: 8px;
-    text-align: center;
     color: white;
     background-color: #222222;
     border-radius: 2px;
+    display: flex;
+    flex-direction: column;
 }
 
 #synth-keys {
+    padding: 2px;
     display: flex;
     align-items: flex-start;
 }
@@ -35,6 +37,7 @@ main {
     height: 220px;
     background-color: white;
     border: 2px solid black;
+    border-top: none;
 }
 
 .key ~ .key.black {
@@ -46,12 +49,27 @@ main {
     margin: 0;
     background-color: black;
     border: 2px solid white;
+    border-top: none;
 }
 
-
-#wave-type-container {
+.synth-controls {
+    text-align: center;
     padding: 8px 0;
     display: flex;
+    flex-direction: row;
     justify-content: center;
+    align-items: center;
     gap: 8px;
+}
+
+.synth-controls button {
+    aspect-ratio: 1;
+    border: 1px solid white;
+    border-radius: 4px;
+    height: 1.5lh;
+}
+
+#octave {
+    font-size: large;
+    font-weight: bold;
 }
