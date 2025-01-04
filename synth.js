@@ -39,6 +39,9 @@ class Synth {
     this.volume = options.volume ?? 50;
 
     this.setMono(options.mono ?? false);
+
+    this.attack = 0;
+    this.release = 0;
   }
 
   setMono(isMono) {
@@ -71,7 +74,7 @@ class Synth {
       oscillator.setFrequency(frequency);
     } else {
       oscillator = new Oscillator(this);
-      oscillator.startNote(frequency);
+      oscillator.attack(frequency);
 
       if (this.mono) this.oscillators = oscillator;
       else this.oscillators[frequency] = oscillator;
@@ -84,20 +87,21 @@ class Synth {
 
     if (frequency == undefined || oscillator == undefined) return;
 
-    oscillator.stop();
+    // oscillator.stop();
+    oscillator.release();
     if (this.mono) this.oscillators = null;
     else delete this.oscillators[frequency];
   }
 
   stopAll() {
     if (this.mono) {
-      this.oscillators?.stop();
+      this.oscillators?.release();
       this.oscillators = null;
       return;
     }
 
     if (this.oscillators != undefined)
-      Object.values(this.oscillators).forEach((note) => note.stop());
+      Object.values(this.oscillators).forEach((note) => note.release());
     this.oscillators = {};
   }
 }
@@ -112,6 +116,12 @@ class Oscillator extends OscillatorNode {
     this.connect(this.gainNode);
 
     this.type = synth.type ?? "sine";
+
+    this.eg = new EnvGen(AUDIO_CONTEXT, this.gainNode.gain);
+    this.eg.mode = "ASR";
+    this.eg.attackTime = synth.attack;
+    this.eg.releaseTime = synth.release;
+    console.log(synth.attack, synth.release);
   }
 
   setFrequency(frequency) {
@@ -119,7 +129,21 @@ class Oscillator extends OscillatorNode {
   }
 
   startNote(frequency) {
+    this.gainNode.gain.value = 1;
     this.setFrequency(frequency);
     this.start();
+  }
+
+  attack(frequency) {
+    this.setFrequency(frequency);
+    this.eg.gateOn();
+    this.start();
+  }
+
+  release() {
+    this.eg.gateOff();
+
+    // Magic number currently, since envelope uses exponential curves
+    this.stop(AUDIO_CONTEXT.currentTime + this.synth.release * 5);
   }
 }

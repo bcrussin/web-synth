@@ -59,6 +59,8 @@ let MASTER_CHANNEL = AUDIO_CONTEXT.createChannelMerger(1);
 MASTER_CHANNEL.connect(GLOBAL_GAIN);
 
 let synth = new Synth();
+setAttack(0);
+setRelease(0);
 
 document.addEventListener("keydown", (e) => {
   let key = Global.keyToNote(e.key.toUpperCase());
@@ -85,4 +87,16 @@ function updateWaveType() {
 function setMono(mono) {
   synth.setMono(mono);
   MONO_CHECKBOX.checked = mono;
+}
+
+function setAttack(value) {
+  synth.attack = Math.max(0.001, parseFloat(value));
+  mouseSynth.attack = Math.max(0.001, parseFloat(value));
+  document.getElementById("attack").value = value;
+}
+
+function setRelease(value) {
+  synth.release = Math.max(0.001, parseFloat(value));
+  mouseSynth.release = Math.max(0.001, parseFloat(value));
+  document.getElementById("release").value = value;
 }
