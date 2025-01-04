@@ -60,7 +60,7 @@ MASTER_CHANNEL.connect(GLOBAL_GAIN);
 
 let synth = new Synth();
 setAttack(0);
-setRelease(0);
+setRelease(0.1);
 
 document.addEventListener("keydown", (e) => {
   let key = Global.keyToNote(e.key.toUpperCase());
