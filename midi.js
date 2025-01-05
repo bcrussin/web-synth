@@ -37,11 +37,10 @@ function getMIDIMessage(message) {
   let noteLetter = Audio.getNoteFromMIDI(note);
   let octave = Math.floor(note / 12) - 1;
 
-  // console.log(note, noteLetter, octave);
   switch (command) {
     case 144: // noteOn
       if (velocity > 0) {
-        synth.playNote(noteLetter, octave);
+        synth.playNote(noteLetter, octave, velocity.map(0, 127, 0, 1));
       } else {
         synth.stopNote(noteLetter, octave);
       }

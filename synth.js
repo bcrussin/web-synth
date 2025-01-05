@@ -1,3 +1,7 @@
+Number.prototype.map = function (in_min, in_max, out_min, out_max) {
+  return ((this - in_min) * (out_max - out_min)) / (in_max - in_min) + out_min;
+};
+
 class Audio {
   static NOTES = {
     C: [16.35, 32.7, 65.41, 130.81, 261.63, 523.25, 1046.5, 2093.0, 4186.01],
@@ -67,7 +71,7 @@ class Synth {
     return this.oscillators?.[frequency];
   }
 
-  playNote(note, octave) {
+  playNote(note, octave, volume) {
     let frequency = Audio.getNoteOrFrequency(note, octave);
 
     if (frequency == undefined || this.isNotePlaying(frequency)) return;
@@ -78,7 +82,7 @@ class Synth {
       oscillator.setFrequency(frequency);
     } else {
       oscillator = new Oscillator(this);
-      oscillator.attack(frequency);
+      oscillator.attack(frequency, volume);
 
       if (this.mono) this.oscillators = oscillator;
       else this.oscillators[frequency] = oscillator;
@@ -115,8 +119,13 @@ class Oscillator extends OscillatorNode {
     super(AUDIO_CONTEXT);
 
     this.synth = synth;
+
+    this.volumeNode = AUDIO_CONTEXT.createGain();
+    this.volumeNode.gain.value = 1;
+    this.volumeNode.connect(MASTER_CHANNEL);
+
     this.gainNode = AUDIO_CONTEXT.createGain();
-    this.gainNode.connect(MASTER_CHANNEL);
+    this.gainNode.connect(this.volumeNode);
     this.connect(this.gainNode);
 
     this.type = synth.type ?? "sine";
@@ -125,20 +134,20 @@ class Oscillator extends OscillatorNode {
     this.eg.mode = "ASR";
     this.eg.attackTime = synth.attack;
     this.eg.releaseTime = synth.release;
-    console.log(synth.attack, synth.release);
   }
 
   setFrequency(frequency) {
     this.frequency.value = frequency;
   }
 
-  startNote(frequency) {
-    this.gainNode.gain.value = 1;
+  startNote(frequency, volume) {
+    this.volumeNode.gain.value = volume ?? 1;
     this.setFrequency(frequency);
     this.start();
   }
 
-  attack(frequency) {
+  attack(frequency, volume) {
+    this.volumeNode.gain.value = volume ?? 1;
     this.setFrequency(frequency);
     this.eg.gateOn();
     this.start();
