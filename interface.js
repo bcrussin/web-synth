@@ -8,14 +8,15 @@ const mouseSynth = new Synth({ mono: true });
 
 window.onload = () => {
   KEYS_CONTAINER.innerHTML = "";
-  for (let i = 1; i <= NUM_OCTAVES + 1; i++) {
+  let octaveStart = 4 - Math.floor(NUM_OCTAVES / 2);
+  for (let i = octaveStart; i <= NUM_OCTAVES + octaveStart; i++) {
     Object.keys(Audio.NOTES).forEach((note, j) => {
       let key = addKey(note, i);
       if (note.includes("b")) key.style.zIndex = 100;
     });
   }
 
-  setOctave(3);
+  setOctave(0);
 
   document.querySelectorAll('input[name="wave-type"]').forEach((radio) => {
     radio.addEventListener("change", () => {
