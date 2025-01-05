@@ -16,6 +16,10 @@ class Audio {
     B: [30.87, 61.74, 123.47, 246.94, 493.88, 987.77, 1975.53, 3951.07],
   };
 
+  static getNoteFromMIDI(note) {
+    return Object.keys(Audio.NOTES)[note % 12];
+  }
+
   static getFrequency(note, octave) {
     return Audio.NOTES[note]?.[octave];
   }

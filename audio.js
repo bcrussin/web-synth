@@ -97,6 +97,6 @@ function setAttack(value) {
 
 function setRelease(value) {
   synth.release = Math.max(0.001, parseFloat(value));
-  mouseSynth.release = Math.max(0.001, parseFloat(value));
+  mouseSynth.release = Math.max(0.005, parseFloat(value));
   document.getElementById("release").value = value;
 }
