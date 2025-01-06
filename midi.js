@@ -14,7 +14,7 @@ class MidiDevice {
   static success(midiAccess) {
     midiAccess.inputs.forEach((input) => {
       let device = new MidiDevice(input);
-      MidiDevice.DEVICES[device.id] = device;
+      MidiDevice.DEVICES[input.id] = device;
       device.startCapturing();
     });
 
