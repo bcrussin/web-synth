@@ -43,8 +43,7 @@
               id="volume"
               type="range"
               min="0"
-              max="100"
-              value="50"
+              max="60"
               onchange="setVolume(this.value)"
             />
           </div>
@@ -84,14 +83,18 @@
 
         <div id="synth-keys"></div>
       </div>
+
+      <button id="user-input-capture" onclick="detectMidiDevices()">
+        Click to refresh MIDI controllers
+      </button>
     </main>
 
     <!-- https://github.com/rsimmons/fastidious-envelope-generator -->
     <script src="EnvGen.js"></script>
 
     <script src="synth.js"></script>
-    <script src="midi.js"></script>
     <script src="interface.js"></script>
+    <script src="midi.js"></script>
     <script src="audio.js"></script>
   </body>
 </html>

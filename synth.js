@@ -43,13 +43,15 @@ class Synth {
   constructor(options) {
     options = options ?? {};
 
+    this.midiDevice = options?.midiDevice;
+
     this.type = options.type;
     this.volume = options.volume ?? 50;
 
     this.setMono(options.mono ?? false);
 
-    this.attack = 0;
-    this.release = 0;
+    this.attack = 0.001;
+    this.release = 0.1;
   }
 
   setMono(isMono) {
@@ -112,6 +114,13 @@ class Synth {
       Object.values(this.oscillators).forEach((note) => note.release());
     this.oscillators = {};
   }
+
+  updateFrequencies() {
+    let oscillators = Object.values(this.oscillators);
+    if (this.mono) oscillators = [this.oscillators];
+
+    oscillators.forEach((oscillator) => oscillator.setFrequency());
+  }
 }
 
 class Oscillator extends OscillatorNode {
@@ -119,6 +128,9 @@ class Oscillator extends OscillatorNode {
     super(AUDIO_CONTEXT);
 
     this.synth = synth;
+
+    this.frequencyValue = 0;
+    this.frequencyOffset = 0;
 
     this.volumeNode = AUDIO_CONTEXT.createGain();
     this.volumeNode.gain.value = 1;
@@ -136,8 +148,24 @@ class Oscillator extends OscillatorNode {
     this.eg.releaseTime = synth.release;
   }
 
+  semitonesToFrequencyOffset(semitones) {
+    return this.frequencyValue * (Math.pow(2, semitones / 12) - 1);
+  }
+
   setFrequency(frequency) {
-    this.frequency.value = frequency;
+    if (frequency == undefined) {
+      frequency = this.frequencyValue;
+    } else {
+      this.frequencyValue = frequency;
+    }
+
+    if (!!this.synth.midiDevice) {
+      this.frequencyOffset = this.semitonesToFrequencyOffset(
+        this.synth.midiDevice.pitchBend
+      );
+    }
+
+    this.frequency.value = frequency + this.frequencyOffset;
   }
 
   startNote(frequency, volume) {
@@ -156,7 +184,7 @@ class Oscillator extends OscillatorNode {
   release() {
     this.eg.gateOff();
 
-    // Magic number currently, since envelope uses exponential curves
+    // Magic number currently, otherwise synth stops before release fully plays out
     this.stop(AUDIO_CONTEXT.currentTime + this.synth.release * 5);
   }
 }

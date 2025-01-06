@@ -53,14 +53,12 @@ let oscillators = {};
 let GLOBAL_GAIN = null;
 GLOBAL_GAIN = AUDIO_CONTEXT.createGain();
 GLOBAL_GAIN.connect(AUDIO_CONTEXT.destination);
-setVolume(localStorage.getItem("masterVolume") ?? 50);
+setVolume(localStorage.getItem("masterVolume") ?? 30);
 
 let MASTER_CHANNEL = AUDIO_CONTEXT.createChannelMerger(1);
 MASTER_CHANNEL.connect(GLOBAL_GAIN);
 
 let synth = new Synth();
-setAttack(0);
-setRelease(0.1);
 
 document.addEventListener("keydown", (e) => {
   let key = Global.keyToNote(e.key.toUpperCase());
@@ -80,8 +78,12 @@ document.addEventListener("keyup", (e) => {
 
 function updateWaveType() {
   const selected = document.querySelector('input[name="wave-type"]:checked');
-  synth.type = selected.value;
-  mouseSynth.type = selected.value;
+  if (!!synth && typeof synth !== "undefined") synth.type = selected.value;
+  if (!!mouseSynth && typeof mouseSynth !== "undefined")
+    mouseSynth.type = selected.value;
+  Object.values(MidiDevice.DEVICES).forEach((device) => {
+    device.synth.type = selected.value;
+  });
 }
 
 function setMono(mono) {
@@ -89,14 +91,30 @@ function setMono(mono) {
   MONO_CHECKBOX.checked = mono;
 }
 
+function setVolume(volume) {
+  GLOBAL_GAIN.gain.value = volume / 200;
+  VOLUME_SLIDER.value = volume;
+  localStorage.setItem("masterVolume", volume);
+}
+
 function setAttack(value) {
-  synth.attack = Math.max(0.001, parseFloat(value));
-  mouseSynth.attack = Math.max(0.001, parseFloat(value));
+  value = Math.max(0.001, parseFloat(value));
+
+  synth.attack = value;
+  mouseSynth.attack = value;
+  Object.values(MidiDevice.DEVICES).forEach((device) => {
+    device.synth.attack = value;
+  });
   document.getElementById("attack").value = value;
 }
 
 function setRelease(value) {
-  synth.release = Math.max(0.001, parseFloat(value));
-  mouseSynth.release = Math.max(0.005, parseFloat(value));
+  value = Math.max(0.005, parseFloat(value));
+
+  synth.release = value;
+  mouseSynth.release = value;
+  Object.values(MidiDevice.DEVICES).forEach((device) => {
+    device.synth.release = value;
+  });
   document.getElementById("release").value = value;
 }

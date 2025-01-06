@@ -49,7 +49,9 @@ function addKey(note, octave) {
   return key;
 }
 
-document.addEventListener("mouseup", () => mouseSynth.stopAll());
+document.addEventListener("mouseup", () => {
+  mouseSynth.stopAll();
+});
 
 function setOctave(octave) {
   Global.octave = octave;
