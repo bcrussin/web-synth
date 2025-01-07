@@ -185,6 +185,7 @@ class Oscillator extends OscillatorNode {
     this.eg.gateOff();
 
     // Magic number currently, otherwise synth stops before release fully plays out
-    this.stop(AUDIO_CONTEXT.currentTime + this.synth.release * 5);
+    let stopDelay = this.synth.release > 0.005 ? this.synth.release * 4 : 0.01;
+    this.stop(AUDIO_CONTEXT.currentTime + stopDelay);
   }
 }
