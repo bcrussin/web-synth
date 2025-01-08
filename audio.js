@@ -61,6 +61,8 @@ MASTER_CHANNEL.connect(GLOBAL_GAIN);
 let synth = new Synth();
 
 document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+
   let key = Global.keyToNote(e.key.toUpperCase());
   if (e.repeat || key == undefined) return;
 
