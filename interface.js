@@ -61,12 +61,10 @@ document.addEventListener("mouseup", () => {
 });
 
 document.addEventListener("touchend", (e) => {
-  e.preventDefault();
   mouseSynth.stopAll();
 });
 
 document.addEventListener("touchstart", (e) => {
-  e.preventDefault();
   let loc = e.changedTouches[0];
   let elem = document.elementFromPoint(loc.clientX, loc.clientY);
   let note = elem.id.slice(0, -1);
@@ -75,7 +73,6 @@ document.addEventListener("touchstart", (e) => {
 });
 
 document.addEventListener("touchmove", (e) => {
-  e.preventDefault();
   let loc = e.changedTouches[0];
   let elem = document.elementFromPoint(loc.clientX, loc.clientY);
   let note = elem.id.slice(0, -1);
