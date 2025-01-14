@@ -60,6 +60,11 @@ MASTER_CHANNEL.connect(GLOBAL_GAIN);
 
 let synth = new Synth();
 
+document.getElementById("attack").value = synth.attack;
+document.getElementById("decay").value = synth.decay;
+document.getElementById("sustain").value = synth.sustain;
+document.getElementById("release").value = synth.release;
+
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
 
@@ -119,4 +124,26 @@ function setRelease(value) {
     device.synth.release = value;
   });
   document.getElementById("release").value = value;
+}
+
+function setDecay(value) {
+  value = Math.max(0.005, parseFloat(value));
+
+  synth.decay = value;
+  mouseSynth.decay = value;
+  Object.values(MidiDevice.DEVICES).forEach((device) => {
+    device.synth.decay = value;
+  });
+  document.getElementById("decay").value = value;
+}
+
+function setSustain(value) {
+  value = parseFloat(value);
+
+  synth.sustain = value;
+  mouseSynth.sustain = value;
+  Object.values(MidiDevice.DEVICES).forEach((device) => {
+    device.synth.sustain = value;
+  });
+  document.getElementById("sustain").value = value;
 }

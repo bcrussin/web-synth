@@ -52,6 +52,8 @@ class Synth {
 
     this.attack = 0.001;
     this.release = 0.1;
+    this.sustain = 1;
+    this.decay = 0.5;
   }
 
   setMono(isMono) {
@@ -144,9 +146,15 @@ class Oscillator extends OscillatorNode {
     this.type = synth.type ?? "sine";
 
     this.eg = new EnvGen(AUDIO_CONTEXT, this.gainNode.gain);
-    this.eg.mode = "ASR";
+
+    // if (synth.sustain == 1) this.eg.mode = "ASR";
+    // else
+    this.eg.mode = "ADSR";
+
     this.eg.attackTime = synth.attack;
     this.eg.releaseTime = synth.release;
+    this.eg.decayTime = synth.decay;
+    this.eg.sustainLevel = synth.sustain;
   }
 
   semitonesToFrequencyOffset(semitones) {
