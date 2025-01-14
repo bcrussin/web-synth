@@ -38,8 +38,6 @@ function addKey(note, octave) {
     playPianoNote(note, octave);
   });
 
-  key.addEventListener("contextmenu", (e) => e.preventDefault());
-
   key.addEventListener("mouseover", (e) => {
     if (e.buttons == 1 || e.buttons == 3) {
       playPianoNote(note, octave);
@@ -72,12 +70,21 @@ document.addEventListener("touchstart", (e) => {
   playPianoNote(note, octave);
 });
 
-document.addEventListener("touchmove", (e) => {
-  let loc = e.changedTouches[0];
-  let elem = document.elementFromPoint(loc.clientX, loc.clientY);
-  let note = elem.id.slice(0, -1);
-  let octave = elem.id.slice(-1);
-  playPianoNote(note, octave);
+document.addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    let loc = e.changedTouches[0];
+    let elem = document.elementFromPoint(loc.clientX, loc.clientY);
+    let note = elem.id.slice(0, -1);
+    let octave = elem.id.slice(-1);
+    playPianoNote(note, octave);
+  },
+  { passive: false }
+);
+
+document.addEventListener("contextmenu", (e) => e.preventDefault(), {
+  passive: false,
 });
 
 function setOctave(octave) {
