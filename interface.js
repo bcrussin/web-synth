@@ -62,13 +62,21 @@ document.addEventListener("touchend", (e) => {
   mouseSynth.stopAll();
 });
 
-document.addEventListener("touchstart", (e) => {
-  let loc = e.changedTouches[0];
-  let elem = document.elementFromPoint(loc.clientX, loc.clientY);
-  let note = elem.id.slice(0, -1);
-  let octave = elem.id.slice(-1);
-  playPianoNote(note, octave);
-});
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    let loc = e.changedTouches[0];
+    let elem = document.elementFromPoint(loc.clientX, loc.clientY);
+    let note = elem.id.slice(0, -1);
+    let octave = elem.id.slice(-1);
+    playPianoNote(note, octave);
+
+    if (elem.classList.contains("key")) {
+      e.preventDefault();
+    }
+  },
+  { passive: false }
+);
 
 document.addEventListener(
   "touchmove",

@@ -29,6 +29,7 @@ main {
     border-radius: 6px;
     display: flex;
     flex-direction: column;
+    user-select: none;
 }
 
 #synth-keys {
