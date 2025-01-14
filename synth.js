@@ -74,6 +74,7 @@ class Synth {
   }
 
   playNote(note, octave, volume) {
+    octave = parseInt(octave);
     let frequency = Audio.getNoteOrFrequency(note, octave);
 
     if (frequency == undefined || this.isNotePlaying(frequency)) return;
