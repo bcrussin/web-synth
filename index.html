@@ -9,7 +9,7 @@
   </head>
   <body>
     <main>
-      <div id="synth-container">
+      <section id="synth-container" class="vertical">
         <div id="wave-type-container" class="synth-controls">
           <input
             type="radio"
@@ -106,11 +106,31 @@
         </div>
 
         <div id="synth-keys"></div>
-      </div>
+      </section>
 
-      <button id="user-input-capture" onclick="detectMidiDevices()">
-        Click to refresh MIDI controllers
-      </button>
+      <section class="vertical">
+        <label for="velocity-curve">Sensitivity:</label>
+        <input
+          type="range"
+          id="velocity-curve"
+          name="velocity-curve"
+          min="0"
+          max="3"
+          step="0.25"
+          list="velocity-markers"
+          onchange="setVelocityCurve(this.value)"
+        />
+        <datalist id="velocity-markers">
+          <option value="0"></option>
+          <option value="1"></option>
+          <option value="2"></option>
+          <option value="3"></option>
+        </datalist>
+
+        <button id="user-input-capture" onclick="detectMidiDevices()">
+          Click to refresh MIDI controllers
+        </button>
+      </section>
     </main>
 
     <!-- https://github.com/rsimmons/fastidious-envelope-generator -->

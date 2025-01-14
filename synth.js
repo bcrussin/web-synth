@@ -147,10 +147,7 @@ class Oscillator extends OscillatorNode {
 
     this.eg = new EnvGen(AUDIO_CONTEXT, this.gainNode.gain);
 
-    // if (synth.sustain == 1) this.eg.mode = "ASR";
-    // else
     this.eg.mode = "ADSR";
-
     this.eg.attackTime = synth.attack;
     this.eg.releaseTime = synth.release;
     this.eg.decayTime = synth.decay;

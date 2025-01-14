@@ -1,5 +1,8 @@
 class MidiDevice {
   static DEVICES = {};
+  static DEFAULTS = {
+    velocityCurve: 1,
+  };
 
   constructor(input) {
     this.input = input;
@@ -47,6 +50,8 @@ class MidiDevice {
     switch (command) {
       case 144: // noteOn
         if (velocity > 0) {
+          console.log(velocity);
+          velocity = this.mapVelocityToCurve(velocity);
           this.synth.playNote(noteLetter, octave, velocity.map(0, 127, 0, 1));
         } else {
           this.synth.stopNote(noteLetter, octave);
@@ -61,6 +66,15 @@ class MidiDevice {
       this.pitchBend = (note + velocity * 128).map(0, 16383, -2, 2);
       this.synth.updateFrequencies();
     }
+  }
+
+  mapVelocityToCurve(velocity) {
+    let curve = this.velocityCurve ?? MidiDevice.DEFAULTS.velocityCurve;
+
+    let xPower = (velocity * velocity) / 127;
+    let newVelocity = 127 * Math.pow(velocity / 127, curve);
+    // let newVelocity = (1 - curve) * velocity + curve * (velocity * velocity);
+    return newVelocity;
   }
 }
 

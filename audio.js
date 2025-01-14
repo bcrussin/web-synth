@@ -65,6 +65,8 @@ document.getElementById("decay").value = synth.decay;
 document.getElementById("sustain").value = synth.sustain;
 document.getElementById("release").value = synth.release;
 
+document.getElementById("velocity-curve").value = 1;
+
 document.addEventListener("keydown", (e) => {
   if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
 
@@ -146,4 +148,12 @@ function setSustain(value) {
     device.synth.sustain = value;
   });
   document.getElementById("sustain").value = value;
+}
+
+function setVelocityCurve(value) {
+  value = parseFloat(value);
+
+  Object.values(MidiDevice.DEVICES).forEach((device) => {
+    device.velocityCurve = value;
+  });
 }
