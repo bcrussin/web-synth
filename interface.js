@@ -4,7 +4,7 @@ const OCTAVE_TEXT = document.getElementById("octave");
 const VOLUME_SLIDER = document.getElementById("volume");
 const NUM_OCTAVES = 2;
 
-const mouseSynth = new Synth({ mono: true });
+const mouseSynth = new Synth({ name: "Mouse", mono: true });
 
 window.onload = () => {
   KEYS_CONTAINER.innerHTML = "";
@@ -25,6 +25,52 @@ window.onload = () => {
   });
   updateWaveType();
 };
+
+/* SETTINGS DIALOG */
+let currentSynth;
+let currentWavetableGraph;
+
+function updateSynthsList() {
+  const container = document.getElementById("synths-list");
+  container.innerHTML = "";
+
+  console.log("_____________________");
+  console.log(Synth.SYNTHS);
+  Object.entries(Synth.SYNTHS).forEach(([name, synth]) => {
+    const button = document.createElement("button");
+    button.innerHTML = name;
+    button.onclick = () => showSynthSettings(name);
+    container.appendChild(button);
+  });
+}
+
+function showSynthSettings(name) {
+  let synth = Synth.SYNTHS[name];
+  if (synth == undefined) return;
+  currentSynth = name;
+  currentWavetableGraph = new WavetableGraph(synth, 16, "wavetable-graph");
+
+  const dialog = document.getElementById("synth-settings");
+  dialog.showModal();
+
+  document.getElementById("synth-name").textContent = name;
+  document.getElementById("synth-attack").value = synth.attack;
+  document.getElementById("synth-decay").value = synth.decay;
+  document.getElementById("synth-sustain").value = synth.sustain;
+  document.getElementById("synth-release").value = synth.release;
+}
+
+function closeSynthSettings() {
+  document.getElementById("synth-settings").close();
+  currentSynth = null;
+}
+
+function setSynthProperty(property, value) {
+  value = parseFloat(value);
+  if (currentSynth == undefined || isNaN(value)) return;
+  Synth.SYNTHS[currentSynth][property] = value;
+}
+/* _______________ */
 
 function addKey(note, octave) {
   const key = document.createElement("div");

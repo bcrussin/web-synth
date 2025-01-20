@@ -40,6 +40,12 @@ class Audio {
 
 // TODO: change `mono` to an integer polyphony value, add dynamic/static property for # of oscillators
 class Synth {
+  static SYNTHS = {};
+
+  static getSynth(name) {
+    return Synth.SYNTHS[name];
+  }
+
   constructor(options) {
     options = options ?? {};
 
@@ -51,9 +57,13 @@ class Synth {
     this.setMono(options.mono ?? false);
 
     this.attack = 0.001;
-    this.release = 0.1;
+    this.release = 0.05;
     this.sustain = 1;
     this.decay = 0.5;
+
+    this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS).length + 1}`;
+    Synth.SYNTHS[this.name] = this;
+    updateSynthsList();
   }
 
   setMono(isMono) {
@@ -124,6 +134,30 @@ class Synth {
 
     oscillators.forEach((oscillator) => oscillator.setFrequency());
   }
+
+  setWavetable(wavetable) {
+    this.wavetable = [...wavetable];
+    let real = [...wavetable];
+    let imag = new Array(wavetable.length).fill(0);
+    const N = wavetable.length;
+
+    // Initialize FFT
+    // FFT(real, imag);
+    let transformed = DFT(wavetable);
+    console.log(transformed);
+
+    // Create a PeriodicWave
+    // return context.createPeriodicWave(real, imag);
+    this.periodicWave = AUDIO_CONTEXT.createPeriodicWave(
+      transformed.real,
+      transformed.imag
+    );
+  }
+
+  clearWavetable() {
+    this.wavetable = null;
+    this.periodicWave = null;
+  }
 }
 
 class Oscillator extends OscillatorNode {
@@ -141,9 +175,23 @@ class Oscillator extends OscillatorNode {
 
     this.gainNode = AUDIO_CONTEXT.createGain();
     this.gainNode.connect(this.volumeNode);
-    this.connect(this.gainNode);
 
-    this.type = synth.type ?? "sine";
+    this.lowPassFilter = AUDIO_CONTEXT.createBiquadFilter();
+    this.lowPassFilter.type = "lowpass";
+    this.lowPassFilter.frequency.setTargetAtTime(
+      4000,
+      AUDIO_CONTEXT.currentTime,
+      0
+    );
+    this.lowPassFilter.connect(this.gainNode);
+
+    this.connect(this.lowPassFilter);
+
+    if (!!this.synth.periodicWave) {
+      this.setPeriodicWave(this.synth.periodicWave);
+    } else {
+      this.type = synth.type ?? "sine";
+    }
 
     this.eg = new EnvGen(AUDIO_CONTEXT, this.gainNode.gain);
 
@@ -191,7 +239,7 @@ class Oscillator extends OscillatorNode {
     this.eg.gateOff();
 
     // Magic number currently, otherwise synth stops before release fully plays out
-    let stopDelay = this.synth.release > 0.005 ? this.synth.release * 4 : 0.01;
+    let stopDelay = this.synth.release > 0.005 ? this.synth.release * 5 : 0.01;
     this.stop(AUDIO_CONTEXT.currentTime + stopDelay);
   }
 }

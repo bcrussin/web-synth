@@ -58,7 +58,7 @@ setVolume(localStorage.getItem("masterVolume") ?? 30);
 let MASTER_CHANNEL = AUDIO_CONTEXT.createChannelMerger(1);
 MASTER_CHANNEL.connect(GLOBAL_GAIN);
 
-let synth = new Synth();
+let synth = new Synth({ name: "Keyboard" });
 
 document.getElementById("attack").value = synth.attack;
 document.getElementById("decay").value = synth.decay;

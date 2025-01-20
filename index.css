@@ -36,6 +36,13 @@ section.vertical {
     gap: 4px;
 }
 
+section.horizontal {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+}
+
 button {
     margin: 4px 0;
     padding: 2px 4px;
@@ -95,4 +102,37 @@ button {
 
 .envelope-slider {
     max-width: 64px;
+}
+
+/* DIALOG */
+dialog {
+    position: relative;
+    color: white;
+    background-color: #222222;
+    border: 2px solid white;
+    border-radius: 8px;
+    box-shadow: 0 0 12px black;
+
+    min-width: min(400px, 90vw);
+}
+
+dialog .close-dialog {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: large;
+    color: white;
+    background: none;
+    border: none;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+}
+
+dialog h2 {
+    margin: 0;
+}
+
+#wavetable-graph {
+    border: 2px solid white;
 }

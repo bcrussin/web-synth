@@ -6,7 +6,7 @@ class MidiDevice {
 
   constructor(input) {
     this.input = input;
-    this.synth = new Synth({ midiDevice: this });
+    this.synth = new Synth({ name: input.name, midiDevice: this });
     this.pitchBend = 0;
   }
 
@@ -57,7 +57,7 @@ class MidiDevice {
         }
         break;
       case 128: // noteOff
-        this.synth.playNote(noteLetter, octave);
+        this.synth.stopNote(noteLetter, octave);
         break;
     }
 
