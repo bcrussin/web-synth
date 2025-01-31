@@ -7,7 +7,18 @@ function padArrayToPowerOfTwo(arr) {
   return paddedArray;
 }
 
-function FFT(input) {
+function FFT(input, stretchValue) {
+  stretchValue = stretchValue ?? 1;
+  let stretched = new Array(input.length * stretchValue);
+  for (let i = 0; i < stretched.length; i++) {
+    let inputIndex = Math.floor(i / stretchValue);
+    stretched[i] = input[inputIndex];
+  }
+
+  return _FFT(stretched);
+}
+
+function _FFT(input) {
   let N = input.length;
   if ((N & (N - 1)) !== 0) {
     // Check if N is a power of two
@@ -17,8 +28,8 @@ function FFT(input) {
 
   if (N <= 1) return { real: input, imag: new Array(N).fill(0) };
 
-  let even = FFT(input.filter((_, i) => i % 2 === 0));
-  let odd = FFT(input.filter((_, i) => i % 2 !== 0));
+  let even = _FFT(input.filter((_, i) => i % 2 === 0));
+  let odd = _FFT(input.filter((_, i) => i % 2 !== 0));
 
   let real = new Array(N).fill(0);
   let imag = new Array(N).fill(0);
