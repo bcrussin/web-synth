@@ -137,20 +137,15 @@ class Synth {
 
   setWavetable(wavetable) {
     this.wavetable = [...wavetable];
-    let real = [...wavetable];
-    let imag = new Array(wavetable.length).fill(0);
-    const N = wavetable.length;
 
     // Initialize FFT
-    // FFT(real, imag);
-    let transformed = DFT(wavetable);
+    let transformed = fft(wavetable);
     console.log(transformed);
 
     // Create a PeriodicWave
-    // return context.createPeriodicWave(real, imag);
     this.periodicWave = AUDIO_CONTEXT.createPeriodicWave(
-      transformed.real,
-      transformed.imag
+      transformed[0],
+      transformed[1]
     );
   }
 
@@ -179,7 +174,7 @@ class Oscillator extends OscillatorNode {
     this.lowPassFilter = AUDIO_CONTEXT.createBiquadFilter();
     this.lowPassFilter.type = "lowpass";
     this.lowPassFilter.frequency.setTargetAtTime(
-      4000,
+      1000,
       AUDIO_CONTEXT.currentTime,
       0
     );

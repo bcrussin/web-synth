@@ -48,7 +48,6 @@ class WavetableGraph {
     this.wavetable[bar] = py * 2 - 1;
     this.render();
 
-    // console.log(bar, this.wavetable[bar]);
     this.synth.setWavetable(this.wavetable);
   }
 }
