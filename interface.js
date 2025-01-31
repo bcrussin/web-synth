@@ -4,7 +4,7 @@ const OCTAVE_TEXT = document.getElementById("octave");
 const VOLUME_SLIDER = document.getElementById("volume");
 const NUM_OCTAVES = 2;
 
-const mouseSynth = new Synth({ name: "Mouse", mono: true });
+const mouseSynth = new Synth({ name: "Mouse" });
 
 KEY_WIDTH = 30;
 window.onload = () => {
@@ -168,6 +168,12 @@ function addKey(note, octave) {
     }
   });
 
+  key.addEventListener("mouseout", (e) => {
+    if (e.buttons == 1 || e.buttons == 3) {
+      stopPianoNote(note, octave);
+    }
+  });
+
   KEYS_CONTAINER.appendChild(key);
 
   return key;
@@ -176,6 +182,11 @@ function addKey(note, octave) {
 function playPianoNote(note, octave) {
   octave = parseInt(octave);
   mouseSynth.playNote(note, octave + Global.octave);
+}
+
+function stopPianoNote(note, octave) {
+  octave = parseInt(octave);
+  mouseSynth.stopNote(note, octave + Global.octave);
 }
 
 document.addEventListener("mouseup", () => {
