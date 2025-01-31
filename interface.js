@@ -89,7 +89,6 @@ function setWaveType(type) {
   Synth.SYNTHS[currentSynth].type = type;
   if (type != "custom" && !WAVE_TYPES.includes(type.toLowerCase())) {
     loadPreset(type);
-    // currentWavetableGraph.setWavetable(presets.instruments[type]?.wavetable);
   }
 
   document.getElementById("wavetable-presets").value =
@@ -108,6 +107,7 @@ function loadPreset(presetName) {
 
   synth.type = presetName;
   currentWavetableGraph.setWavetable(preset.wavetable);
+  document.getElementById("wavetable-size").value = preset.wavetable.length;
   setSynthProperty("attack", preset.attack);
   setSynthProperty("decay", preset.decay);
   setSynthProperty("sustain", preset.sustain);
