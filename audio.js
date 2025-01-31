@@ -85,13 +85,27 @@ document.addEventListener("keyup", (e) => {
   e.preventDefault();
 });
 
-function updateWaveType() {
+function setWaveType(type) {
   const selected = document.querySelector('input[name="wave-type"]:checked');
-  if (!!synth && typeof synth !== "undefined") synth.type = selected.value;
-  if (!!mouseSynth && typeof mouseSynth !== "undefined")
-    mouseSynth.type = selected.value;
+  type = type ?? selected?.value;
+
+  let settingsSelect = document.getElementById("wavetable-presents");
+  let isValidPreset = Object.values(settingsSelect.options).some((option) => {
+    return option.value == type;
+  });
+  type = isValidPreset ? type : "custom";
+  settingsSelect.value = type;
+
+  document
+    .querySelectorAll('input[name="wave-type"]')
+    .forEach((elem) => (elem.checked = false));
+
+  if (type != "custom") document.getElementById("wave-" + type).checked = true;
+
+  if (!!synth && typeof synth !== "undefined") synth.type = type;
+  if (!!mouseSynth && typeof mouseSynth !== "undefined") mouseSynth.type = type;
   Object.values(MidiDevice.DEVICES).forEach((device) => {
-    device.synth.type = selected.value;
+    device.synth.type = type;
   });
 }
 

@@ -4,6 +4,7 @@ class WavetableGraph {
 
     if (!!this.synth.wavetable) {
       this.wavetable = this.synth.wavetable;
+      this.resizeWavetable();
     } else {
       this.wavetable = new Array(length).fill(0);
     }
@@ -23,6 +24,8 @@ class WavetableGraph {
   }
 
   render() {
+    if (this.canvas == undefined || this.ctx == undefined) return;
+
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.ctx.fillStyle = "white";
     let barWidth = this.canvas.width / this.wavetable.length;
@@ -48,6 +51,28 @@ class WavetableGraph {
     this.wavetable[bar] = py * 2 - 1;
     this.render();
 
+    this.synth.setWavetable(this.wavetable);
+    setWaveType("custom");
+  }
+
+  resizeWavetable(size) {
+    if (this.wavetable == undefined) {
+      this.wavetable = new Array(size).fill(0);
+      return;
+    }
+
+    size = size ?? wavetableSize;
+
+    let len = this.wavetable.length;
+    if (len > size) {
+      this.wavetable = this.wavetable.slice(0, size);
+    } else if (len < size) {
+      for (let i = len; i < size; i++) {
+        this.wavetable.push(0);
+      }
+    }
+
+    this.render();
     this.synth.setWavetable(this.wavetable);
   }
 }

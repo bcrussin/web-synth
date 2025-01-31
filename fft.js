@@ -1,57 +1,41 @@
-// petamoriken (https://stackoverflow.com/q/32402804/)
-// Use FFT to convert wavetable to real and imag arrays
-function fft(input) {
-  var n = input.length,
-    theta = (2 * Math.PI) / n,
-    ar = new Float32Array(n),
-    ai = new Float32Array(n),
-    m,
-    mh,
-    i,
-    j,
-    k,
-    irev,
-    wr,
-    wi,
-    xr,
-    xi,
-    cos = Math.cos,
-    sin = Math.sin;
+function padArrayToPowerOfTwo(arr) {
+  let newSize = Math.pow(2, Math.ceil(Math.log2(arr.length)));
+  let paddedArray = new Array(newSize).fill(0);
+  for (let i = 0; i < arr.length; i++) {
+    paddedArray[i] = arr[i];
+  }
+  return paddedArray;
+}
 
-  for (i = 0; i < n; ++i) {
-    ar[i] = input[i];
+function FFT(input) {
+  let N = input.length;
+  if ((N & (N - 1)) !== 0) {
+    // Check if N is a power of two
+    input = padArrayToPowerOfTwo(input);
+    N = input.length;
   }
 
-  // scrambler
-  i = 0;
-  for (j = 1; j < n - 1; ++j) {
-    for (k = n >> 1; k > (i ^= k); k >>= 1);
-    if (j < i) {
-      xr = ar[j];
-      xi = ai[j];
-      ar[j] = ar[i];
-      ai[j] = ai[i];
-      ar[i] = xr;
-      ai[i] = xi;
-    }
-  }
-  for (mh = 1; (m = mh << 1) <= n; mh = m) {
-    irev = 0;
-    for (i = 0; i < n; i += m) {
-      wr = cos(theta * irev);
-      wi = sin(theta * irev);
-      for (k = n >> 2; k > (irev ^= k); k >>= 1);
-      for (j = i; j < mh + i; ++j) {
-        k = j + mh;
-        xr = ar[j] - ar[k];
-        xi = ai[j] - ai[k];
-        ar[j] += ar[k];
-        ai[j] += ai[k];
-        ar[k] = wr * xr - wi * xi;
-        ai[k] = wr * xi + wi * xr;
-      }
-    }
+  if (N <= 1) return { real: input, imag: new Array(N).fill(0) };
+
+  let even = FFT(input.filter((_, i) => i % 2 === 0));
+  let odd = FFT(input.filter((_, i) => i % 2 !== 0));
+
+  let real = new Array(N).fill(0);
+  let imag = new Array(N).fill(0);
+
+  for (let k = 0; k < N / 2; k++) {
+    let exp = (-2 * Math.PI * k) / N;
+    let twiddleRe = Math.cos(exp);
+    let twiddleIm = Math.sin(exp);
+
+    let oddRe = twiddleRe * odd.real[k] - twiddleIm * odd.imag[k];
+    let oddIm = twiddleRe * odd.imag[k] + twiddleIm * odd.real[k];
+
+    real[k] = even.real[k] + oddRe;
+    imag[k] = even.imag[k] + oddIm;
+    real[k + N / 2] = even.real[k] - oddRe;
+    imag[k + N / 2] = even.imag[k] - oddIm;
   }
 
-  return [ar, ai];
+  return { real, imag };
 }

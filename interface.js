@@ -20,15 +20,17 @@ window.onload = () => {
 
   document.querySelectorAll('input[name="wave-type"]').forEach((radio) => {
     radio.addEventListener("change", () => {
-      updateWaveType();
+      setWaveType();
     });
   });
-  updateWaveType();
+  setWaveType();
 };
 
 /* SETTINGS DIALOG */
 let currentSynth;
 let currentWavetableGraph;
+let wavetableSize = 0;
+updateWavetableSize(16);
 
 function updateSynthsList() {
   const container = document.getElementById("synths-list");
@@ -42,6 +44,12 @@ function updateSynthsList() {
     button.onclick = () => showSynthSettings(name);
     container.appendChild(button);
   });
+}
+
+function updateWavetableSize(size) {
+  wavetableSize = size;
+  currentWavetableGraph?.resizeWavetable(size);
+  document.getElementById("wavetable-size").value = size;
 }
 
 function showSynthSettings(name) {

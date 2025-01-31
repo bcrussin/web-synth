@@ -192,7 +192,30 @@
         />
       </div>
 
-      <canvas id="wavetable-graph"></canvas>
+      <div id="wavetable-container">
+        <canvas id="wavetable-graph"></canvas>
+        <div class="flex horizontal">
+          <select id="wavetable-presents" onchange="setWaveType(this.value)">
+            <option value="sine">Sine</option>
+            <option value="sawtooth">Sawtooth</option>
+            <option value="triangle">Triangle</option>
+            <option value="custom">Custom</option>
+          </select>
+
+          <input
+            type="range"
+            min="2"
+            max="128"
+            step="2"
+            id="wavetable-size"
+            list="wavetable-size-markers"
+            oninput="updateWavetableSize(this.value)"
+          />
+          <datalist id="wavetable-size-markers">
+            <option value="16"></option>
+          </datalist>
+        </div>
+      </div>
     </dialog>
 
     <!-- https://github.com/rsimmons/fastidious-envelope-generator -->

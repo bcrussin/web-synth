@@ -139,13 +139,12 @@ class Synth {
     this.wavetable = [...wavetable];
 
     // Initialize FFT
-    let transformed = fft(wavetable);
-    console.log(transformed);
+    let transformed = FFT(wavetable);
 
     // Create a PeriodicWave
     this.periodicWave = AUDIO_CONTEXT.createPeriodicWave(
-      transformed[0],
-      transformed[1]
+      transformed.real,
+      transformed.imag
     );
   }
 
@@ -182,7 +181,7 @@ class Oscillator extends OscillatorNode {
 
     this.connect(this.lowPassFilter);
 
-    if (!!this.synth.periodicWave) {
+    if (!!this.synth.periodicWave && synth.type == "custom") {
       this.setPeriodicWave(this.synth.periodicWave);
     } else {
       this.type = synth.type ?? "sine";

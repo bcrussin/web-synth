@@ -29,14 +29,16 @@ section {
     border-radius: 6px;
 }
 
-section.vertical {
+section.vertical,
+.flex.vertical {
     display: flex;
     flex-direction: column;
     align-items: stretch;
     gap: 4px;
 }
 
-section.horizontal {
+section.horizontal,
+.flex.horizontal {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -131,6 +133,13 @@ dialog .close-dialog {
 
 dialog h2 {
     margin: 0;
+}
+
+#wavetable-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 }
 
 #wavetable-graph {

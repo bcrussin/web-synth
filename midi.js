@@ -22,7 +22,7 @@ class MidiDevice {
     });
 
     // Temporary until UI is overhauled
-    updateWaveType();
+    setWaveType();
   }
 
   static failure(event) {
