@@ -181,7 +181,7 @@ class Oscillator extends OscillatorNode {
     this.lowPassFilter = AUDIO_CONTEXT.createBiquadFilter();
     this.lowPassFilter.type = "lowpass";
     this.lowPassFilter.frequency.setTargetAtTime(
-      1000,
+      2000,
       AUDIO_CONTEXT.currentTime,
       0
     );
