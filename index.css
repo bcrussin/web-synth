@@ -110,6 +110,27 @@ button {
     max-width: 64px;
 }
 
+#synths-list {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.synth-button {
+    padding: 2px 4px;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.synth-button.playing {
+    --playing-color: rgb(40, 188, 40);
+    box-shadow: 0 0 8px 2px var(--playing-color);
+    border-color: var(--playing-color);
+    transition-duration: 0s;
+}
+
+
 /* DIALOG */
 dialog {
     position: relative;
@@ -157,18 +178,4 @@ dialog h2 {
 
 #wavetable-graph {
     border: 2px solid white;
-}
-
-.synth-button {
-    padding: 2px 4px;
-    border: 3px solid transparent;
-    border-radius: 8px;
-    transition: border-color 0.3s, box-shadow 0.3s;
-}
-
-.synth-button.playing {
-    --playing-color: rgb(40, 188, 40);
-    box-shadow: 0 0 8px 2px var(--playing-color);
-    border-color: var(--playing-color);
-    transition-duration: 0s;
 }

@@ -24,7 +24,7 @@ window.addEventListener("resize", () => initializeKeys());
 
 function initializeKeys() {
   KEYS_CONTAINER.innerHTML = "";
-  let maxNotes = Math.floor(window.innerWidth / KEY_WIDTH) - 4;
+  let maxNotes = Math.floor(window.innerWidth / KEY_WIDTH) - 3;
 
   let octaveStart = 4 - Math.floor(NUM_OCTAVES / 2);
   let counter = 0;
