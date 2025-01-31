@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     margin: 0;
 }
 
@@ -70,7 +71,7 @@ button {
     border-top: none;
 }
 
-.key ~ .key.black {
+.key~.key.black {
     margin: 0 -17px;
 }
 
@@ -116,9 +117,18 @@ dialog {
     background-color: #222222;
     border: 2px solid white;
     border-radius: 8px;
-    box-shadow: 0 0 12px black;
+    box-shadow: 0 0 16px #ffffff80;
 
     min-width: min(400px, 90vw);
+}
+
+dialog::backdrop {
+    background-color: #00000080;
+    background: repeating-linear-gradient(45deg,
+            #00000080,
+            #00000080 6px,
+            #000000a0 6px,
+            #000000a0 12px);
 }
 
 dialog .close-dialog {
