@@ -6,15 +6,9 @@ const NUM_OCTAVES = 2;
 
 const mouseSynth = new Synth({ name: "Mouse", mono: true });
 
+KEY_WIDTH = 30;
 window.onload = () => {
-  KEYS_CONTAINER.innerHTML = "";
-  let octaveStart = 4 - Math.floor(NUM_OCTAVES / 2);
-  for (let i = octaveStart; i <= NUM_OCTAVES + octaveStart; i++) {
-    Object.keys(Audio.NOTES).forEach((note, j) => {
-      let key = addKey(note, i);
-      if (note.includes("b")) key.style.zIndex = 100;
-    });
-  }
+  initializeKeys();
 
   setOctave(0);
 
@@ -25,6 +19,26 @@ window.onload = () => {
   });
   setWaveType();
 };
+
+window.addEventListener("resize", () => initializeKeys());
+
+function initializeKeys() {
+  KEYS_CONTAINER.innerHTML = "";
+  let maxNotes = Math.floor(window.innerWidth / KEY_WIDTH) - 4;
+
+  let octaveStart = 4 - Math.floor(NUM_OCTAVES / 2);
+  let counter = 0;
+  for (let i = octaveStart; i <= NUM_OCTAVES + octaveStart; i++) {
+    Object.keys(Audio.NOTES).forEach((note, j) => {
+      if (counter >= maxNotes) return;
+
+      let key = addKey(note, i);
+      if (note.includes("b")) key.style.zIndex = 100;
+      else counter++; // only include white notes in total width calculation
+    });
+    console.log(counter, maxNotes);
+  }
+}
 
 /* SETTINGS DIALOG */
 let currentSynth;
@@ -139,6 +153,7 @@ function addKey(note, octave) {
   if (note.includes("b")) key.classList.add("black");
 
   key.id = note + octave;
+  key.style.width = KEY_WIDTH + "px";
 
   key.addEventListener("mousedown", (e) => {
     e.preventDefault();
