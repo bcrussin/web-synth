@@ -51,7 +51,7 @@ class Synth {
 
     this.midiDevice = options?.midiDevice;
 
-    this.type = options.type;
+    this.type = options.type ?? "sine";
     this.volume = options.volume ?? 50;
 
     this.setMono(options.mono ?? false);

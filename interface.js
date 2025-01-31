@@ -52,6 +52,21 @@ function updateWavetableSize(size) {
   document.getElementById("wavetable-size").value = size;
 }
 
+const WAVE_TYPES = ["sine", "sawtooth", "triangle", "custom"];
+function setWaveType(type) {
+  if (currentSynth == undefined) return;
+
+  if (WAVE_TYPES.includes(type.toLowerCase()))
+    Synth.SYNTHS[currentSynth].type = type;
+  else Synth.SYNTHS[currentSynth].type = "sine";
+
+  document.getElementById("wavetable-presets").value =
+    Synth.SYNTHS[currentSynth].type;
+
+  document.getElementById("wavetable-graph").style.opacity =
+    type == "custom" ? 1 : 0.5;
+}
+
 function showSynthSettings(name) {
   let synth = Synth.SYNTHS[name];
   if (synth == undefined) return;
@@ -66,6 +81,10 @@ function showSynthSettings(name) {
   document.getElementById("synth-decay").value = synth.decay;
   document.getElementById("synth-sustain").value = synth.sustain;
   document.getElementById("synth-release").value = synth.release;
+
+  document.getElementById("wavetable-presets").value = synth.type;
+  document.getElementById("wavetable-graph").style.opacity =
+    synth.type == "custom" ? 1 : 0.5;
 }
 
 function closeSynthSettings() {

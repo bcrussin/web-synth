@@ -10,31 +10,6 @@
   <body>
     <main>
       <section id="synth-container" class="vertical">
-        <div id="wave-type-container" class="synth-controls">
-          <input
-            type="radio"
-            id="wave-sine"
-            name="wave-type"
-            value="sine"
-            checked
-          />
-          <label for="wave-sine">Sine</label><br />
-          <input
-            type="radio"
-            id="wave-sawtooth"
-            name="wave-type"
-            value="sawtooth"
-          />
-          <label for="wave-sawtooth">Sawtooth</label><br />
-          <input
-            type="radio"
-            id="wave-triangle"
-            name="wave-type"
-            value="triangle"
-          />
-          <label for="wave-triangle">Triangle</label>
-        </div>
-
         <div class="synth-controls">
           <div id="volume-container" class="synth-controls">
             <label for="volume">Volume:</label>
@@ -195,11 +170,12 @@
       <div id="wavetable-container">
         <canvas id="wavetable-graph"></canvas>
         <div class="flex horizontal">
-          <select id="wavetable-presents" onchange="setWaveType(this.value)">
+          <select id="wavetable-presets" onchange="setWaveType(this.value)">
             <option value="sine">Sine</option>
             <option value="sawtooth">Sawtooth</option>
             <option value="triangle">Triangle</option>
             <option value="custom">Custom</option>
+            <option disabled>──────────</option>
           </select>
 
           <input
