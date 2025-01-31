@@ -52,19 +52,50 @@ function updateWavetableSize(size) {
   document.getElementById("wavetable-size").value = size;
 }
 
-const WAVE_TYPES = ["sine", "sawtooth", "triangle", "custom"];
+const WAVE_TYPES = ["sine", "sawtooth", "triangle"];
+let presets;
+fetch("presets.json").then((response) => {
+  response.json().then((jsonResponse) => {
+    presets = jsonResponse;
+
+    Object.entries(presets.instruments).forEach(([name, data]) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.text = data.displayName;
+      document.getElementById("wavetable-presets").appendChild(option);
+    });
+  });
+});
+
 function setWaveType(type) {
   if (currentSynth == undefined) return;
 
-  if (WAVE_TYPES.includes(type.toLowerCase()))
-    Synth.SYNTHS[currentSynth].type = type;
-  else Synth.SYNTHS[currentSynth].type = "sine";
+  Synth.SYNTHS[currentSynth].type = type;
+  if (type != "custom" && !WAVE_TYPES.includes(type.toLowerCase())) {
+    loadPreset(type);
+    // currentWavetableGraph.setWavetable(presets.instruments[type]?.wavetable);
+  }
 
   document.getElementById("wavetable-presets").value =
     Synth.SYNTHS[currentSynth].type;
 
+  if (type == "custom")
+    Synth.getSynth(currentSynth).setWavetable(currentWavetableGraph.wavetable);
+
   document.getElementById("wavetable-graph").style.opacity =
-    type == "custom" ? 1 : 0.5;
+    WAVE_TYPES.includes(type) ? 0.5 : 1;
+}
+
+function loadPreset(presetName) {
+  let preset = presets.instruments[presetName];
+  let synth = Synth.SYNTHS[currentSynth];
+
+  synth.type = presetName;
+  currentWavetableGraph.setWavetable(preset.wavetable);
+  setSynthProperty("attack", preset.attack);
+  setSynthProperty("decay", preset.decay);
+  setSynthProperty("sustain", preset.sustain);
+  setSynthProperty("release", preset.release);
 }
 
 function showSynthSettings(name) {
@@ -84,7 +115,7 @@ function showSynthSettings(name) {
 
   document.getElementById("wavetable-presets").value = synth.type;
   document.getElementById("wavetable-graph").style.opacity =
-    synth.type == "custom" ? 1 : 0.5;
+    WAVE_TYPES.includes(synth.type) ? 0.5 : 1;
 }
 
 function closeSynthSettings() {
@@ -96,6 +127,9 @@ function setSynthProperty(property, value) {
   value = parseFloat(value);
   if (currentSynth == undefined || isNaN(value)) return;
   Synth.SYNTHS[currentSynth][property] = value;
+
+  let elem = document.getElementById("synth-" + property);
+  if (!!elem) elem.value = value;
 }
 /* _______________ */
 

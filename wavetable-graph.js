@@ -55,6 +55,13 @@ class WavetableGraph {
     setWaveType("custom");
   }
 
+  setWavetable(wavetable) {
+    if (!!wavetable) this.wavetable = wavetable;
+    this.render();
+
+    this.synth.setWavetable(this.wavetable);
+  }
+
   resizeWavetable(size) {
     if (this.wavetable == undefined) {
       this.wavetable = new Array(size).fill(0);

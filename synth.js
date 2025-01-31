@@ -136,6 +136,7 @@ class Synth {
   }
 
   setWavetable(wavetable) {
+    wavetable = wavetable ?? [0, 1];
     this.wavetable = [...wavetable];
 
     // Initialize FFT
@@ -184,7 +185,7 @@ class Oscillator extends OscillatorNode {
 
     this.connect(this.lowPassFilter);
 
-    if (!!this.synth.periodicWave && synth.type == "custom") {
+    if (!!this.synth.periodicWave && !WAVE_TYPES.includes(synth.type)) {
       this.setPeriodicWave(this.synth.periodicWave);
     } else {
       this.type = synth.type ?? "sine";
