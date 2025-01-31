@@ -59,7 +59,7 @@ class WavetableGraph {
   }
 
   setWavetable(wavetable) {
-    if (!!wavetable) this.wavetable = wavetable;
+    if (!!wavetable) this.wavetable = [...wavetable];
     this.render();
 
     this.synth.setWavetable(this.wavetable);

@@ -146,10 +146,7 @@ class Synth {
     wavetable = wavetable ?? [0, 1];
     this.wavetable = [...wavetable];
 
-    // Initialize FFT
-    // let repeat = parseInt(
-    //   document.getElementById("wavetable-stretch")?.value ?? 1
-    // );
+    // Presets assume stretch value of 4
     let transformed = FFT(wavetable, 4);
 
     // Create a PeriodicWave
