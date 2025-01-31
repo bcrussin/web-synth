@@ -36,7 +36,6 @@ function initializeKeys() {
       if (note.includes("b")) key.style.zIndex = 100;
       else counter++; // only include white notes in total width calculation
     });
-    console.log(counter, maxNotes);
   }
 }
 
@@ -54,9 +53,12 @@ function updateSynthsList() {
   console.log(Synth.SYNTHS);
   Object.entries(Synth.SYNTHS).forEach(([name, synth]) => {
     const button = document.createElement("button");
+    button.classList.add("synth-button");
     button.innerHTML = name;
     button.onclick = () => showSynthSettings(name);
     container.appendChild(button);
+
+    synth.indicatorElement = button;
   });
 }
 

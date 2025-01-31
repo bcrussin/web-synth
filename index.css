@@ -158,3 +158,17 @@ dialog h2 {
 #wavetable-graph {
     border: 2px solid white;
 }
+
+.synth-button {
+    padding: 2px 4px;
+    border: 3px solid transparent;
+    border-radius: 8px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.synth-button.playing {
+    --playing-color: rgb(40, 188, 40);
+    box-shadow: 0 0 8px 2px var(--playing-color);
+    border-color: var(--playing-color);
+    transition-duration: 0s;
+}

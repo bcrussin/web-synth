@@ -102,6 +102,8 @@ class Synth {
       if (this.mono) this.oscillators = oscillator;
       else this.oscillators[frequency] = oscillator;
     }
+
+    this.indicatorElement.classList.add("playing");
   }
 
   stopNote(note, octave) {
@@ -114,9 +116,14 @@ class Synth {
     oscillator.release();
     if (this.mono) this.oscillators = null;
     else delete this.oscillators[frequency];
+
+    if (this.mono || Object.keys(this.oscillators).length <= 0)
+      this.indicatorElement.classList.remove("playing");
   }
 
   stopAll() {
+    this.indicatorElement?.classList?.remove("playing");
+
     if (this.mono) {
       this.oscillators?.release();
       this.oscillators = null;
