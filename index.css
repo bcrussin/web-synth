@@ -145,7 +145,7 @@ dialog {
 
 dialog::backdrop {
     background-color: #00000080;
-    background: repeating-linear-gradient(45deg,
+    background: repeating-linear-gradient(-45deg,
             #00000080,
             #00000080 6px,
             #000000a0 6px,
