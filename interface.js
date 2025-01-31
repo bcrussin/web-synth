@@ -193,8 +193,17 @@ document.addEventListener("mouseup", () => {
   mouseSynth.stopAll();
 });
 
+const touchedKeys = {};
+
 document.addEventListener("touchend", (e) => {
-  mouseSynth.stopAll();
+  let loc = e.changedTouches[0];
+  let elem = document.elementFromPoint(loc.clientX, loc.clientY);
+  if (elem == undefined || !elem.classList.contains("key")) return;
+
+  delete touchedKeys[elem.id];
+
+  let [note, octave] = getNoteAndOctaveFromId(elem.id);
+  stopPianoNote(note, octave);
 });
 
 document.addEventListener(
@@ -202,8 +211,11 @@ document.addEventListener(
   (e) => {
     let loc = e.changedTouches[0];
     let elem = document.elementFromPoint(loc.clientX, loc.clientY);
-    let note = elem.id.slice(0, -1);
-    let octave = elem.id.slice(-1);
+    if (elem == undefined || !elem.classList.contains("key")) return;
+
+    touchedKeys[elem.id] = elem;
+
+    let [note, octave] = getNoteAndOctaveFromId(elem.id);
     playPianoNote(note, octave);
 
     if (elem.classList.contains("key")) {
@@ -219,8 +231,24 @@ document.addEventListener(
     e.preventDefault();
     let loc = e.changedTouches[0];
     let elem = document.elementFromPoint(loc.clientX, loc.clientY);
-    let note = elem.id.slice(0, -1);
-    let octave = elem.id.slice(-1);
+
+    Object.keys(touchedKeys).forEach((key) => {
+      if (
+        !Object.values(e.touches).some(
+          (touch) =>
+            document.elementFromPoint(touch.clientX, touch.clientY).id == key
+        )
+      ) {
+        let [keyNote, keyOctave] = getNoteAndOctaveFromId(key);
+        stopPianoNote(keyNote, keyOctave);
+        delete touchedKeys[key];
+      }
+    });
+
+    if (elem == undefined || !elem.classList.contains("key")) return;
+
+    touchedKeys[elem.id] = elem;
+    let [note, octave] = getNoteAndOctaveFromId(elem.id);
     playPianoNote(note, octave);
   },
   { passive: false }
@@ -229,6 +257,13 @@ document.addEventListener(
 document.addEventListener("contextmenu", (e) => e.preventDefault(), {
   passive: false,
 });
+
+function getNoteAndOctaveFromId(id) {
+  let note = id.slice(0, -1);
+  let octave = id.slice(-1);
+
+  return [note, octave];
+}
 
 function setOctave(octave) {
   Global.octave = octave;
