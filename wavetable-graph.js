@@ -19,6 +19,9 @@ class WavetableGraph {
         this.edit(e);
       }
     };
+    this.canvas.ontouchmove = (e) => {
+      this.edit(e.changedTouches[0]);
+    };
 
     this.render();
   }
