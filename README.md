@@ -1,20 +1,39 @@
-# Web Synthesizer
+# web-synth-vue
 
-The goal of this project is to provide a customizable synthesizer that supports mouse, keyboard, and MIDI control. Future plans include custom waveforms, LFOs, and key bindings.
-Most web-based synths do not provide a high level of control (especially in regards to key bindings), so this project aims to provide as custom an experience as possible.
+This template should help get you started developing with Vue 3 in Vite.
 
-#### Mouse/Keyboard Control
+## Recommended IDE Setup
 
-The synth can be played using a keyboard. The Z-M and Q-P rows are used for white notes (Z = C4), while the A-L and numbers row are used for black notes. Customizable keyboard bindings are planned for the future.
+[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
 
-A mouse may also be used to play notes, simply by clicking on the on-screen piano.
+## Type Support for `.vue` Imports in TS
 
-#### MIDI Control
+TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
 
-Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity and pitch bends are currently supported.
+## Customize configuration
 
-# Credits
+See [Vite Configuration Reference](https://vite.dev/config/).
 
-This project utilitzes the Web Audio API and Web MIDI API.
+## Project Setup
 
-[fastidious-envelope-generator](https://github.com/rsimmons/fastidious-envelope-generator) provides smooth, cross-browser envelope control.
+```sh
+npm install
+```
+
+### Compile and Hot-Reload for Development
+
+```sh
+npm run dev
+```
+
+### Type-Check, Compile and Minify for Production
+
+```sh
+npm run build
+```
+
+### Lint with [ESLint](https://eslint.org/)
+
+```sh
+npm run lint
+```

@@ -1,0 +1,65 @@
+@import './base.css';
+
+#app {
+  --playing-color: #28bc28;
+
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+  padding: 3px;
+}
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (min-width: 1024px) {
+  body {
+    display: flex;
+    place-items: center;
+  }
+
+  #app {
+    display: flex;
+    place-items: center;
+    /* display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 0 2rem; */
+  }
+}
+
+section {
+  margin: 8px;
+  padding: 12px 16px;
+  color: white;
+  background-color: #222222;
+  border: 1px solid white;
+  box-shadow: 0 0 12px #ffffff60;
+  border-radius: 6px;
+}
+
+section.vertical,
+.flex.vertical {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+section.horizontal,
+.flex.horizontal {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
