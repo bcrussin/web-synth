@@ -10,6 +10,7 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: 'https://bcrussin.github.io/web-synth',
   plugins: [
     vue(),
     vueDevTools(),
