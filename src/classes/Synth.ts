@@ -3,6 +3,7 @@ import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import { reactive, ref, type Ref } from 'vue'
 import FFT from './FFT'
+import Tuna from 'tunajs'
 
 export interface SynthOptions {
   name?: string
@@ -35,6 +36,10 @@ export default class Synth {
   wavetable: Array<number> | null = null
   periodicWave: PeriodicWave | null = null
 
+  audioNode: ChannelMergerNode
+  tuna: Tuna
+  effects: Tuna.TunaAudioNode[] = reactive([])
+
   constructor(options: SynthOptions = {}) {
     options = options ?? {}
 
@@ -48,6 +53,13 @@ export default class Synth {
     this.sustain = 1
     this.decay = 0.5
 
+    this.tuna = new Tuna(Global.CONTEXT)
+
+    this.audioNode = Global.CONTEXT.createChannelMerger(1)
+
+    this.addEffect()
+    this.updateEffectNodes()
+
     this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS).length + 1}`
     Synth.SYNTHS.value[this.name] = this
     // updateSynthsList()
@@ -59,6 +71,31 @@ export default class Synth {
 
   static getSynth(name: string): Synth {
     return Synth.SYNTHS.value[name]
+  }
+
+  updateEffectNodes() {
+    this.audioNode.disconnect()
+    if (this.effects.length <= 0) {
+      this.audioNode.connect(Global.MASTER)
+      return
+    }
+
+    this.effects.forEach((effect, index) => {
+      if (index <= 0) this.audioNode.connect(effect)
+
+      if (index >= this.effects.length - 1) effect.connect(Global.MASTER)
+      else effect.connect(this.effects[index + 1])
+    })
+  }
+
+  getEffect(index: number): Tuna.TunaAudioNode {
+    return this.effects?.[index]
+  }
+
+  addEffect() {
+    const effect = new this.tuna.Convolver({ wetLevel: 0.5 })
+    effect.convolver.buffer = Global.generateImpulseReponse(1, 1, false)
+    this.effects.push(effect)
   }
 
   setProperty(property: string, value: string | number): void {

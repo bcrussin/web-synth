@@ -23,10 +23,13 @@ const props = defineProps<{ synth: Synth }>()
   >
     <el-tabs value="0" id="test">
       <!-- <div id="tab-panels" :style="{ height: dialogHeight, transition: 'height 1s ease-in-out' }"> -->
-      <el-tab-pane label="Waveform" value="0" id="tab0">
+      <el-tab-pane label="Waveform" value="0">
         <SynthWaveformSettings :synth="props.synth"></SynthWaveformSettings>
       </el-tab-pane>
-      <el-tab-pane label="Settings" value="1" id="tab1">
+      <el-tab-pane label="Effects" value="1">
+        <SynthEffects :synth="props.synth"></SynthEffects>
+      </el-tab-pane>
+      <el-tab-pane label="Settings" value="2">
         <SynthSettings :synth="props.synth"></SynthSettings>
       </el-tab-pane>
       <!-- </div> -->

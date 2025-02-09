@@ -29,7 +29,7 @@ export default class Global {
 
     Global.volumeNode = Global.CONTEXT.createGain()
     Global.volumeNode.connect(Global.CONTEXT.destination)
-    Global.volumeNode.gain.value = 0.4
+    Global.volumeNode.gain.value = 0.3
 
     Global.MASTER = Global.CONTEXT.createChannelMerger(1)
     Global.MASTER.connect(Global.volumeNode)
@@ -59,5 +59,21 @@ export default class Global {
     }
 
     return frequency
+  }
+
+  static generateImpulseReponse(duration: number, decay: number, reverse: boolean) {
+    const sampleRate = Global.CONTEXT.sampleRate
+    const length = sampleRate * duration
+    const impulse = Global.CONTEXT.createBuffer(2, length, sampleRate)
+    const impulseL = impulse.getChannelData(0)
+    const impulseR = impulse.getChannelData(1)
+
+    if (!decay) decay = 2.0
+    for (let i = 0; i < length; i++) {
+      const n = reverse ? length - i : i
+      impulseL[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay)
+      impulseR[i] = (Math.random() * 2 - 1) * Math.pow(1 - n / length, decay)
+    }
+    return impulse
   }
 }

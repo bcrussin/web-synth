@@ -7,7 +7,11 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ConvolverEffect: typeof import('./src/components/synth-effects/ConvolverEffect.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
+    ElCard: typeof import('element-plus/es')['ElCard']
+    ElCollapse: typeof import('element-plus/es')['ElCollapse']
+    ElCollapseItem: typeof import('element-plus/es')['ElCollapseItem']
     ElDialog: typeof import('element-plus/es')['ElDialog']
     ElOption: typeof import('element-plus/es')['ElOption']
     ElSelect: typeof import('element-plus/es')['ElSelect']
@@ -22,6 +26,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SynthDialog: typeof import('./src/components/SynthDialog.vue')['default']
+    SynthEffects: typeof import('./src/components/SynthEffects.vue')['default']
     SynthList: typeof import('./src/components/SynthList.vue')['default']
     SynthPiano: typeof import('./src/components/SynthPiano.vue')['default']
     SynthSettings: typeof import('./src/components/SynthSettings.vue')['default']

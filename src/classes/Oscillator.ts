@@ -25,7 +25,7 @@ export default class Oscillator extends OscillatorNode {
 
     this.volumeNode = Global.CONTEXT.createGain()
     this.volumeNode.gain.value = synth.volume
-    this.volumeNode.connect(Global.MASTER)
+    this.volumeNode.connect(synth.audioNode)
 
     this.velocityNode = Global.CONTEXT.createGain()
     this.velocityNode.gain.value = 1
