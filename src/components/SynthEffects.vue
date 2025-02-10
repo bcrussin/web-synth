@@ -62,14 +62,22 @@ function deleteEffect(e: Event, index: number): void {
         <template #title>
           <div class="effect-title flex-split">
             <span>{{ getEffectName(effect.name) }}</span>
-            <el-button
-              class="delete-effect"
-              type="danger"
-              :icon="Delete"
-              circle
-              size="large"
-              @click.stop.prevent="deleteEffect($event, index)"
-            />
+            <div>
+              <el-button
+                class="delete-effect"
+                type="danger"
+                :icon="Delete"
+                circle
+                size="large"
+                @click.stop.prevent="deleteEffect($event, index)"
+              />
+              <el-switch
+                v-model="effect.bypass"
+                :active-value="false"
+                :inactive-value="true"
+                @click.stop.prevent=""
+              />
+            </div>
           </div>
         </template>
 
@@ -116,6 +124,7 @@ function deleteEffect(e: Event, index: number): void {
 
 .effect-title {
   cursor: move !important;
+  padding-right: 8px;
 }
 
 .effect-item:not(.is-active) + .effect-item:not(.is-active) {
@@ -146,15 +155,19 @@ function deleteEffect(e: Event, index: number): void {
 
 .delete-effect {
   margin-right: 8px;
-  padding: 8px;
+  padding: 4px;
   aspect-ratio: 1;
   width: fit-content;
   height: fit-content;
   opacity: 0;
-  transition: opacity 0.2s;
+  visibility: hidden;
+  transition:
+    opacity 0.2s,
+    visibility 0.2s;
 }
 
 .effect-item.is-active .delete-effect {
   opacity: 1;
+  visibility: visible;
 }
 </style>
