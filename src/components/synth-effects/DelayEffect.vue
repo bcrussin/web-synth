@@ -63,7 +63,7 @@ function setProperty(property: string, value: number) {
     <el-slider
       :min="0"
       :max="1"
-      :step="0.05"
+      :step="0.01"
       v-model="delayTime"
       @input="setPropertyValue('delayTime', $event)"
     >
@@ -74,7 +74,7 @@ function setProperty(property: string, value: number) {
     <el-slider
       :min="0"
       :max="0.8"
-      :step="0.1"
+      :step="0.05"
       v-model="feedback"
       @input="setPropertyValue('feedback', $event)"
     >

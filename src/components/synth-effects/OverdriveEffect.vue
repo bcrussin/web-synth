@@ -42,7 +42,7 @@ function setProperty(property: string, value: number) {
     <span>Gain:</span>
     <el-slider
       :min="0"
-      :max="20"
+      :max="5"
       :step="0.1"
       v-model="outputGain"
       @input="setPropertyValue('outputGain', $event)"
@@ -53,7 +53,7 @@ function setProperty(property: string, value: number) {
     <span>Drive:</span>
     <el-slider
       :min="0"
-      :max="1"
+      :max="0.8"
       :step="0.05"
       v-model="drive"
       @input="setPropertyValue('drive', $event)"
@@ -68,6 +68,17 @@ function setProperty(property: string, value: number) {
       :step="0.1"
       :model-value="getEffect().curveAmount"
       @input="setProperty('curveAmount', $event)"
+    >
+    </el-slider>
+  </div>
+  <div class="effect-property">
+    <span>Algorithm:</span>
+    <el-slider
+      :min="0"
+      :max="5"
+      :step="1"
+      :model-value="getEffect().algorithmIndex"
+      @input="setProperty('algorithmIndex', $event)"
     >
     </el-slider>
   </div>
