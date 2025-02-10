@@ -19,6 +19,7 @@ export default class MidiDevice {
   }
 
   static requestDevices() {
+    if (typeof navigator.requestMIDIAccess != 'function') return
     navigator.requestMIDIAccess().then(MidiDevice.success, MidiDevice.failure)
   }
 
