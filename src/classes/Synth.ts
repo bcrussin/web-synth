@@ -87,6 +87,8 @@ export default class Synth {
     }
 
     this.effects.forEach((effect, index) => {
+      effect.disconnect(null as unknown as AudioNode)
+
       if (index <= 0) this.inputNode.connect(effect)
 
       if (index >= this.effects.length - 1) effect.connect(this.outputNode)
@@ -129,7 +131,8 @@ export default class Synth {
     if (index < 0 || index >= this.effects.length) return
 
     // TODO: Properly disconnect/dispose effect
-    this.effects[index].bypass = true
+    // this.effects[index].bypass = true
+    this.effects[index].disconnect(null as unknown as AudioNode)
     this.effects.splice(index, 1)
     this.updateEffectNodes()
   }

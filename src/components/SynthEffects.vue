@@ -5,6 +5,7 @@ import type Synth from '@/classes/Synth'
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
 import ConvolverEffect from './synth-effects/ConvolverEffect.vue'
 import { Close, Delete } from '@element-plus/icons-vue'
+import { vDraggable } from 'vue-draggable-plus'
 
 const effects: { [key: string]: string } = { convolver: 'Reverb', chorus: 'Chorus', delay: 'Delay' }
 
@@ -13,7 +14,6 @@ const props = defineProps<{ synth: Synth }>()
 const selectedEffect = ref(null)
 
 function newEffect(effect: string): void {
-  console.log(effect)
   props.synth.addEffect(effect)
   selectedEffect.value = null
 }
@@ -22,11 +22,33 @@ function getEffectName(name: string): string {
   return effects[name?.toLowerCase()] ?? ''
 }
 
+const effectsList = computed(() => {
+  return props.synth.effects.map((effect) => ({ name: effect.name }))
+})
+
+const list = ref([
+  {
+    name: 'Joao',
+    id: 1,
+  },
+  {
+    name: 'Jean',
+    id: 2,
+  },
+  {
+    name: 'Johanna',
+    id: 3,
+  },
+  {
+    name: 'Juan',
+    id: 4,
+  },
+])
+
 function deleteEffect(e: Event, index: number): void {
   e.stopPropagation()
   e.stopImmediatePropagation()
   e.preventDefault()
-  console.log(index)
   props.synth.deleteEffect(index)
 }
 </script>
@@ -37,7 +59,18 @@ function deleteEffect(e: Event, index: number): void {
       <el-option v-for="option in effects" :key="option" :value="option">{{ option }}</el-option>
     </el-select>
 
-    <el-collapse accordion class="effects-collapse" v-model="selectedEffect">
+    <el-collapse
+      accordion
+      class="effects-collapse"
+      v-model="selectedEffect"
+      v-draggable="[
+        props.synth.effects,
+        {
+          animation: 150,
+        },
+      ]"
+      @end="props.synth.updateEffectNodes()"
+    >
       <el-collapse-item
         class="effect-item"
         v-for="(effect, index) in props.synth.effects"
@@ -90,6 +123,10 @@ function deleteEffect(e: Event, index: number): void {
   margin: 0 0;
   padding: 0 8px;
   transition: margin 0.4s;
+}
+
+.effect-title {
+  cursor: move !important;
 }
 
 .effect-item:not(.is-active) + .effect-item:not(.is-active) {

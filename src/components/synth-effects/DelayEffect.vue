@@ -26,7 +26,6 @@ const feedback = ref(getEffect().feedback.value)
 watchEffect(() => {
   wet.value = getEffect().wetLevel.value
   delayTime.value = getEffect().delayTime.value
-  console.log(getEffect().delayTime)
   feedback.value = getEffect().feedback.value
 })
 
