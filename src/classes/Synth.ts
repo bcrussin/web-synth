@@ -3,7 +3,7 @@ import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import { reactive, ref, type Ref } from 'vue'
 import FFT from './FFT'
-import Tuna from 'tunajs'
+import Tuna, { type TunaAudioNode } from 'tunajs'
 
 export interface SynthOptions {
   name?: string
@@ -122,6 +122,15 @@ export default class Synth {
 
     this.effects.push(effectNode)
 
+    this.updateEffectNodes()
+  }
+
+  deleteEffect(index: number) {
+    if (index < 0 || index >= this.effects.length) return
+
+    // TODO: Properly disconnect/dispose effect
+    this.effects[index].bypass = true
+    this.effects.splice(index, 1)
     this.updateEffectNodes()
   }
 

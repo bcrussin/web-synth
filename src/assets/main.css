@@ -63,3 +63,10 @@ section.horizontal,
   align-items: center;
   gap: 4px;
 }
+
+.flex-split {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
