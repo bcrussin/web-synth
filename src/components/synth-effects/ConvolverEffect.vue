@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import Global from '@/classes/Audio'
 import type Synth from '@/classes/Synth'
-import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
+import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
 
 interface Convolver extends Tuna.TunaAudioNode {
@@ -25,16 +25,18 @@ const wet = ref(getEffect().wetLevel.value)
 const impulseDuration = ref(1)
 
 watchEffect(() => {
-  console.log('ITS UM ', getEffect().wetLevel.value)
   wet.value = getEffect().wetLevel.value
 })
 
 function changeWetDry(wet: number) {
   const effect = getEffect()
-  effect.wetLevel.value = wet
-  effect.dryLevel.value = 1 - wet
-  effect.level.value = 1 + wet
-  console.log(effect.wetLevel.value, effect.dryLevel.value)
+  // effect.wetLevel.value = wet
+  // effect.dryLevel.value = 1 // - wet
+  // effect.level.value = 1 // + wet
+
+  props.synth.setEffectProperty(props.effectIndex, 'wetLevel', wet, true)
+  props.synth.setEffectProperty(props.effectIndex, 'dryLevel', 1, true)
+  props.synth.setEffectProperty(props.effectIndex, 'level', 1, true)
 }
 
 function updateImpulse() {
@@ -48,13 +50,13 @@ function updateImpulse() {
 
 <template>
   <div class="effect-property">
-    <span>Wet/Dry</span>
-    <el-slider :min="0" :max="1" :step="0.1" v-model="wet" @input="changeWetDry($event)">
+    <span>Volume:</span>
+    <el-slider :min="0" :max="2" :step="0.1" v-model="wet" @input="changeWetDry($event)">
     </el-slider>
   </div>
   <div class="effect-property">
-    <span>Duration</span>
-    <el-slider :min="0" :max="4" :step="0.1" v-model="impulseDuration" @input="updateImpulse()" q>
+    <span>Duration:</span>
+    <el-slider :min="0" :max="4" :step="0.1" v-model="impulseDuration" @input="updateImpulse()">
     </el-slider>
   </div>
 </template>
@@ -64,10 +66,14 @@ function updateImpulse() {
   display: flex;
   flex-direction: row;
   place-content: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .effect-property span {
   white-space: nowrap;
+}
+
+.el-slider {
+  margin: 0 16px;
 }
 </style>

@@ -36,7 +36,8 @@ export default class Synth {
   wavetable: Array<number> | null = null
   periodicWave: PeriodicWave | null = null
 
-  audioNode: ChannelMergerNode
+  inputNode: ChannelMergerNode
+  outputNode: DynamicsCompressorNode
   tuna: Tuna
   effects: Tuna.TunaAudioNode[] = reactive([])
 
@@ -55,9 +56,13 @@ export default class Synth {
 
     this.tuna = new Tuna(Global.CONTEXT)
 
-    this.audioNode = Global.CONTEXT.createChannelMerger(1)
+    this.inputNode = Global.CONTEXT.createChannelMerger(1)
 
-    this.addEffect()
+    this.outputNode = Global.CONTEXT.createDynamicsCompressor()
+    this.outputNode.threshold.setValueAtTime(-10, Global.CONTEXT.currentTime)
+    this.outputNode.ratio.setValueAtTime(10, Global.CONTEXT.currentTime)
+    this.outputNode.connect(Global.MASTER)
+
     this.updateEffectNodes()
 
     this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS).length + 1}`
@@ -74,16 +79,17 @@ export default class Synth {
   }
 
   updateEffectNodes() {
-    this.audioNode.disconnect()
+    this.inputNode.disconnect()
+
     if (this.effects.length <= 0) {
-      this.audioNode.connect(Global.MASTER)
+      this.inputNode.connect(this.outputNode)
       return
     }
 
     this.effects.forEach((effect, index) => {
-      if (index <= 0) this.audioNode.connect(effect)
+      if (index <= 0) this.inputNode.connect(effect)
 
-      if (index >= this.effects.length - 1) effect.connect(Global.MASTER)
+      if (index >= this.effects.length - 1) effect.connect(this.outputNode)
       else effect.connect(this.effects[index + 1])
     })
   }
@@ -92,10 +98,43 @@ export default class Synth {
     return this.effects?.[index]
   }
 
-  addEffect() {
-    const effect = new this.tuna.Convolver({ wetLevel: 0.5 })
-    effect.convolver.buffer = Global.generateImpulseReponse(1, 1, false)
-    this.effects.push(effect)
+  addEffect(effect: string, options: any = {}) {
+    options.bypass = false
+    let effectNode
+
+    switch (effect.toLowerCase()) {
+      case 'reverb':
+        options.wetLevel = options.wetLevel ?? 0.5
+        effectNode = new this.tuna.Convolver(options)
+        effectNode.convolver.buffer = Global.generateImpulseReponse(1, 1, false)
+        break
+      case 'chorus':
+        effectNode = new this.tuna.Chorus(options)
+        break
+      case 'delay':
+        options.wetLevel = options.wetLevel ?? 1
+        options.delayTime = options.delayTime ?? 300
+        effectNode = new this.tuna.Delay(options)
+        break
+      default:
+        return
+    }
+
+    this.effects.push(effectNode)
+
+    this.updateEffectNodes()
+  }
+
+  setEffectProperty(
+    id: number,
+    property: string,
+    value: number,
+    treatAsAudioParam: boolean = false,
+  ) {
+    const effect = this.effects[id] as Record<string, any>
+
+    if (treatAsAudioParam) effect[property].value = value
+    else effect[property] = value
   }
 
   setProperty(property: string, value: string | number): void {

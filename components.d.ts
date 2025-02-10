@@ -7,7 +7,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ChorusEffect: typeof import('./src/components/synth-effects/ChorusEffect.vue')['default']
     ConvolverEffect: typeof import('./src/components/synth-effects/ConvolverEffect.vue')['default']
+    copy: typeof import('./src/components/synth-effects/ConvolverEffect copy.vue')['default']
+    DelayEffect: typeof import('./src/components/synth-effects/DelayEffect.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCollapse: typeof import('element-plus/es')['ElCollapse']
