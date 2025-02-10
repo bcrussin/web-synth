@@ -9,7 +9,7 @@ declare module 'vue' {
   export interface GlobalComponents {
     ChorusEffect: typeof import('./src/components/synth-effects/ChorusEffect.vue')['default']
     ConvolverEffect: typeof import('./src/components/synth-effects/ConvolverEffect.vue')['default']
-    copy: typeof import('./src/components/synth-effects/ConvolverEffect copy.vue')['default']
+    copy: typeof import('./src/components/synth-effects/DelayEffect copy.vue')['default']
     DelayEffect: typeof import('./src/components/synth-effects/DelayEffect.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
@@ -27,6 +27,7 @@ declare module 'vue' {
     IconEcosystem: typeof import('./src/components/icons/IconEcosystem.vue')['default']
     IconSupport: typeof import('./src/components/icons/IconSupport.vue')['default']
     IconTooling: typeof import('./src/components/icons/IconTooling.vue')['default']
+    OverdriveEffect: typeof import('./src/components/synth-effects/OverdriveEffect.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SynthDialog: typeof import('./src/components/SynthDialog.vue')['default']

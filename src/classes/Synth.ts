@@ -118,6 +118,12 @@ export default class Synth {
         options.delayTime = options.delayTime ?? 300
         effectNode = new this.tuna.Delay(options)
         break
+      case 'overdrive':
+        effectNode = new this.tuna.Overdrive(options)
+        effectNode.outputGain = 5
+        effectNode.curveAmount = 0.7
+        console.log(effectNode.outputGain)
+        break
       default:
         return
     }
