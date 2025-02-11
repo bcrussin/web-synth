@@ -150,6 +150,8 @@ function stopNote(note: string, octave: number) {
   justify-content: center;
   align-items: flex-start;
   border-radius: 8px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .key {
