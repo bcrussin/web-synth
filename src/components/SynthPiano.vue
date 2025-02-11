@@ -18,7 +18,7 @@ const pianoKeys: Ref<PianoKey[]> = ref([])
 const KEY_WIDTH = 30
 const NUM_OCTAVES = 2
 
-const touchedKeys: { [key: string]: HTMLElement } = {}
+const touchedKeys: { [key: string]: { note: string; octave: string } } = {} //{ [key: string]: Element } = {}
 
 onMounted(() => {
   resizeObserver = new ResizeObserver(onResize)
@@ -53,6 +53,57 @@ function generateKeys(componentWidth: number) {
 
     document.addEventListener('contextmenu', (e) => e.preventDefault(), {
       passive: false,
+    })
+
+    document.addEventListener('touchstart', (event: TouchEvent) => {
+      const e = event.changedTouches[0]
+      const key = document.elementFromPoint(e.clientX, e.clientY)
+      const data = Global.getKeyElemAttributes(key)
+
+      if (key == undefined || data.note == undefined || data.octave == undefined) return
+
+      props.synth.playNote(data.note, data.octave)
+      touchedKeys[data.note + data.octave] = { note: data.note, octave: data.octave }
+    })
+
+    document.addEventListener('touchmove', (event: TouchEvent) => {
+      const changedKeys: string[] = []
+
+      Object.values(event.touches).forEach((touch) => {
+        const key = document.elementFromPoint(touch.clientX, touch.clientY)
+        const data = Global.getKeyElemAttributes(key)
+
+        if (data.note == undefined || data.octave == undefined) return
+
+        changedKeys.push(data.note + data.octave)
+      })
+
+      Object.entries(touchedKeys).forEach(([key, keyData]) => {
+        if (!changedKeys.includes(key)) {
+          delete touchedKeys[keyData.note + keyData.octave]
+          props.synth.stopNote(keyData.note, keyData.octave)
+        }
+      })
+
+      const e = event.changedTouches[0]
+      const key = document.elementFromPoint(e.clientX, e.clientY)
+      const data = Global.getKeyElemAttributes(key)
+
+      if (data.note == undefined || data.octave == undefined) return
+
+      touchedKeys[data.note + data.octave] = { note: data.note, octave: data.octave }
+      props.synth.playNote(data.note, data.octave)
+    })
+
+    document.addEventListener('touchend', (event: TouchEvent) => {
+      const e = event.changedTouches[0]
+      const key = document.elementFromPoint(e.clientX, e.clientY)
+      const data = Global.getKeyElemAttributes(key)
+
+      if (data.note == undefined || data.octave == undefined) return
+
+      delete touchedKeys[data.note + data.octave]
+      props.synth.stopNote(data.note, data.octave)
     })
   }
 }

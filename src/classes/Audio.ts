@@ -42,11 +42,11 @@ export default class Global {
     return Object.keys(Global.NOTES)[note % 12]
   }
 
-  static getFrequency(note: string, octave: number): number {
-    return Global.NOTES[note]?.[octave]
-  }
+  // static getFrequency(note: string, octave: number): number {
+  //   return Global.NOTES[note]?.[octave]
+  // }
 
-  static getNoteOrFrequency(note: string | number, octave: number | string): number {
+  static getFrequency(note: string | number, octave: number | string): number {
     if (typeof octave != 'number') octave = parseInt(octave)
 
     let frequency: number = 0
@@ -54,11 +54,23 @@ export default class Global {
       frequency = note
     } else {
       if (octave != undefined && !isNaN(octave)) {
-        frequency = Global.getFrequency(note, octave)
+        frequency = Global.NOTES[note]?.[octave]
       }
     }
 
     return frequency
+  }
+
+  static getKeyElemAttributes(key?: Element | null) {
+    const note = key?.getAttribute('data-note')
+    const octave = key?.getAttribute('data-octave')
+
+    if (key == undefined || note == undefined || octave == undefined) return {}
+
+    return {
+      note: note,
+      octave: octave,
+    }
   }
 
   static generateImpulseReponse(duration: number, decay: number, reverse: boolean) {

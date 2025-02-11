@@ -178,9 +178,11 @@ export default class Synth {
     return this.oscillators?.[frequency]
   }
 
-  playNote(note: string, octave: number | string, volume?: number) {
+  playNote(note?: string, octave?: number | string, volume?: number) {
+    if (note == undefined || octave == undefined) return
+
     if (typeof octave != 'number') octave = parseInt(octave)
-    const frequency = Global.getNoteOrFrequency(note, octave)
+    const frequency = Global.getFrequency(note, octave)
 
     if (frequency == undefined || this.isNotePlaying(frequency)) return
 
@@ -192,8 +194,10 @@ export default class Synth {
     // this.indicatorElement.classList.add('playing')
   }
 
-  stopNote(note: string, octave: number | string) {
-    const frequency = Global.getNoteOrFrequency(note, octave)
+  stopNote(note?: string, octave?: number | string) {
+    if (note == undefined || octave == undefined) return
+
+    const frequency = Global.getFrequency(note, octave)
     const oscillator = this.getOscillator(frequency)
 
     if (frequency == undefined || oscillator == undefined) return
