@@ -12,7 +12,7 @@ export const usePresetsStore = defineStore('presets', {
       return this.instruments[instrument]
     },
     async fetchPresets() {
-      fetch('src/assets/presets.json').then((response) =>
+      fetch(`${import.meta.env.BASE_URL}data/presets.json`).then((response) =>
         response.json().then((jsonResponse) => {
           this.instruments = reactive(jsonResponse.instruments) as any
 
