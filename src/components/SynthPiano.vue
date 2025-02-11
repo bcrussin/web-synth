@@ -64,6 +64,8 @@ function generateKeys(componentWidth: number) {
 
       props.synth.playNote(data.note, data.octave)
       touchedKeys[data.note + data.octave] = { note: data.note, octave: data.octave }
+
+      event.preventDefault()
     })
 
     document.addEventListener('touchmove', (event: TouchEvent) => {
@@ -93,6 +95,8 @@ function generateKeys(componentWidth: number) {
 
       touchedKeys[data.note + data.octave] = { note: data.note, octave: data.octave }
       props.synth.playNote(data.note, data.octave)
+
+      event.preventDefault()
     })
 
     document.addEventListener('touchend', (event: TouchEvent) => {
@@ -104,6 +108,8 @@ function generateKeys(componentWidth: number) {
 
       delete touchedKeys[data.note + data.octave]
       props.synth.stopNote(data.note, data.octave)
+
+      event.preventDefault()
     })
   }
 }
