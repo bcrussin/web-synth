@@ -1,18 +1,28 @@
-# web-synth-vue
+# Web Synthesizer
 
-This template should help get you started developing with Vue 3 in Vite.
+The goal of this project is to provide a customizable synthesizer that supports mouse, keyboard, and MIDI control. Future plans include custom LFOs and key bindings.
+Most web-based synths do not provide a high level of control (especially in regards to key bindings), so this project aims to provide as custom an experience as possible.
 
-## Recommended IDE Setup
+Only a list of synthesizers are available on page load. One is created for keyboard control and the rest coorespond to detected MIDI devices. Clicking on one will open a modal containing waveform/effect/synth settings and a playable piano roll.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+#### Mouse/Keyboard Control
 
-## Type Support for `.vue` Imports in TS
+The synth can be played using a keyboard. The Z-M and Q-P rows are used for white notes (Z = C4), while the A-L and numbers row are used for black notes. Customizable keyboard bindings are planned for the future.
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+A mouse may also be used to play notes, simply by clicking on the piano within a synth's modal.
 
-## Customize configuration
+#### MIDI Control
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity and pitch bends are currently supported.
+
+# Credits
+
+This project utilitzes the Web Audio API and Web MIDI API.
+
+[fastidious-envelope-generator](https://github.com/rsimmons/fastidious-envelope-generator) provides smooth, cross-browser envelope control.
+[Tuna.js](https://github.com/Theodeus/tuna) provides built-in audio effects and sound processing.
+
+- - -
 
 ## Project Setup
 
