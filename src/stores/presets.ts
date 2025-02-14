@@ -15,12 +15,6 @@ export const usePresetsStore = defineStore('presets', {
       fetch(`${import.meta.env.BASE_URL}data/presets.json`).then((response) =>
         response.json().then((jsonResponse) => {
           this.instruments = reactive(jsonResponse.instruments) as any
-
-          // Object.entries(presets['instruments']).forEach(([name, data]: [string, any]) => {
-          //   const option = document.createElement('option')
-          //   option.value = name
-          //   option.text = data.displayName
-          // })
         }),
       )
     },
