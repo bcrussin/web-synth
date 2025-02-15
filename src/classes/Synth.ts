@@ -122,7 +122,9 @@ export default class Synth {
         effectNode = new this.tuna.Overdrive(options)
         effectNode.outputGain = 5
         effectNode.curveAmount = 0.7
-        console.log(effectNode.outputGain)
+        break
+      case 'phaser':
+        effectNode = new this.tuna.Phaser(options)
         break
       default:
         return

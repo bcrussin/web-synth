@@ -7,12 +7,14 @@ import ConvolverEffect from './synth-effects/ConvolverEffect.vue'
 import { Close, Delete } from '@element-plus/icons-vue'
 import { vDraggable } from 'vue-draggable-plus'
 import OverdriveEffect from './synth-effects/OverdriveEffect.vue'
+import PhaserEffect from './synth-effects/PhaserEffect.vue'
 
 const effects: { [key: string]: string } = {
   convolver: 'Reverb',
   chorus: 'Chorus',
   delay: 'Delay',
   overdrive: 'Overdrive',
+  // phaser: 'Phaser', Not currently functional
 }
 
 const props = defineProps<{ synth: Synth }>()
@@ -104,6 +106,12 @@ function deleteEffect(e: Event, index: number): void {
           :effectIndex="index"
           v-else-if="effect.name == 'Overdrive'"
         ></OverdriveEffect>
+
+        <PhaserEffect
+          :synth="props.synth"
+          :effectIndex="index"
+          v-else-if="effect.name == 'Phaser'"
+        ></PhaserEffect>
       </el-collapse-item>
     </el-collapse>
   </div>

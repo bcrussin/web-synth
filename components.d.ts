@@ -29,6 +29,7 @@ declare module 'vue' {
     IconSupport: typeof import('./src/components/icons/IconSupport.vue')['default']
     IconTooling: typeof import('./src/components/icons/IconTooling.vue')['default']
     OverdriveEffect: typeof import('./src/components/synth-effects/OverdriveEffect.vue')['default']
+    PhaserEffect: typeof import('./src/components/synth-effects/PhaserEffect.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     SynthDialog: typeof import('./src/components/SynthDialog.vue')['default']
