@@ -5,6 +5,20 @@ import Keyboard from './classes/Keyboard'
 import Synth from './classes/Synth'
 import SynthList from './components/SynthList.vue'
 import MidiDevice from './classes/Midi'
+import Global from './classes/Audio'
+import { ref, watchEffect } from 'vue'
+
+const volume = ref(Global.volumeNode.gain.value)
+
+watchEffect(() => {
+  volume.value = Global.volumeNode.gain.value
+})
+
+function setGlobalVolume(value: number) {
+  volume.value = value
+  Global.volumeNode.gain.value = value
+  console.log(volume)
+}
 
 Keyboard.initialize()
 MidiDevice.requestDevices()
@@ -12,6 +26,21 @@ MidiDevice.requestDevices()
 
 <template>
   <div class="wrapper">
+    <div class="synth-controls">
+      <div>
+        <span>Volume:</span>
+        <el-slider
+          :min="0"
+          :max="0.5"
+          :step="0.05"
+          class="envelope-slider"
+          style="width: 240px"
+          :model-value="volume"
+          @input="setGlobalVolume($event)"
+        >
+        </el-slider>
+      </div>
+    </div>
     <SynthList />
   </div>
 

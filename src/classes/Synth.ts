@@ -4,6 +4,7 @@ import Oscillator from '@/classes/Oscillator'
 import { reactive, ref, type Ref } from 'vue'
 import FFT from './FFT'
 import Tuna, { type TunaAudioNode } from 'tunajs'
+import MidiDevice from './Midi'
 
 export interface SynthOptions {
   name?: string
@@ -20,7 +21,7 @@ export interface SynthOptions {
 export default class Synth {
   static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
 
-  midiDevice: any
+  midiDevice: any // Ref<MidiDevice | null>
   name: string
   type: string
   preset: string | undefined
@@ -161,6 +162,16 @@ export default class Synth {
     if (typeof value != 'number') value = parseFloat(value)
     if (isNaN(value)) return
     ;(this as any)[property] = value
+  }
+
+  setMidiDevice(device: MidiDevice | string): void {
+    if (typeof device === 'string') device = MidiDevice.DEVICES[device]
+
+    if (device == undefined) return
+    console.log(this.midiDevice)
+    this.midiDevice?.removeSynth(this.name)
+    device.addSynth(this)
+    this.midiDevice = device
   }
 
   getPresetOrType(): string {

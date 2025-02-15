@@ -8,13 +8,13 @@ export default class MidiDevice {
   }
 
   input: MIDIInput
-  synth: Synth
+  synths: Synth[]
   pitchBend: number
   velocityCurve: number | null = null
 
   constructor(input: MIDIInput) {
     this.input = input
-    this.synth = new Synth({ name: input?.name ?? undefined, midiDevice: this })
+    this.synths = [new Synth({ name: input?.name ?? undefined, midiDevice: this })]
     this.pitchBend = 0
   }
 
@@ -71,19 +71,21 @@ export default class MidiDevice {
       case 144: // noteOn
         if (velocity > 0) {
           velocity = this.mapVelocityToCurve(velocity)
-          this.synth.playNote(noteLetter, octave, MidiDevice.mapToRange(velocity, 0, 127, 0, 1))
+          this.synths.forEach((synth) =>
+            synth.playNote(noteLetter, octave, MidiDevice.mapToRange(velocity, 0, 127, 0, 1)),
+          )
         } else {
-          this.synth.stopNote(noteLetter, octave)
+          this.synths.forEach((synth) => synth.stopNote(noteLetter, octave))
         }
         break
       case 128: // noteOff
-        this.synth.stopNote(noteLetter, octave)
+        this.synths.forEach((synth) => synth.stopNote(noteLetter, octave))
         break
     }
 
     if (command >= 224 && command <= 239) {
       this.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
-      this.synth.updateFrequencies()
+      this.synths.forEach((synth) => synth.updateFrequencies())
     }
   }
 
@@ -92,5 +94,17 @@ export default class MidiDevice {
 
     const velocityMapped = 127 * Math.pow(velocity / 127, curve)
     return velocityMapped
+  }
+
+  addSynth(synth: Synth | string) {
+    if (typeof synth === 'string') synth = Synth.getSynth(synth)
+
+    if (synth == undefined) return
+
+    this.synths.push(synth)
+  }
+
+  removeSynth(name: string): void {
+    this.synths = this.synths.filter((synth) => synth.name != name)
   }
 }

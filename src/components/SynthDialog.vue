@@ -59,6 +59,10 @@ const props = defineProps<{ synth: Synth }>()
   gap: 4px;
 }
 
+.synth-controls .el-select {
+  width: 160px;
+}
+
 .envelope-slider {
   width: 72px;
   margin: 0 8px;

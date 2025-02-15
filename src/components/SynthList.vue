@@ -20,6 +20,8 @@ import SynthDialog from './SynthDialog.vue'
     >
       {{ name }}
     </el-button>
+
+    <el-button round size="default" @click="addSynth"> + </el-button>
   </section>
 
   <SynthDialog
@@ -83,6 +85,10 @@ export default {
         this.settingsDialogs.delete(id)
       }
       // this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
+    },
+    addSynth(): void {
+      const synth = new Synth()
+      console.log(Synth.getSynths())
     },
   },
 }
