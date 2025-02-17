@@ -66,7 +66,7 @@ export default class Synth {
 
     this.updateEffectNodes()
 
-    this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS).length + 1}`
+    this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`
     Synth.SYNTHS.value[this.name] = this
     // updateSynthsList()
   }
@@ -77,6 +77,11 @@ export default class Synth {
 
   static getSynth(name: string): Synth {
     return Synth.SYNTHS.value[name]
+  }
+
+  delete(): void {
+    this.setMidiDevice()
+    delete Synth.SYNTHS.value[this.name]
   }
 
   updateEffectNodes() {
@@ -164,7 +169,7 @@ export default class Synth {
     ;(this as any)[property] = value
   }
 
-  setMidiDevice(device: MidiDevice | string): void {
+  setMidiDevice(device?: MidiDevice | string): void {
     if (typeof device === 'string') device = MidiDevice.DEVICES[device]
 
     this.midiDevice?.removeSynth(this.name)
