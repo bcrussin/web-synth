@@ -14,10 +14,6 @@ const effects: { [key: string]: string } = {
 const props = defineProps<{ synth: Synth }>()
 const midiStore = useMidiStore()
 
-function getChannelParams() {
-  return props.synth.midiDevice.synthParams[props.synth.name] ?? {}
-}
-
 function getChannelParam(channel: number) {
   return props.synth.midiDevice.synthParams[props.synth.name]?.[channel] ?? ''
 }

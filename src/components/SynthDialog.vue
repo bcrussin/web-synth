@@ -35,30 +35,44 @@ function deleteSynth(close: () => void) {
     <template #header="{ close, titleId, titleClass }">
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
-        <div>
-          <el-button
-            v-if="props.synth.name != 'Keyboard'"
-            :icon="Delete"
-            @click="deleteSynth(close)"
-            type="danger"
-            round
-          ></el-button>
+        <div class="dialog-options">
+          <el-popconfirm
+            :width="200"
+            title="Are you sure you would like to delete this synth?"
+            @confirm="deleteSynth(close)"
+          >
+            <template #reference>
+              <el-button
+                v-if="props.synth.name != 'Keyboard'"
+                :icon="Delete"
+                type="danger"
+                round
+              ></el-button>
+            </template>
+          </el-popconfirm>
+
+          <el-switch
+            :model-value="synth.bypass"
+            @change="synth.setBypass($event)"
+            :active-value="false"
+            :inactive-value="true"
+          />
           <el-button :icon="Close" @click="close" size="large" link> </el-button>
         </div>
       </div>
     </template>
 
-    <el-tabs value="0" id="test">
-      <el-tab-pane label="Waveform">
+    <el-tabs>
+      <el-tab-pane label="Waveform" lazy>
         <SynthWaveformSettings :synth="props.synth"></SynthWaveformSettings>
       </el-tab-pane>
-      <el-tab-pane label="Effects">
+      <el-tab-pane label="Effects" lazy>
         <SynthEffects :synth="props.synth"></SynthEffects>
       </el-tab-pane>
-      <el-tab-pane label="MIDI" v-if="!!props.synth.midiDevice">
+      <el-tab-pane label="MIDI" v-if="!!props.synth.midiDevice" lazy>
         <SynthMidiSettings :synth="props.synth"></SynthMidiSettings>
       </el-tab-pane>
-      <el-tab-pane label="Settings">
+      <el-tab-pane label="Settings" lazy>
         <SynthSettings :synth="props.synth"></SynthSettings>
       </el-tab-pane>
       <!-- </div> -->
@@ -75,6 +89,11 @@ function deleteSynth(close: () => void) {
   width: 100%;
   display: flex;
   justify-content: space-between;
+}
+
+.dialog-options {
+  display: flex;
+  gap: 8px;
 }
 
 .synth-controls {

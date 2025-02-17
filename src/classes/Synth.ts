@@ -36,6 +36,21 @@ export default class Synth {
   notes: Set<string> = reactive(new Set<string>())
   wavetable: Array<number> | null = null
   periodicWave: PeriodicWave | null = null
+  _bypass: boolean = false
+
+  public get bypass() {
+    return this._bypass
+  }
+
+  public set bypass(enabled: boolean) {
+    this._bypass = enabled
+
+    if (!!enabled) {
+      this.outputNode.disconnect()
+    } else {
+      this.outputNode.connect(Global.MASTER)
+    }
+  }
 
   inputNode: ChannelMergerNode
   outputNode: DynamicsCompressorNode
@@ -167,6 +182,10 @@ export default class Synth {
     if (typeof value != 'number') value = parseFloat(value)
     if (isNaN(value)) return
     ;(this as any)[property] = value
+  }
+
+  setBypass(enabled: boolean) {
+    this.bypass = enabled
   }
 
   setMidiDevice(device?: MidiDevice | string): void {
