@@ -1,7 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Synth, { type SynthOptions } from './Synth'
 import Global from './Audio'
-import { useMidiStore } from '@/stores/midiStore'
+import { useMidiStore, type MIDIParam } from '@/stores/midiStore'
+import { reactive } from 'vue'
+
+interface SynthParams {
+  [synthName: string]: {
+    [channel: number]: string
+  }
+}
 
 export default class MidiDevice {
   static DEVICES: { [key: string]: MidiDevice } = {}
@@ -13,7 +20,8 @@ export default class MidiDevice {
 
   input: MIDIInput
   synths: Synth[]
-  params: any
+  globalParams: any
+  synthParams: SynthParams
   pitchBend: number
   velocityCurve: number | null = null
 
@@ -21,7 +29,7 @@ export default class MidiDevice {
     this.input = input
     this.synths = [new Synth({ name: input?.name ?? undefined, midiDevice: this })]
     this.pitchBend = 0
-    this.params = {}
+    this.synthParams = reactive({})
   }
 
   static async initialize() {
@@ -101,8 +109,13 @@ export default class MidiDevice {
       this.synths.forEach((synth) => synth.updateFrequencies())
     }
 
-    if (command == 176 && !!this.params[note]) {
-      this.modifyParam(this.params[note].param, velocity / 127, this.params[note]?.synth)
+    if (command == 176) {
+      Object.entries(this.synthParams).forEach(([synthName, channels]: [any, any]) => {
+        if (!!channels[note]) {
+          const param = channels[note]
+          this.modifyParam(param, velocity / 127, Synth.getSynth(synthName))
+        }
+      })
     }
   }
 
@@ -125,15 +138,18 @@ export default class MidiDevice {
     this.synths = this.synths.filter((synth) => synth.name != name)
   }
 
-  setChannelParam(channel: number, param: string, synth?: Synth) {
-    this.params[channel] = {
-      synth: synth,
-      param: param,
+  setChannelParam(channel: number, param: string, synth: Synth) {
+    if (this.synthParams[synth.name] == undefined) {
+      this.synthParams[synth.name] = {}
     }
+
+    if (!!param) this.synthParams[synth.name][channel] = param
+    else delete this.synthParams[synth.name][channel]
   }
 
   modifyParam(paramName: any | string, percent: number, synth?: Synth) {
-    let param
+    let param: MIDIParam
+
     if (typeof paramName === 'string') param = MidiDevice.STORE.getParam(paramName)
     else param = paramName
 

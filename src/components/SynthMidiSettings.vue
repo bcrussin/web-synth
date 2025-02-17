@@ -14,6 +14,14 @@ const effects: { [key: string]: string } = {
 const props = defineProps<{ synth: Synth }>()
 const midiStore = useMidiStore()
 
+function getChannelParams() {
+  return props.synth.midiDevice.synthParams[props.synth.name] ?? {}
+}
+
+function getChannelParam(channel: number) {
+  return props.synth.midiDevice.synthParams[props.synth.name]?.[channel] ?? ''
+}
+
 function setChannelParam(channel: number, param: string) {
   props.synth.midiDevice.setChannelParam(channel, param, props.synth)
 }
@@ -25,10 +33,12 @@ function setChannelParam(channel: number, param: string) {
     <div v-for="channel in 16" :key="channel">
       <span>{{ channel }}:</span>
       <el-select
-        :model-value="synth.midiDevice.params[channel]?.param"
+        :model-value="getChannelParam(channel)"
         @change="setChannelParam(channel, $event)"
         class="channel-dropdown"
+        placeholder="None"
       >
+        <el-option value=""> None </el-option>
         <el-option
           v-for="param in midiStore.params"
           :key="param.displayName"
