@@ -167,7 +167,12 @@ export default class Synth {
   setMidiDevice(device: MidiDevice | string): void {
     if (typeof device === 'string') device = MidiDevice.DEVICES[device]
 
-    if (device == undefined) return
+    this.midiDevice?.removeSynth(this.name)
+
+    if (device == undefined) {
+      this.midiDevice = null
+      return
+    }
 
     this.midiDevice?.removeSynth(this.name)
     device.addSynth(this)

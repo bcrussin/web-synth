@@ -3,14 +3,17 @@ import '../assets/main.css'
 
 import MidiDevice from '@/classes/Midi'
 import Synth from '@/classes/Synth'
-import { ref } from 'vue'
+import { ref, watchEffect } from 'vue'
 
 const props = defineProps<{ synth: Synth }>()
 
-const midiDevice = ref(props.synth.midiDevice)
+const midiDevice = ref(props.synth.midiDevice?.input?.id)
+
+watchEffect(() => {
+  midiDevice.value = props.synth.midiDevice?.input?.id
+})
 
 function setMidiDevice(id: string) {
-  const device = MidiDevice.DEVICES[id]
   props.synth.setMidiDevice(id)
 }
 
@@ -23,6 +26,7 @@ function setSynthValue(property: string, value: number | string) {
   <div class="synth-controls">
     <div class="select">
       <el-select placeholder="Input Device" v-model="midiDevice" @change="setMidiDevice($event)">
+        <el-option label="None" value=""> </el-option>
         <el-option
           v-for="device in MidiDevice.DEVICES"
           :key="device.input.name"
