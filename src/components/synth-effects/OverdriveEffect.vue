@@ -23,7 +23,6 @@ const outputGain = ref(getEffect().outputGain.value)
 const drive = ref(getEffect().drive.value)
 
 watchEffect(() => {
-  console.log(getEffect().curveAmount)
   outputGain.value = getEffect().outputGain.value
   drive.value = getEffect().drive.value
 })

@@ -168,7 +168,7 @@ export default class Synth {
     if (typeof device === 'string') device = MidiDevice.DEVICES[device]
 
     if (device == undefined) return
-    console.log(this.midiDevice)
+
     this.midiDevice?.removeSynth(this.name)
     device.addSynth(this)
     this.midiDevice = device

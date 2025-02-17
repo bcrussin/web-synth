@@ -25,7 +25,6 @@ function setPropertyValue(property: string, value: number) {
 }
 
 function setProperty(property: string, value: number) {
-  console.log(value)
   props.synth.setEffectProperty(props.effectIndex, property, value)
 }
 </script>

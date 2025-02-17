@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import Synth, { type SynthOptions } from './Synth'
 import Global from './Audio'
+import { useMidiStore } from '@/stores/midiStore'
 
 export default class MidiDevice {
   static DEVICES: { [key: string]: MidiDevice } = {}
@@ -7,8 +9,11 @@ export default class MidiDevice {
     velocityCurve: 1,
   }
 
+  static STORE: any
+
   input: MIDIInput
   synths: Synth[]
+  params: any
   pitchBend: number
   velocityCurve: number | null = null
 
@@ -16,6 +21,14 @@ export default class MidiDevice {
     this.input = input
     this.synths = [new Synth({ name: input?.name ?? undefined, midiDevice: this })]
     this.pitchBend = 0
+    this.params = {}
+  }
+
+  static async initialize() {
+    this.STORE = useMidiStore()
+    await this.STORE.fetchParams()
+
+    MidiDevice.requestDevices()
   }
 
   static requestDevices() {
@@ -87,6 +100,10 @@ export default class MidiDevice {
       this.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
       this.synths.forEach((synth) => synth.updateFrequencies())
     }
+
+    if (command == 176 && !!this.params[note]) {
+      this.modifyParam(this.params[note].param, velocity / 127, this.params[note]?.synth)
+    }
   }
 
   mapVelocityToCurve(velocity: number) {
@@ -106,5 +123,35 @@ export default class MidiDevice {
 
   removeSynth(name: string): void {
     this.synths = this.synths.filter((synth) => synth.name != name)
+  }
+
+  setChannelParam(channel: number, param: string, synth?: Synth) {
+    this.params[channel] = {
+      synth: synth,
+      param: param,
+    }
+  }
+
+  modifyParam(paramName: any | string, percent: number, synth?: Synth) {
+    let param
+    if (typeof paramName === 'string') param = MidiDevice.STORE.getParam(paramName)
+    else param = paramName
+
+    const value = percent * param.max + param.min
+
+    switch (param.type) {
+      case 'synth':
+        if (!!synth) {
+          ;(synth as any)[param.property] = value
+        } else {
+          this.synths.forEach((synth: any) => (synth[param.property] = value))
+        }
+        break
+    }
+  }
+
+  resolve(path: string | string[], obj = self, separator = '.') {
+    const properties = Array.isArray(path) ? path : path.split(separator)
+    return properties.reduce((prev: any, curr: any) => prev?.[curr], obj)
   }
 }

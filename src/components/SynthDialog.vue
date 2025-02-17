@@ -4,6 +4,7 @@ import SynthWaveformSettings from './SynthWaveformSettings.vue'
 import SynthSettings from './SynthSettings.vue'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import SynthPiano from './SynthPiano.vue'
+import SynthMidiSettings from './SynthMidiSettings.vue'
 
 const props = defineProps<{ synth: Synth }>()
 </script>
@@ -22,14 +23,16 @@ const props = defineProps<{ synth: Synth }>()
     }"
   >
     <el-tabs value="0" id="test">
-      <!-- <div id="tab-panels" :style="{ height: dialogHeight, transition: 'height 1s ease-in-out' }"> -->
-      <el-tab-pane label="Waveform" value="0">
+      <el-tab-pane label="Waveform">
         <SynthWaveformSettings :synth="props.synth"></SynthWaveformSettings>
       </el-tab-pane>
-      <el-tab-pane label="Effects" value="1">
+      <el-tab-pane label="Effects">
         <SynthEffects :synth="props.synth"></SynthEffects>
       </el-tab-pane>
-      <el-tab-pane label="Settings" value="2">
+      <el-tab-pane label="MIDI" v-if="!!props.synth.midiDevice">
+        <SynthMidiSettings :synth="props.synth"></SynthMidiSettings>
+      </el-tab-pane>
+      <el-tab-pane label="Settings">
         <SynthSettings :synth="props.synth"></SynthSettings>
       </el-tab-pane>
       <!-- </div> -->

@@ -17,11 +17,10 @@ watchEffect(() => {
 function setGlobalVolume(value: number) {
   volume.value = value
   Global.volumeNode.gain.value = value
-  console.log(volume)
 }
 
 Keyboard.initialize()
-MidiDevice.requestDevices()
+MidiDevice.initialize()
 </script>
 
 <template>
