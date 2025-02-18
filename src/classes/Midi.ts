@@ -3,10 +3,11 @@ import Synth, { type SynthOptions } from './Synth'
 import Global from './Audio'
 import { useMidiStore, type MIDIParam } from '@/stores/midiStore'
 import { reactive } from 'vue'
+import MidiChannel, { type MidiChannelOptions } from './MidiChannel'
 
 interface SynthParams {
   [synthName: string]: {
-    [channel: number]: string
+    [channel: number]: MidiChannel
   }
 }
 
@@ -21,15 +22,19 @@ export default class MidiDevice {
   input: MIDIInput
   synths: Synth[]
   globalParams: any
-  synthParams: SynthParams
+  channelSettings: SynthParams
   pitchBend: number
   velocityCurve: number | null = null
 
   constructor(input: MIDIInput) {
     this.input = input
-    this.synths = [new Synth({ name: input?.name ?? undefined, midiDevice: this })]
     this.pitchBend = 0
-    this.synthParams = reactive({})
+    this.channelSettings = reactive({})
+
+    this.synths = []
+
+    const synth = new Synth({ name: input?.name ?? undefined, midiDevice: this })
+    this.addSynth(synth)
   }
 
   static async initialize() {
@@ -110,10 +115,10 @@ export default class MidiDevice {
     }
 
     if (command == 176) {
-      Object.entries(this.synthParams).forEach(([synthName, channels]: [any, any]) => {
+      Object.entries(this.channelSettings).forEach(([synthName, channels]) => {
         if (!!channels[note]) {
-          const param = channels[note]
-          this.modifyParam(param, velocity / 127, Synth.getSynth(synthName))
+          const channelProperties = channels[note] as MidiChannel
+          this.setParam(channelProperties, velocity / 127, Synth.getSynth(synthName))
         }
       })
     }
@@ -132,26 +137,57 @@ export default class MidiDevice {
     if (synth == undefined) return
 
     this.synths.push(synth)
+
+    if (this.channelSettings[synth.name] == undefined) {
+      this.channelSettings[synth.name] = {}
+
+      for (let i = 1; i <= 16; i++) {
+        this.channelSettings[synth.name][i] = new MidiChannel()
+      }
+    }
   }
 
   removeSynth(name: string): void {
     this.synths = this.synths.filter((synth) => synth.name != name)
   }
 
-  setChannelParam(channel: number, param: string, synth: Synth) {
-    if (this.synthParams[synth.name] == undefined) {
-      this.synthParams[synth.name] = {}
-    }
-
-    if (!!param) this.synthParams[synth.name][channel] = param
-    else delete this.synthParams[synth.name][channel]
+  getChannelProperties(synthName: string, channel: number) {
+    return this.channelSettings[synthName][channel]
   }
 
-  modifyParam(paramName: any | string, percent: number, synth?: Synth) {
-    let param: MIDIParam
+  getChannelProperty(synthName: string, channel: number, property: keyof MidiChannelOptions) {
+    return this.channelSettings[synthName][channel].getProperty(property)
+  }
 
-    if (typeof paramName === 'string') param = MidiDevice.STORE.getParam(paramName)
-    else param = paramName
+  setChannelProperty<K extends keyof MidiChannelOptions>(
+    synth: Synth,
+    channel: number,
+    property: K,
+    value: MidiChannelOptions[K],
+  ) {
+    if (this.channelSettings[synth.name] == undefined) {
+      console.log(`Synth ${synth.name} has no data for channel ${channel}`)
+      return //this.channelSettings[synth.name] = {}
+    }
+
+    this.channelSettings[synth.name][channel].setProperty(property, value)
+  }
+
+  setChannelProperties(synth: Synth, channel: number, data: MidiChannelOptions) {
+    if (this.channelSettings[synth.name] == undefined) {
+      console.log(`Synth ${synth.name} has no data for channel ${channel}`)
+      return //this.channelSettings[synth.name] = {}
+    }
+
+    this.channelSettings[synth.name][channel].setProperties(data)
+  }
+
+  setParam(channelProps: MidiChannel, percent: number, synth?: Synth) {
+    const param = MidiDevice.STORE.getParam(channelProps.param)
+    if (param == undefined) return
+
+    percent = Global.mapToRange(percent, 0, 1, channelProps.min, channelProps.max)
+    if (channelProps.inverted) percent = 1 - percent
 
     const value = percent * param.max + param.min
 

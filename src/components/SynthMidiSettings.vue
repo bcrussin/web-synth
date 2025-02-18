@@ -2,6 +2,10 @@
 <script setup lang="ts">
 import type Synth from '@/classes/Synth'
 import { useMidiStore } from '@/stores/midiStore'
+import MidiParamDialog from './MidiParamDialog.vue'
+import { ref } from 'vue'
+import type MidiChannel from '@/classes/MidiChannel'
+import type { MidiChannelOptions } from '@/classes/MidiChannel'
 
 const effects: { [key: string]: string } = {
   convolver: 'Reverb',
@@ -12,39 +16,36 @@ const effects: { [key: string]: string } = {
 }
 
 const props = defineProps<{ synth: Synth }>()
-const midiStore = useMidiStore()
+const dialogChannel = ref(-1)
 
-function getChannelParam(channel: number) {
-  return props.synth.midiDevice.synthParams[props.synth.name]?.[channel] ?? ''
+function getChannelProperties(channel: number): MidiChannel {
+  return props.synth.midiDevice.channelSettings[props.synth.name]?.[channel]
 }
 
-function setChannelParam(channel: number, param: string) {
-  props.synth.midiDevice.setChannelParam(channel, param, props.synth)
+function getChannelProperty(channel: number, property: keyof MidiChannelOptions) {
+  const channelProps = getChannelProperties(channel)
+
+  return channelProps.getProperty(property)
 }
 </script>
 
 <template>
-  <span class="section-label">Channel Parameters:</span>
+  <span class="section-label">Channel Settings:</span>
   <div class="channel-params-list">
     <div v-for="channel in 16" :key="channel">
       <span>{{ channel }}:</span>
-      <el-select
-        :model-value="getChannelParam(channel)"
-        @change="setChannelParam(channel, $event)"
-        class="channel-dropdown"
-        placeholder="None"
-      >
-        <el-option value=""> None </el-option>
-        <el-option
-          v-for="param in midiStore.params"
-          :key="param.displayName"
-          :label="param.displayName"
-          :value="param.displayName"
-        >
-        </el-option>
-      </el-select>
+      <el-button @click="dialogChannel = channel">{{
+        getChannelProperty(channel, 'param') || 'None'
+      }}</el-button>
     </div>
   </div>
+
+  <MidiParamDialog
+    v-if="dialogChannel >= 0"
+    :synth="synth"
+    :channel="dialogChannel"
+    @update:model-value="() => (dialogChannel = -1)"
+  ></MidiParamDialog>
 </template>
 
 <style scoped>

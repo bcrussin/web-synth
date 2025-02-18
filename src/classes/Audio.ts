@@ -88,4 +88,14 @@ export default class Global {
     }
     return impulse
   }
+
+  static mapToRange(
+    value: number,
+    inputMin: number,
+    inputMax: number,
+    outputMin: number,
+    outputMax: number,
+  ): number {
+    return ((value - inputMin) * (outputMax - outputMin)) / (inputMax - inputMin) + outputMin
+  }
 }
