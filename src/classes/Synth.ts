@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { reactive, ref, type Ref } from 'vue'
 import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
-import { reactive, ref, type Ref } from 'vue'
 import FFT from './FFT'
-import Tuna, { type TunaAudioNode } from 'tunajs'
+import Tuna from 'tunajs'
 import MidiDevice from './Midi'
 
 export interface SynthOptions {
@@ -88,7 +88,6 @@ export default class Synth {
 
     this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`
     Synth.SYNTHS.value[this.name] = this
-    // updateSynthsList()
   }
 
   static getSynths(): { [key: string]: Synth } {
@@ -237,8 +236,6 @@ export default class Synth {
     oscillator.attack(frequency, volume)
     this.oscillators[frequency] = oscillator
     this.notes.add(note + octave)
-
-    // this.indicatorElement.classList.add('playing')
   }
 
   stopNote(note?: string, octave?: number | string) {

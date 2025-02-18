@@ -9,9 +9,11 @@ import Global from './classes/Audio'
 import { ref, watchEffect } from 'vue'
 
 const volume = ref(Global.volumeNode.gain.value)
+const contextSuspended = Global.suspended
 
 watchEffect(() => {
   volume.value = Global.volumeNode.gain.value
+  contextSuspended.value = Global.suspended.value
 })
 
 function setGlobalVolume(value: number) {
@@ -41,6 +43,15 @@ MidiDevice.initialize()
       </div>
     </div>
     <SynthList />
+
+    <el-alert
+      v-if="contextSuspended"
+      class="context-suspended-alert"
+      type="error"
+      title="Audio Output Suspended"
+      description="Please click or press any key and then play a note in order to allow MIDI input"
+      :closable="false"
+    ></el-alert>
   </div>
 
   <RouterView />
@@ -75,6 +86,10 @@ nav a {
 
 nav a:first-of-type {
   border: 0;
+}
+
+.context-suspended-alert {
+  margin: 16px 0;
 }
 
 @media (min-width: 1024px) {

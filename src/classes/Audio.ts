@@ -1,11 +1,23 @@
 import { usePresetsStore } from '@/stores/presets'
 import Synth from './Synth'
+import { ref, type Ref } from 'vue'
 
 export default class Global {
-  static CONTEXT: AudioContext
+  static _CONTEXT: AudioContext
+
+  public static get CONTEXT() {
+    Global.suspended.value = Global._CONTEXT.state === 'suspended'
+    return Global._CONTEXT
+  }
+
+  public static set CONTEXT(context: AudioContext) {
+    Global._CONTEXT = context
+  }
+
   static MASTER: ChannelMergerNode
 
   static volumeNode: GainNode
+  static suspended: Ref<boolean> = ref(false)
 
   static NOTES: { [key: string]: Array<number> } = {
     C: [16.35, 32.7, 65.41, 130.81, 261.63, 523.25, 1046.5, 2093.0, 4186.01],
@@ -36,6 +48,10 @@ export default class Global {
 
     const presets = usePresetsStore()
     presets.fetchPresets()
+  }
+
+  static updateContextState() {
+    Global.suspended.value = Global.CONTEXT.state === 'suspended'
   }
 
   static getNoteFromMIDI(note: number) {

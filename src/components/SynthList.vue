@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import SynthSettings from './SynthWaveformSettings.vue'
-
 import Synth from '@/classes/Synth'
-import { reactive } from 'vue'
 import SynthDialog from './SynthDialog.vue'
+
+import Global from '@/classes/Audio'
 </script>
 
 <template>
@@ -11,7 +10,7 @@ import SynthDialog from './SynthDialog.vue'
     <el-button
       class="synth-button"
       v-for="(synth, name) in Synth.getSynths()"
-      v-bind:class="{ playing: synth.isPlaying() }"
+      v-bind:class="{ playing: synth.isPlaying(), suspended: Global.suspended.value }"
       :key="name"
       plain
       round
@@ -47,6 +46,12 @@ import SynthDialog from './SynthDialog.vue'
 .synth-button.playing {
   outline-color: var(--playing-color);
   box-shadow: 0 0 20px var(--playing-color);
+  transition: outline-color 0s;
+}
+
+.synth-button.playing.suspended {
+  outline-color: var(--suspended-color);
+  box-shadow: 0 0 20px var(--suspended-color);
   transition: outline-color 0s;
 }
 

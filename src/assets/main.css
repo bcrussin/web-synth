@@ -3,6 +3,7 @@
 #app {
   --primary-color: #409EFF;
   --playing-color: #28bc28;
+  --suspended-color: #F56C6C;
 
   max-width: 1280px;
   margin: 0 auto;

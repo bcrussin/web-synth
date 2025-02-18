@@ -11,6 +11,7 @@ declare module 'vue' {
     ConvolverEffect: typeof import('./src/components/synth-effects/ConvolverEffect.vue')['default']
     copy: typeof import('./src/components/synth-effects/DelayEffect copy.vue')['default']
     DelayEffect: typeof import('./src/components/synth-effects/DelayEffect.vue')['default']
+    ElAlert: typeof import('element-plus/es')['ElAlert']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCard: typeof import('element-plus/es')['ElCard']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
