@@ -3,7 +3,7 @@
 The goal of this project is to provide a customizable synthesizer that supports mouse, keyboard, and MIDI control. Future plans include custom LFOs and key bindings.
 Most web-based synths do not provide a high level of control (especially in regards to key bindings), so this project aims to provide as custom an experience as possible.
 
-Only a list of synthesizers are available on page load. One is created for keyboard control and the rest coorespond to detected MIDI devices. Clicking on one will open a modal containing waveform/effect/synth settings and a playable piano roll.
+Only a list of synthesizers are available on page load. One is created for keyboard control and the rest correspond to detected MIDI devices. Clicking on one will open a modal containing waveform/effect/synth settings and a playable piano roll.
 
 #### Mouse/Keyboard Control
 
