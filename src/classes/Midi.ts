@@ -21,7 +21,8 @@ export default class MidiDevice {
 
   input: MIDIInput
   synths: Synth[]
-  globalParams: any
+
+  channelValues: number[]
   channelSettings: SynthParams
   pitchBend: number
   velocityCurve: number | null = null
@@ -29,10 +30,10 @@ export default class MidiDevice {
   constructor(input: MIDIInput) {
     this.input = input
     this.pitchBend = 0
+    this.channelValues = reactive(new Array(16).fill(0))
     this.channelSettings = reactive({})
 
     this.synths = []
-
     const synth = new Synth({ name: input?.name ?? undefined, midiDevice: this })
     this.addSynth(synth)
   }
@@ -118,7 +119,10 @@ export default class MidiDevice {
       Object.entries(this.channelSettings).forEach(([synthName, channels]) => {
         if (!!channels[note]) {
           const channelProperties = channels[note] as MidiChannel
-          this.setParam(channelProperties, velocity / 127, Synth.getSynth(synthName))
+          const percent = velocity / 127
+
+          this.channelValues[note] = percent
+          this.setParam(channelProperties, percent, Synth.getSynth(synthName))
         }
       })
     }
