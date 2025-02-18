@@ -49,7 +49,7 @@ MidiDevice.initialize()
       class="context-suspended-alert"
       type="error"
       title="Audio Output Suspended"
-      description="Please click or press any key and then play a note in order to allow MIDI input"
+      description="Please click or press any key and then play a note in order to enable audio output."
       :closable="false"
     ></el-alert>
   </div>
