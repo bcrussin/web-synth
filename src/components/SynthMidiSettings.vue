@@ -100,6 +100,10 @@ function getIndicatorStyles(channel: number) {
   width: 100%;
 }
 
+.channel-button {
+  width: 100%;
+}
+
 .channel-value {
   content: '';
   position: absolute;
