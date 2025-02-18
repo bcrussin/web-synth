@@ -20,7 +20,10 @@ Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use 
 This project utilitzes the Web Audio API and Web MIDI API.
 
 [fastidious-envelope-generator](https://github.com/rsimmons/fastidious-envelope-generator) provides smooth, cross-browser envelope control.
+
 [Tuna.js](https://github.com/Theodeus/tuna) provides built-in audio effects and sound processing.
+
+[Element Plus](https://element-plus.org) provides many UI components across the app.
 
 - - -
 
