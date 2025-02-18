@@ -9,7 +9,7 @@ export default class Oscillator extends OscillatorNode {
   frequencyValue: number
   frequencyOffset: number
 
-  volumeNode: GainNode
+  // volumeNode: GainNode
   velocityNode: GainNode
   gainNode: GainNode
   lowPassFilter: BiquadFilterNode
@@ -23,13 +23,9 @@ export default class Oscillator extends OscillatorNode {
     this.frequencyValue = 0
     this.frequencyOffset = 0
 
-    this.volumeNode = Global.CONTEXT.createGain()
-    this.volumeNode.gain.value = synth.volume
-    this.volumeNode.connect(synth.inputNode)
-
     this.velocityNode = Global.CONTEXT.createGain()
     this.velocityNode.gain.value = 1
-    this.velocityNode.connect(this.volumeNode)
+    this.velocityNode.connect(synth.inputNode)
 
     this.gainNode = Global.CONTEXT.createGain()
     this.gainNode.gain.value = 0

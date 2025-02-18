@@ -1,5 +1,12 @@
 [
     {
+        "displayName": "Synth Volume",
+        "type": "synth",
+        "property": "volume",
+        "min": 0,
+        "max": 1
+    },
+    {
         "displayName": "Synth Attack",
         "type": "synth",
         "property": "attack",

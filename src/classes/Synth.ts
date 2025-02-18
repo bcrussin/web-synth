@@ -25,23 +25,28 @@ export default class Synth {
   name: string
   type: string
   preset: string | undefined
-  volume: number
   attack: number
   decay: number
   sustain: number
   release: number
+
+  public get volume(): number {
+    return this.inputNode.gain.value
+  }
+  public set volume(value: number) {
+    this.inputNode.gain.value = value
+  }
 
   mono: boolean = false
   oscillators: { [key: number]: Oscillator } = reactive({})
   notes: Set<string> = reactive(new Set<string>())
   wavetable: Array<number> | null = null
   periodicWave: PeriodicWave | null = null
-  _bypass: boolean = false
 
+  _bypass: boolean = false
   public get bypass() {
     return this._bypass
   }
-
   public set bypass(enabled: boolean) {
     this._bypass = enabled
 
@@ -52,7 +57,7 @@ export default class Synth {
     }
   }
 
-  inputNode: ChannelMergerNode
+  inputNode: GainNode
   outputNode: DynamicsCompressorNode
   tuna: Tuna
   effects: Tuna.TunaAudioNode[] = reactive([])
@@ -62,17 +67,9 @@ export default class Synth {
 
     this.midiDevice = options?.midiDevice
 
-    this.type = options.type ?? 'sine'
-    this.volume = options.volume ?? 1
-
-    this.attack = 0.001
-    this.release = 0.05
-    this.sustain = 1
-    this.decay = 0.5
-
     this.tuna = new Tuna(Global.CONTEXT)
 
-    this.inputNode = Global.CONTEXT.createChannelMerger(1)
+    this.inputNode = Global.CONTEXT.createGain()
 
     this.outputNode = Global.CONTEXT.createDynamicsCompressor()
     this.outputNode.threshold.setValueAtTime(-10, Global.CONTEXT.currentTime)
@@ -80,6 +77,14 @@ export default class Synth {
     this.outputNode.connect(Global.MASTER)
 
     this.updateEffectNodes()
+
+    this.type = options.type ?? 'sine'
+    this.volume = options.volume ?? 1
+
+    this.attack = 0.001
+    this.release = 0.05
+    this.sustain = 1
+    this.decay = 0.5
 
     this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`
     Synth.SYNTHS.value[this.name] = this
