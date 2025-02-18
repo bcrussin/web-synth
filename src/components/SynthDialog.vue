@@ -37,6 +37,7 @@ function deleteSynth(close: () => void) {
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
           <el-popconfirm
+            v-if="props.synth.name != 'Keyboard'"
             title="Are you sure you would like to delete this synth?"
             :width="200"
             :hide-icon="true"
@@ -44,12 +45,7 @@ function deleteSynth(close: () => void) {
             @confirm="deleteSynth(close)"
           >
             <template #reference>
-              <el-button
-                v-if="props.synth.name != 'Keyboard'"
-                :icon="Delete"
-                type="danger"
-                round
-              ></el-button>
+              <el-button :icon="Delete" type="danger" round></el-button>
             </template>
           </el-popconfirm>
 
