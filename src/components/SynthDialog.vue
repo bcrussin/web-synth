@@ -37,8 +37,10 @@ function deleteSynth(close: () => void) {
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
           <el-popconfirm
-            :width="200"
             title="Are you sure you would like to delete this synth?"
+            :width="200"
+            :hide-icon="true"
+            confirm-button-type="danger"
             @confirm="deleteSynth(close)"
           >
             <template #reference>
