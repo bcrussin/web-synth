@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     ChorusEffect: typeof import('./src/components/synth-effects/ChorusEffect.vue')['default']
     ConvolverEffect: typeof import('./src/components/synth-effects/ConvolverEffect.vue')['default']
-    copy: typeof import('./src/components/synth-effects/DelayEffect copy.vue')['default']
     DelayEffect: typeof import('./src/components/synth-effects/DelayEffect.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElButton: typeof import('element-plus/es')['ElButton']
