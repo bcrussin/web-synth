@@ -13,7 +13,7 @@ A mouse may also be used to play notes, simply by clicking on the piano within a
 
 #### MIDI Control
 
-Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity and pitch bends are currently supported.
+Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity, pitch bends, and assignable MIDI channels (work in progress) are currently supported.
 
 # Credits
 
