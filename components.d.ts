@@ -37,7 +37,6 @@ declare module 'vue' {
     PhaserEffect: typeof import('./src/components/synth-effects/PhaserEffect.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    SynhMidiSettings: typeof import('./src/components/SynhMidiSettings.vue')['default']
     SynthDialog: typeof import('./src/components/SynthDialog.vue')['default']
     SynthEffects: typeof import('./src/components/SynthEffects.vue')['default']
     SynthList: typeof import('./src/components/SynthList.vue')['default']
