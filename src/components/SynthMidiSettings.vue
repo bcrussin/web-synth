@@ -35,11 +35,6 @@ function getIndicatorStyles(channel: number) {
 
   const style: any = {}
 
-  // if (value > 0.5) style.left = '50%'
-  // else style.right = '50%'
-
-  // style.width = Math.abs(value - 0.5) * 100 + '%'
-
   style.left = 0
   style.width = value * 100 + '%'
 
