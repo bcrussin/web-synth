@@ -1,10 +1,10 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import '../assets/main.css'
+import '@/assets/main.css'
 
 import Synth from '@/classes/Synth'
 import { ref } from 'vue'
-import WavetableGraph from './WavetableGraph.vue'
+import WavetableGraph from '@/components/WavetableGraph.vue'
 import { usePresetsStore } from '@/stores/presets'
 
 const props = defineProps<{ synth: Synth }>()

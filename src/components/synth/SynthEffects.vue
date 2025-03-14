@@ -3,11 +3,11 @@
 import Global from '@/classes/Audio'
 import type Synth from '@/classes/Synth'
 import { computed, onMounted, reactive, ref, watch, watchEffect } from 'vue'
-import ConvolverEffect from './synth-effects/ConvolverEffect.vue'
 import { Delete } from '@element-plus/icons-vue'
 import { vDraggable } from 'vue-draggable-plus'
-import OverdriveEffect from './synth-effects/OverdriveEffect.vue'
-import PhaserEffect from './synth-effects/PhaserEffect.vue'
+import ConvolverEffect from '@/components/synth-effects/ConvolverEffect.vue'
+import OverdriveEffect from '@/components/synth-effects/OverdriveEffect.vue'
+import PhaserEffect from '@/components/synth-effects/PhaserEffect.vue'
 
 const effects: { [key: string]: string } = {
   convolver: 'Reverb',

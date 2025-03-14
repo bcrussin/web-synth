@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import '../assets/main.css'
+import '@/assets/main.css'
 
 import MidiDevice from '@/classes/Midi'
 import Synth from '@/classes/Synth'

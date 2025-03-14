@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Synth from '@/classes/Synth'
-import '../assets/main.css'
+import '@/assets/main.css'
 import { onMounted, ref, watch, type Ref } from 'vue'
 
 const props = defineProps<{ synth: Synth }>()
