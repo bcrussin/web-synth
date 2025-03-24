@@ -82,6 +82,7 @@ function toggleElementSelection() {
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
           <el-button
+            v-if="!!synth.midiDevice"
             id="select-element"
             @click="toggleElementSelection()"
             :link="!selectingElement"
@@ -150,14 +151,14 @@ function toggleElementSelection() {
     </div>
 
     <div id="mask" v-if="selectingElement"></div>
-  </el-dialog>
 
-  <MidiParamDialog
-    v-if="currentMidiChannel"
-    :channel="currentMidiChannel"
-    :isNewChannel="true"
-    @update:model-value="() => (currentMidiChannel = undefined)"
-  ></MidiParamDialog>
+    <MidiParamDialog
+      v-if="currentMidiChannel"
+      :channel="currentMidiChannel"
+      :isNewChannel="true"
+      @update:model-value="() => (currentMidiChannel = undefined)"
+    ></MidiParamDialog>
+  </el-dialog>
 </template>
 
 <style>

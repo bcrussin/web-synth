@@ -3,6 +3,25 @@ import Synth from '@/classes/Synth'
 import SynthDialog from './SynthDialog.vue'
 
 import Global from '@/classes/Audio'
+import { ref, type Ref } from 'vue'
+
+const currentSynth: Ref<string | undefined> = ref(undefined)
+const settingsDialogs = new Set<string>()
+
+function openDialog(synth: Synth) {
+  currentSynth.value = synth.name
+  // settingsDialogs.add(synth.name)
+}
+function closeDialog() {
+  console.log('please')
+  currentSynth.value = undefined
+  // this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
+}
+
+function addSynth(): void {
+  const synth = new Synth()
+  console.log(Synth.getSynths())
+}
 </script>
 
 <template>
@@ -24,10 +43,10 @@ import Global from '@/classes/Audio'
   </section>
 
   <SynthDialog
-    v-for="synth in settingsDialogs"
-    :key="Synth.getSynth(synth).name"
-    :synth="Synth.getSynth(synth)"
-    @update:model-value="(val) => closeDialog(Synth.getSynth(synth).name, val)"
+    v-if="currentSynth"
+    :key="currentSynth"
+    :synth="Synth.getSynth(currentSynth)"
+    @update:model-value="(val) => closeDialog()"
   />
 </template>
 
@@ -78,11 +97,13 @@ export default {
   components: { SynthDialog },
   data() {
     return {
+      currentSynth: undefined,
       settingsDialogs: new Set<string>(), // Dynamically managed dialogs
     }
   },
   methods: {
     openDialog(synth: Synth) {
+      console.log(this.settingsDialogs)
       this.settingsDialogs.add(synth.name)
     },
     closeDialog(id: string, isVisible: boolean) {
