@@ -208,18 +208,18 @@ function toggleElementSelection() {
   left: 0;
   z-index: 999;
 
-  background-color: #00000080;
+  background-color: #00000060;
 }
 
 .selecting #select-element,
 .selecting .selectable {
   position: relative;
+  z-index: 1001;
+  cursor: pointer;
 }
 
-.selecting #select-element,
-.selecting .selectable:hover {
-  z-index: 1000;
-  cursor: pointer;
+.selecting .selectable * {
+  z-index: 1001;
 }
 
 .selecting .selectable:after {
@@ -232,15 +232,16 @@ function toggleElementSelection() {
   right: var(--padding);
   bottom: var(--padding);
   background-color: transparent;
-  z-index: 1001;
+
+  z-index: 1000;
 
   border-radius: 12px;
   border: 1px dashed #aaaaaa60;
+  background-color: #88888880;
 }
 
 .selecting #select-element:after,
 .selecting .selectable:hover:after {
   border: 1px solid var(--primary-color);
-  background-color: #cccccc11;
 }
 </style>

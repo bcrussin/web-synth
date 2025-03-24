@@ -46,7 +46,16 @@ function updateChannelMinMax(minMax: [number, number]) {
 }
 
 function save() {
+  if (props.channel.param == undefined) return
+
   MidiManager.registerChannel(props.channel)
+  dialogVisible.value = false
+}
+
+function deleteChannel() {
+  if (props.channel.param == undefined) return
+
+  MidiManager.unregisterChannel(props.channel)
   dialogVisible.value = false
 }
 </script>
@@ -84,7 +93,7 @@ function save() {
           class="channel-dropdown"
           placeholder="None"
         >
-          <el-option value=""> None </el-option>
+          <el-option value="" v-if="props.isNewChannel"> None </el-option>
           <el-option
             v-for="param in midiStore.params"
             :key="param.displayName"
@@ -114,9 +123,26 @@ function save() {
     </div>
 
     <template #footer>
-      <div>
+      <!-- New Channel Options -->
+      <div v-if="props.isNewChannel">
         <el-button @click="() => (dialogVisible = false)">Cancel</el-button>
-        <el-button type="primary" @click="save()">Save</el-button>
+        <el-button type="primary" @click="save()" :disabled="!props.channel.param">Save</el-button>
+      </div>
+
+      <!-- Existing Channel Options -->
+      <div v-else>
+        <el-button @click="() => (dialogVisible = false)">Close</el-button>
+        <el-popconfirm
+          title="Are you sure you would like to delete this channel assignment?"
+          :width="200"
+          :hide-icon="true"
+          confirm-button-type="danger"
+          @confirm="deleteChannel()"
+        >
+          <template #reference>
+            <el-button type="danger">Remove</el-button>
+          </template>
+        </el-popconfirm>
       </div>
     </template>
   </el-dialog>
