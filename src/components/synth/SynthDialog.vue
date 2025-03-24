@@ -81,7 +81,12 @@ function toggleElementSelection() {
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
-          <el-button id="select-element" @click="toggleElementSelection()" link>
+          <el-button
+            id="select-element"
+            @click="toggleElementSelection()"
+            :link="!selectingElement"
+            :round="selectingElement"
+          >
             <v-icon
               v-if="!selectingElement"
               :name="selectingElement ? 'hi-backspace' : 'bi-sliders'"
@@ -208,7 +213,9 @@ function toggleElementSelection() {
   left: 0;
   z-index: 999;
 
-  background-color: #00000060;
+  backdrop-filter: brightness(0.6);
+
+  /* background-color: #00000060; */
 }
 
 .selecting #select-element,
@@ -236,12 +243,21 @@ function toggleElementSelection() {
   z-index: 1000;
 
   border-radius: 12px;
-  border: 1px dashed #aaaaaa60;
-  background-color: #88888880;
+  border: 1px dashed #88888880;
+  background-color: white;
+  /* background-color: #88888880; */
+}
+
+.dark .selecting .selectable:after {
+  background-color: #44444480;
 }
 
 .selecting #select-element:after,
 .selecting .selectable:hover:after {
   border: 1px solid var(--primary-color);
+}
+
+.selecting .selectable .control {
+  pointer-events: none;
 }
 </style>
