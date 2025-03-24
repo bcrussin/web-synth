@@ -38,7 +38,7 @@ function selectElement(target?: HTMLElement) {
     param: target.getAttribute('data-param') ?? undefined,
   })
 
-  MidiManager.registerChannel(currentMidiChannel.value)
+  // MidiManager.registerChannel(currentMidiChannel.value)
 }
 
 document.addEventListener('click', (e: MouseEvent) => {
@@ -150,6 +150,7 @@ function toggleElementSelection() {
   <MidiParamDialog
     v-if="currentMidiChannel"
     :channel="currentMidiChannel"
+    :isNewChannel="true"
     @update:model-value="() => (currentMidiChannel = undefined)"
   ></MidiParamDialog>
 </template>

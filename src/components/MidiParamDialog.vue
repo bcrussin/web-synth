@@ -8,8 +8,12 @@ import { useMidiStore } from '@/stores/midiStore'
 import { ref, watchEffect } from 'vue'
 import MidiManager from '@/classes/MidiManager'
 
-const props = defineProps<{ channel: MidiChannel }>()
+const props = withDefaults(defineProps<{ channel: MidiChannel; isNewChannel?: boolean }>(), {
+  isNewChannel: false,
+})
 const midiStore = useMidiStore()
+
+const dialogVisible = ref(true)
 
 const midiDevice = props.channel.device as MidiDevice
 const settings = getChannelSettings()
@@ -19,9 +23,10 @@ function getChannelSettings(): MidiChannel {
 }
 
 function setChannelProperty(property: keyof MidiChannelOptions, value: any) {
-  if (getChannelSettings() == undefined) return
+  props.channel.setProperty(property, value)
+  // if (getChannelSettings() == undefined) return
 
-  getChannelSettings()?.setProperty(property, value)
+  // getChannelSettings()?.setProperty(property, value)
 }
 
 function getChannelMinMax() {
@@ -36,7 +41,13 @@ function updateChannelMinMax(minMax: [number, number]) {
     max: minMax[1],
   } as MidiChannelOptions
 
-  getChannelSettings()?.setProperties(data)
+  // getChannelSettings()?.setProperties(data)
+  props.channel.setProperties(data)
+}
+
+function save() {
+  MidiManager.registerChannel(props.channel)
+  dialogVisible.value = false
 }
 </script>
 
@@ -44,7 +55,7 @@ function updateChannelMinMax(minMax: [number, number]) {
   <el-dialog
     :title="`Channel ${channel.channelNumber}`"
     modal
-    :model-value="true"
+    :model-value="dialogVisible"
     :show-close="true"
     :style="{
       width: '90vw',
@@ -101,6 +112,13 @@ function updateChannelMinMax(minMax: [number, number]) {
         >
       </div>
     </div>
+
+    <template #footer>
+      <div>
+        <el-button @click="() => (dialogVisible = false)">Cancel</el-button>
+        <el-button type="primary" @click="save()">Save</el-button>
+      </div>
+    </template>
   </el-dialog>
 </template>
 
