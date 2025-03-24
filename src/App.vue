@@ -4,7 +4,7 @@ import { RouterLink, RouterView } from 'vue-router'
 import Keyboard from './classes/Keyboard'
 import Synth from './classes/Synth'
 import SynthList from './components/synth/SynthList.vue'
-import MidiDevice from './classes/Midi'
+import MidiDevice from './classes/MidiDevice'
 import Global from './classes/Audio'
 import { ref, watchEffect } from 'vue'
 

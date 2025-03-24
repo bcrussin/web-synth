@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import '@/assets/main.css'
 
-import MidiDevice from '@/classes/Midi'
+import MidiDevice from '@/classes/MidiDevice'
 import Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 

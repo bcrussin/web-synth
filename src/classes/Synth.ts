@@ -4,7 +4,7 @@ import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import FFT from './FFT'
 import Tuna from 'tunajs'
-import MidiDevice from './Midi'
+import MidiDevice from './MidiDevice'
 
 export interface SynthOptions {
   name?: string

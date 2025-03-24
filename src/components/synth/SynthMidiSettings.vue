@@ -6,7 +6,7 @@ import MidiParamDialog from '@/components/MidiParamDialog.vue'
 import { ref } from 'vue'
 import type MidiChannel from '@/classes/MidiChannel'
 import type { MidiChannelOptions } from '@/classes/MidiChannel'
-import type MidiDevice from '@/classes/Midi'
+import type MidiDevice from '@/classes/MidiDevice'
 
 const effects: { [key: string]: string } = {
   convolver: 'Reverb',

@@ -6,7 +6,7 @@ import SynthSettings from './SynthSettings.vue'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import SynthPiano from './SynthPiano.vue'
 import SynthMidiSettings from './SynthMidiSettings.vue'
-import MidiDevice from '@/classes/Midi'
+import MidiDevice from '@/classes/MidiDevice'
 
 const props = defineProps<{ synth: Synth }>()
 

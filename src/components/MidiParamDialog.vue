@@ -1,6 +1,6 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import type MidiDevice from '@/classes/Midi'
+import type MidiDevice from '@/classes/MidiDevice'
 import type { MidiChannelOptions } from '@/classes/MidiChannel'
 import MidiChannel from '@/classes/MidiChannel'
 import type Synth from '@/classes/Synth'
