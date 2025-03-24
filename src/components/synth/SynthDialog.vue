@@ -42,7 +42,7 @@ function selectElement(target: HTMLElement) {
 }
 
 document.addEventListener('click', (e: MouseEvent) => {
-  if (!selectingElement.value || (e.target as HTMLElement)?.id == 'select-element') return
+  if (!selectingElement.value || !!(e.target as HTMLElement)?.closest('#select-element')) return
 
   const elem = e.target as HTMLElement
   const target = elem.closest('.selectable') as HTMLElement
@@ -155,6 +155,7 @@ function toggleElementSelection() {
 <style>
 .dialog-header {
   width: 100%;
+  height: 1lh;
   display: flex;
   justify-content: space-between;
 }
@@ -216,12 +217,10 @@ function toggleElementSelection() {
 .selecting #select-element,
 .selecting .selectable:hover {
   z-index: 1000;
-  transform: translateZ(-100px);
   cursor: pointer;
 }
 
-.selecting #select-element:after,
-.selecting .selectable:hover:after {
+.selecting .selectable:after {
   --padding: -4px;
 
   content: '';
@@ -231,12 +230,15 @@ function toggleElementSelection() {
   right: var(--padding);
   bottom: var(--padding);
   background-color: transparent;
-  border-radius: 12px;
   z-index: 1001;
 
+  border-radius: 12px;
+  border: 1px dashed #aaaaaa60;
+}
+
+.selecting #select-element:after,
+.selecting .selectable:hover:after {
   border: 1px solid var(--primary-color);
   background-color: #cccccc11;
-  backdrop-filter: brightness(1.5);
-  mix-blend-mode: lighten;
 }
 </style>
