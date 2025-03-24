@@ -21,14 +21,13 @@ const props = defineProps<{ synth: Synth }>()
 const dialogChannel: Ref<MidiChannel | undefined> = ref(undefined)
 const midiDevice = props.synth.midiDevice as MidiDevice
 
-function getChannelProperties(channel: number): MidiChannel | undefined {
-  return MidiManager.getChannel(props.synth.midiDevice, props.synth, channel)
+function getChannelProperties(channelNumber: number) {
+  console.log(MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber))
+  return MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber)
 }
 
-function getChannelProperty(channel: number, property: keyof MidiChannelOptions) {
-  const channelProps = getChannelProperties(channel)
-
-  return channelProps?.getProperty(property)
+function getChannelProperty(channel: MidiChannel, property: keyof MidiChannelOptions) {
+  return channel?.getProperty(property)
 }
 
 function getIndicatorStyles(channel: number) {
@@ -46,16 +45,11 @@ function channelExists(channelNumber: number) {
   return !!getChannelProperties(channelNumber)
 }
 
-function getMidiChannel(channel: number) {
-  return MidiManager.getChannel(props.synth.midiDevice, props.synth, channel)
-}
-
 function getExistingChannels(): MidiChannel[] {
   const channels = []
 
   for (let i = 0; i < 16; i++) {
-    console.log(i)
-    if (channelExists(i)) channels.push(getChannelProperties(i)!)
+    if (getChannelProperties(i)?.length > 0) channels.push(getChannelProperties(i)![0])
   }
 
   console.log('existing')
@@ -76,11 +70,9 @@ function getExistingChannels(): MidiChannel[] {
       <span>{{ channel.channelNumber }}:</span>
 
       <div class="channel-button-container">
-        <el-button
-          class="channel-button"
-          @click="dialogChannel = getMidiChannel(channel.channelNumber)"
-          >{{ channel.param || 'None' }}</el-button
-        >
+        <el-button class="channel-button" @click="dialogChannel = channel">{{
+          channel.param || 'None'
+        }}</el-button>
         <div class="channel-value" :style="getIndicatorStyles(channel.channelNumber)"></div>
       </div>
     </div>
