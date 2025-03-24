@@ -7,6 +7,9 @@ import SynthList from './components/synth/SynthList.vue'
 import MidiDevice from './classes/MidiDevice'
 import Global from './classes/Audio'
 import { ref, watchEffect } from 'vue'
+import SettingsDialog from './components/SettingsDialog.vue'
+
+const settingsDialogVisible = ref(false)
 
 const volume = ref(Global.volumeNode.gain.value)
 const contextSuspended = Global.suspended
@@ -61,7 +64,13 @@ MidiDevice.initialize()
         <SynthList />
       </div>
       <section class="horizontal">
-        <el-button link><v-icon name="md-settings-round"></v-icon></el-button>
+        <el-button link>
+          <v-icon name="md-settings-round" @click="() => (settingsDialogVisible = true)"></v-icon>
+        </el-button>
+        <SettingsDialog
+          v-if="settingsDialogVisible"
+          @update:model-value="() => (settingsDialogVisible = false)"
+        ></SettingsDialog>
       </section>
     </div>
   </div>
