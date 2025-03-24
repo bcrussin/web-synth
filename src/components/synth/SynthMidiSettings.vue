@@ -22,7 +22,6 @@ const dialogChannel: Ref<MidiChannel | undefined> = ref(undefined)
 const midiDevice = props.synth.midiDevice as MidiDevice
 
 function getChannelProperties(channelNumber: number) {
-  console.log(MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber))
   return MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber)
 }
 
@@ -52,8 +51,6 @@ function getExistingChannels(): MidiChannel[] {
     if (getChannelProperties(i)?.length > 0) channels.push(getChannelProperties(i)![0])
   }
 
-  console.log('existing')
-  console.log(channels)
   return channels
 }
 </script>

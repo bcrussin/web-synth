@@ -39,10 +39,6 @@ export default class MidiManager {
         this.channelsBySynth.get(synth.name)!.add(channel)
       })
     }
-
-    console.log('___')
-    console.log(this.channelsByDevice)
-    console.log(this.channelsBySynth)
   }
 
   static unregisterChannel(channel: MidiChannel) {

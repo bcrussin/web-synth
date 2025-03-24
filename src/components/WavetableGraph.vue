@@ -132,8 +132,8 @@ function pasteWavetable() {
         props.synth.setWavetable(parsed)
         props.synth.setWaveType('custom')
       }
-    } catch (e) {
-      console.log(e)
+    } catch (err) {
+      console.log(err)
       return
     }
   })

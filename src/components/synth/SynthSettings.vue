@@ -36,15 +36,16 @@ function setSynthValue(property: string, value: number | string) {
         </el-option>
       </el-select>
     </div>
-    <div>
+    <div class="selectable">
       <span>Volume:</span>
       <el-slider
         :min="0"
         :max="1"
         :step="0.1"
         name="volume"
-        class="envelope-slider"
+        class="control envelope-slider"
         v-bind:model-value="synth?.volume"
+        data-param="Synth Volume"
         @input="setSynthValue('volume', $event)"
       ></el-slider>
     </div>

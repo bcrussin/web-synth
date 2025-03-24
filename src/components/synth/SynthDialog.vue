@@ -24,8 +24,8 @@ function deleteSynth(close: () => void) {
   }, 400)
 }
 
-function selectElement(target: HTMLElement) {
-  console.log(target)
+function selectElement(target?: HTMLElement) {
+  if (target == undefined) return
 
   const existingChannels = MidiManager.getChannelsForDeviceAndSynth(
     props.synth.midiDevice,
@@ -48,10 +48,12 @@ document.addEventListener('click', (e: MouseEvent) => {
   const target = elem.closest('.selectable') as HTMLElement
 
   if (!!target) {
-    selectElement(target)
+    selectElement((target.querySelector('.control') as HTMLElement) ?? undefined)
   }
 
   selectingElement.value = false
+  e.stopPropagation()
+  e.preventDefault()
 })
 
 function toggleElementSelection() {
@@ -206,7 +208,6 @@ function toggleElementSelection() {
   z-index: 999;
 
   background-color: #00000080;
-  pointer-events: none;
 }
 
 .selecting #select-element,
