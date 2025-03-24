@@ -1,14 +1,20 @@
 <script setup lang="ts">
 import Synth from '@/classes/Synth'
-import { Close, Delete } from '@element-plus/icons-vue'
+import { Close, Delete, Operation } from '@element-plus/icons-vue'
 import SynthWaveformSettings from './SynthWaveformSettings.vue'
 import SynthSettings from './SynthSettings.vue'
 import 'element-plus/theme-chalk/dark/css-vars.css'
 import SynthPiano from './SynthPiano.vue'
 import SynthMidiSettings from './SynthMidiSettings.vue'
 import MidiDevice from '@/classes/MidiDevice'
+import { ref, type Ref } from 'vue'
+import MidiManager from '@/classes/MidiManager'
+import MidiChannel from '@/classes/MidiChannel'
 
 const props = defineProps<{ synth: Synth }>()
+
+const selectingElement = ref(false)
+const currentMidiChannel: Ref<MidiChannel | undefined> = ref(undefined)
 
 function deleteSynth(close: () => void) {
   close()
@@ -16,6 +22,25 @@ function deleteSynth(close: () => void) {
   setTimeout(() => {
     props.synth.delete()
   }, 400)
+}
+
+function selectElement(target: HTMLElement) {
+  console.log(target)
+
+  const existingChannels = MidiManager.getChannelsForDeviceAndSynth(
+    props.synth.midiDevice,
+    props.synth,
+  )
+
+  currentMidiChannel.value = new MidiChannel(props.synth.midiDevice, {
+    channelNumber: Math.min(existingChannels.length + 1, 16),
+    synth: props.synth,
+    param: target.getAttribute('data-param') ?? undefined,
+  })
+
+  MidiManager.registerChannel(currentMidiChannel.value)
+
+  selectingElement.value = !selectingElement.value
 }
 </script>
 
@@ -31,11 +56,20 @@ function deleteSynth(close: () => void) {
       width: '90vw',
       maxWidth: '40rem',
     }"
+    :class="{ selecting: selectingElement }"
   >
     <template #header="{ close, titleId, titleClass }">
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
+          <el-button id="select-element" @click="selectingElement = !selectingElement" link>
+            <v-icon
+              v-if="!selectingElement"
+              :name="selectingElement ? 'hi-backspace' : 'bi-sliders'"
+            ></v-icon>
+            <span v-else>Cancel</span>
+          </el-button>
+
           <el-popconfirm
             v-if="props.synth.name != 'Keyboard'"
             title="Are you sure you would like to delete this synth?"
@@ -48,7 +82,6 @@ function deleteSynth(close: () => void) {
               <el-button :icon="Delete" type="danger" round></el-button>
             </template>
           </el-popconfirm>
-
           <el-switch
             :model-value="synth.bypass"
             @change="synth.setBypass($event)"
@@ -62,16 +95,28 @@ function deleteSynth(close: () => void) {
 
     <el-tabs>
       <el-tab-pane label="Waveform" lazy>
-        <SynthWaveformSettings :synth="props.synth"></SynthWaveformSettings>
+        <SynthWaveformSettings
+          :selectingElement="selectingElement"
+          @selectElement="selectElement"
+          :synth="props.synth"
+        ></SynthWaveformSettings>
       </el-tab-pane>
       <el-tab-pane label="Effects" lazy>
-        <SynthEffects :synth="props.synth"></SynthEffects>
+        <SynthEffects
+          :selectingElement="selectingElement"
+          @selectElement="selectElement"
+          :synth="props.synth"
+        ></SynthEffects>
       </el-tab-pane>
       <el-tab-pane label="MIDI" v-if="!!props.synth.midiDevice" lazy>
         <SynthMidiSettings :synth="props.synth"></SynthMidiSettings>
       </el-tab-pane>
       <el-tab-pane label="Settings" lazy>
-        <SynthSettings :synth="props.synth"></SynthSettings>
+        <SynthSettings
+          :selectingElement="selectingElement"
+          @selectElement="selectElement"
+          :synth="props.synth"
+        ></SynthSettings>
       </el-tab-pane>
       <!-- </div> -->
     </el-tabs>
@@ -79,7 +124,15 @@ function deleteSynth(close: () => void) {
     <div id="piano-container">
       <SynthPiano :synth="props.synth"></SynthPiano>
     </div>
+
+    <div id="mask" v-if="selectingElement"></div>
   </el-dialog>
+
+  <MidiParamDialog
+    v-if="currentMidiChannel"
+    :channel="currentMidiChannel"
+    @update:model-value="() => (currentMidiChannel = undefined)"
+  ></MidiParamDialog>
 </template>
 
 <style>
@@ -122,5 +175,51 @@ function deleteSynth(close: () => void) {
 
 #piano-container {
   margin-top: 8px;
+}
+</style>
+
+<style>
+#mask {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 999;
+
+  background-color: #00000080;
+  pointer-events: none;
+}
+
+.selecting #select-element,
+.selecting .selectable {
+  position: relative;
+}
+
+.selecting #select-element,
+.selecting .selectable:hover {
+  z-index: 1000;
+  transform: translateZ(-100px);
+  cursor: pointer;
+}
+
+.selecting #select-element:after,
+.selecting .selectable:hover:after {
+  --padding: -4px;
+
+  content: '';
+  position: absolute;
+  top: var(--padding);
+  left: var(--padding);
+  right: var(--padding);
+  bottom: var(--padding);
+  background-color: transparent;
+  border-radius: 12px;
+  z-index: 1001;
+
+  border: 1px solid var(--primary-color);
+  background-color: #cccccc11;
+  backdrop-filter: brightness(1.5);
+  mix-blend-mode: lighten;
 }
 </style>

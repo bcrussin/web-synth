@@ -26,6 +26,10 @@ export default class MidiChannel {
   isGlobal: boolean = false
   channelNumber: number
 
+  get synth() {
+    return Object.values(this.synths)[0]
+  }
+
   constructor(device: MidiDevice, options?: MidiChannelOptions) {
     this.device = device
     this.channelNumber = options?.channelNumber ?? 1

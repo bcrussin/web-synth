@@ -12,9 +12,9 @@ import Global from './classes/Audio'
 import { useDark, useToggle } from '@vueuse/core'
 
 import { OhVueIcon, addIcons } from 'oh-vue-icons'
-import { FaRegularCopy, MdContentpasteRound } from 'oh-vue-icons/icons'
+import { FaRegularCopy, MdContentpasteRound, BiSliders, HiBackspace } from 'oh-vue-icons/icons'
 
-addIcons(FaRegularCopy, MdContentpasteRound)
+addIcons(FaRegularCopy, MdContentpasteRound, BiSliders, HiBackspace)
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

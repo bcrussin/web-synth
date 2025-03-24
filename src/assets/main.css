@@ -72,3 +72,15 @@ section.horizontal,
   justify-content: space-between;
   align-items: center;
 }
+
+.flex-stretch {
+  width: 100%;
+  display: flex;
+  justify-content: stretch;
+  align-items: center;
+  gap: 8px;
+}
+
+.flex-stretch>* {
+  flex: 1;
+}

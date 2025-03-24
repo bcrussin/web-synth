@@ -3,11 +3,16 @@
 import '@/assets/main.css'
 
 import Synth from '@/classes/Synth'
-import { ref } from 'vue'
+import { onMounted, ref, type Ref } from 'vue'
 import WavetableGraph from '@/components/WavetableGraph.vue'
 import { usePresetsStore } from '@/stores/presets'
+import MidiManager from '@/classes/MidiManager'
+import MidiChannel from '@/classes/MidiChannel'
+import MidiParamDialog from '../MidiParamDialog.vue'
 
-const props = defineProps<{ synth: Synth }>()
+const props = defineProps<{ selectingElement: any; synth: Synth }>()
+const emit = defineEmits(['selectElement'])
+
 const wavetableGraphRef = ref<typeof WavetableGraph | null>(null)
 
 const presets = usePresetsStore()
@@ -61,6 +66,22 @@ function getPresets() {
   return [...properties, ...presetOptions]
 }
 
+function controlSelected(e: Event) {
+  if (props.selectingElement) {
+    console.log(e)
+    const target = e.target as HTMLElement
+    const control = target.querySelector('.control')
+    emit('selectElement', control)
+  }
+}
+
+onMounted(() => {
+  const elements = document.querySelectorAll('.selectable')
+  elements.forEach((element) => {
+    element.addEventListener('click', controlSelected)
+  })
+})
+
 // function getPresets() {
 //   const presetOptions: any = { label: 'Presets', items: [] }
 
@@ -76,46 +97,49 @@ function getPresets() {
   <!-- v-model:visible="visible" -->
 
   <div class="synth-controls">
-    <div>
+    <div class="selectable">
       <span>Attack:</span>
       <el-slider
         :min="0.01"
         :max="0.4"
         :step="0.05"
         :show-tooltip="false"
-        class="envelope-slider"
+        class="control envelope-slider"
         v-bind:model-value="synth?.attack"
+        data-param="Synth Attack"
         @input="setSynthValue('attack', $event)"
       ></el-slider>
     </div>
 
-    <div>
+    <div class="selectable">
       <span>Decay:</span>
       <el-slider
         :min="0"
         :max="1"
         :step="0.05"
         :show-tooltip="false"
-        class="envelope-slider"
+        class="control envelope-slider"
         v-bind:model-value="synth?.decay"
+        data-param="Synth Decay"
         @input="setSynthValue('decay', $event)"
       ></el-slider>
     </div>
 
-    <div>
+    <div class="selectable">
       <span>Sustain:</span>
       <el-slider
         :min="0"
         :max="1"
         :step="0.05"
         :show-tooltip="false"
-        class="envelope-slider"
+        class="control envelope-slider"
         v-bind:model-value="synth?.sustain"
+        data-param="Synth Sustain"
         @input="setSynthValue('sustain', $event)"
       ></el-slider>
     </div>
 
-    <div>
+    <div class="selectable">
       <span>Release:</span>
       <el-slider
         :min="0"
@@ -123,8 +147,9 @@ function getPresets() {
         :step="0.05"
         name="release"
         :show-tooltip="false"
-        class="envelope-slider"
+        class="control envelope-slider"
         v-bind:model-value="synth?.release"
+        data-param="Synth Release"
         @input="setSynthValue('release', $event)"
       ></el-slider>
     </div>

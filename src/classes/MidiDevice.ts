@@ -28,6 +28,10 @@ export default class MidiDevice {
   pitchBend: number
   velocityCurve: number | null = null
 
+  get name(): string {
+    return this.input.name ?? ''
+  }
+
   constructor(input: MIDIInput) {
     this.input = input
     this.pitchBend = 0
@@ -117,13 +121,15 @@ export default class MidiDevice {
     }
 
     if (command == 176) {
-      Object.entries(this.channelSettings).forEach(([synthName, channels]) => {
-        if (!!channels[note]) {
-          const channelProperties = channels[note] as MidiChannel
+      const channels = MidiManager.getChannelsForDevice(this)
+      const channelNumber = note
+
+      channels.forEach((channel: MidiChannel) => {
+        if (channel.channelNumber == channelNumber) {
           const percent = velocity / 127
 
-          this.channelValues[note] = percent
-          this.setParam(channelProperties, percent, Synth.getSynth(synthName))
+          this.channelValues[channelNumber] = percent
+          this.setParam(channel, percent, channel.synth)
         }
       })
     }
@@ -142,14 +148,6 @@ export default class MidiDevice {
     if (synth == undefined) return
 
     this.synths.push(synth)
-
-    // if (this.channelSettings[synth.name] == undefined) {
-    //   this.channelSettings[synth.name] = {}
-
-    //   for (let i = 1; i <= 16; i++) {
-    //     this.channelSettings[synth.name][i] = new MidiChannel(this)
-    //   }
-    // }
   }
 
   removeSynth(name: string): void {
