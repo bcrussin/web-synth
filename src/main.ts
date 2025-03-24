@@ -18,9 +18,23 @@ import {
   BiSliders,
   HiBackspace,
   MdSettingsRound,
+  HiDatabase,
+  FaEllipsisH,
+  FaUpload,
+  FaDownload,
 } from 'oh-vue-icons/icons'
 
-addIcons(FaRegularCopy, MdContentpasteRound, BiSliders, HiBackspace, MdSettingsRound)
+addIcons(
+  FaRegularCopy,
+  MdContentpasteRound,
+  BiSliders,
+  HiBackspace,
+  MdSettingsRound,
+  HiDatabase,
+  FaEllipsisH,
+  FaUpload,
+  FaDownload,
+)
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)

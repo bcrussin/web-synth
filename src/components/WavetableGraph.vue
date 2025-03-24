@@ -138,6 +138,10 @@ function pasteWavetable() {
     }
   })
 }
+
+function saveWavetable() {}
+function exportWavetable() {}
+function importWavetable() {}
 </script>
 
 <template>
@@ -156,6 +160,25 @@ function pasteWavetable() {
       <el-button id="paste-wavetable" @click="pasteWavetable()">
         <v-icon name="md-contentpaste-round" scale="0.8"></v-icon>
       </el-button>
+
+      <!-- More Options -->
+      <el-dropdown id="wavetable-more" trigger="click">
+        <el-button>
+          <v-icon name="fa-ellipsis-h" scale="0.8"></v-icon>
+        </el-button>
+
+        <template #dropdown>
+          <el-dropdown-item @click="saveWavetable()">
+            <v-icon name="hi-database" scale="0.8"></v-icon> Save Locally
+          </el-dropdown-item>
+          <el-dropdown-item @click="importWavetable()">
+            <v-icon name="fa-upload" scale="0.8"></v-icon> Import from File
+          </el-dropdown-item>
+          <el-dropdown-item @click="exportWavetable()">
+            <v-icon name="fa-download" scale="0.8"></v-icon> Save to File
+          </el-dropdown-item>
+        </template>
+      </el-dropdown>
     </div>
   </div>
 </template>
@@ -185,6 +208,7 @@ function pasteWavetable() {
   align-items: center;
 }
 
+#wavetable-more,
 .graph-controls > * {
   flex: 1;
   margin: 0 !important;
@@ -197,117 +221,20 @@ function pasteWavetable() {
   border-bottom-left-radius: 0;
 }
 
+#wavetable-more,
 .graph-controls > *:not(:last-child) {
   border-bottom-right-radius: 0;
 }
-</style>
 
-<!-- <script lang="ts">
-export default {
-  props: {
-    synth: Synth
-  },
-  data() {
-    return {
-      wavetable: null,
-    }
-  },
-  mounted() {
-    if (!!this.synth?.wavetable) {
-      this.wavetable = this.synth.wavetable;
-      this.resizeWavetable();
-    } else {
-      this.wavetable = new Array(length).fill(0);
-    }
-  },
+.graph-controls > div {
+  flex: 0 0 auto;
+  display: flex;
+  padding: 0;
 }
-</script> -->
-<!--
-class WavetableGraph {
-  constructor(synth, length, id) {
-    this.synth = synth;
 
-    if (!!this.synth.wavetable) {
-      this.wavetable = this.synth.wavetable;
-      this.resizeWavetable();
-    } else {
-      this.wavetable = new Array(length).fill(0);
-    }
-
-    this.id = id;
-
-    this.canvas = document.getElementById(this.id);
-    this.ctx = this.canvas.getContext("2d");
-
-    this.canvas.onmousemove = (e) => {
-      if (e.buttons & 1) {
-        this.edit(e);
-      }
-    };
-    this.canvas.ontouchmove = (e) => {
-      this.edit(e.changedTouches[0]);
-    };
-
-    this.render();
-  }
-
-  render() {
-    if (this.canvas == undefined || this.ctx == undefined) return;
-
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-    this.ctx.fillStyle = "white";
-    let barWidth = this.canvas.width / this.wavetable.length;
-
-    for (let i = 0; i < this.wavetable.length; i++) {
-      let x = i * barWidth;
-      let barHeight = (this.canvas.height * (this.wavetable[i] + 1)) / 2;
-      this.ctx.fillRect(x, this.canvas.height - barHeight, barWidth, barHeight);
-    }
-  }
-
-  edit(e) {
-    let rect = this.canvas.getBoundingClientRect();
-    let x = e.clientX - rect.left;
-    let y = e.clientY - rect.top;
-    let px = Math.max(0, Math.min(x / this.canvas.width, 1));
-    let py = Math.max(0, Math.min(1 - y / this.canvas.height, 1));
-
-    let bar = Math.min(
-      Math.floor(px * this.wavetable.length),
-      this.wavetable.length - 1
-    );
-    this.wavetable[bar] = py * 2 - 1;
-    this.render();
-
-    this.synth.setWavetable(this.wavetable);
-    setWaveType("custom");
-  }
-
-  setWavetable(wavetable) {
-    if (!!wavetable) this.wavetable = [...wavetable];
-    this.render();
-
-    this.synth.setWavetable(this.wavetable);
-  }
-
-  resizeWavetable(size) {
-    if (this.wavetable == undefined) {
-      this.wavetable = new Array(size).fill(0);
-      return;
-    }
-
-    size = size ?? wavetableSize;
-
-    let len = this.wavetable.length;
-    if (len > size) {
-      this.wavetable = this.wavetable.slice(0, size);
-    } else if (len < size) {
-      for (let i = len; i < size; i++) {
-        this.wavetable.push(0);
-      }
-    }
-
-    this.render();
-    this.synth.setWavetable(this.wavetable);
-  }
-} -->
+/* Ensure dropdown button matches other buttons */
+#wavetable-more {
+  border-left: none;
+  border-radius: 0 0 12px 0;
+}
+</style>
