@@ -39,8 +39,25 @@ function selectElement(target: HTMLElement) {
   })
 
   MidiManager.registerChannel(currentMidiChannel.value)
+}
 
-  selectingElement.value = !selectingElement.value
+document.addEventListener('click', (e: MouseEvent) => {
+  if (!selectingElement.value || (e.target as HTMLElement)?.id == 'select-element') return
+
+  const elem = e.target as HTMLElement
+  const target = elem.closest('.selectable') as HTMLElement
+
+  if (!!target) {
+    selectElement(target)
+  }
+
+  selectingElement.value = false
+})
+
+function toggleElementSelection() {
+  setTimeout(() => {
+    selectingElement.value = !selectingElement.value
+  }, 0)
 }
 </script>
 
@@ -62,7 +79,7 @@ function selectElement(target: HTMLElement) {
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
-          <el-button id="select-element" @click="selectingElement = !selectingElement" link>
+          <el-button id="select-element" @click="toggleElementSelection()" link>
             <v-icon
               v-if="!selectingElement"
               :name="selectingElement ? 'hi-backspace' : 'bi-sliders'"

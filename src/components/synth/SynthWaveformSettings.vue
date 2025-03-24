@@ -66,21 +66,21 @@ function getPresets() {
   return [...properties, ...presetOptions]
 }
 
-function controlSelected(e: Event) {
-  if (props.selectingElement) {
-    console.log(e)
-    const target = e.target as HTMLElement
-    const control = target.querySelector('.control')
-    emit('selectElement', control)
-  }
-}
+// function controlSelected(e: Event) {
+//   if (props.selectingElement) {
+//     console.log(e)
+//     const target = e.target as HTMLElement
+//     const control = target.querySelector('.control')
+//     emit('selectElement', control)
+//   }
+// }
 
-onMounted(() => {
-  const elements = document.querySelectorAll('.selectable')
-  elements.forEach((element) => {
-    element.addEventListener('click', controlSelected)
-  })
-})
+// onMounted(() => {
+//   const elements = document.querySelectorAll('.selectable')
+//   elements.forEach((element) => {
+//     element.addEventListener('click', controlSelected)
+//   })
+// })
 
 // function getPresets() {
 //   const presetOptions: any = { label: 'Presets', items: [] }
