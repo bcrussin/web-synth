@@ -3,7 +3,7 @@
 The goal of this project is to provide a customizable synthesizer that supports mouse, keyboard, and MIDI control. Future plans include custom LFOs and key bindings.
 Most web-based synths do not provide a high level of control (especially in regards to key bindings), so this project aims to provide as custom an experience as possible.
 
-Only a list of synthesizers are available on page load. One is created for keyboard control and the rest coorespond to detected MIDI devices. Clicking on one will open a modal containing waveform/effect/synth settings and a playable piano roll.
+Only a list of synthesizers are available on page load. One is created for keyboard control and the rest correspond to detected MIDI devices. Clicking on one will open a modal containing waveform/effect/synth settings and a playable piano roll.
 
 #### Mouse/Keyboard Control
 
@@ -13,14 +13,17 @@ A mouse may also be used to play notes, simply by clicking on the piano within a
 
 #### MIDI Control
 
-Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity and pitch bends are currently supported.
+Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity, pitch bends, and assignable MIDI channels (work in progress) are currently supported.
 
 # Credits
 
 This project utilitzes the Web Audio API and Web MIDI API.
 
 [fastidious-envelope-generator](https://github.com/rsimmons/fastidious-envelope-generator) provides smooth, cross-browser envelope control.
+
 [Tuna.js](https://github.com/Theodeus/tuna) provides built-in audio effects and sound processing.
+
+[Element Plus](https://element-plus.org) provides many UI components across the app.
 
 - - -
 

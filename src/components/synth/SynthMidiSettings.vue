@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type Synth from '@/classes/Synth'
 import { useMidiStore } from '@/stores/midiStore'
-import MidiParamDialog from './MidiParamDialog.vue'
+import MidiParamDialog from '@/components/MidiParamDialog.vue'
 import { ref } from 'vue'
 import type MidiChannel from '@/classes/MidiChannel'
 import type { MidiChannelOptions } from '@/classes/MidiChannel'
