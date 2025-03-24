@@ -4,6 +4,7 @@ import Global from './Audio'
 import { useMidiStore, type MIDIParam } from '@/stores/midiStore'
 import { reactive } from 'vue'
 import MidiChannel, { type MidiChannelOptions } from './MidiChannel'
+import MidiManager from './MidiManager'
 
 interface SynthParams {
   [synthName: string]: {
@@ -142,13 +143,13 @@ export default class MidiDevice {
 
     this.synths.push(synth)
 
-    if (this.channelSettings[synth.name] == undefined) {
-      this.channelSettings[synth.name] = {}
+    // if (this.channelSettings[synth.name] == undefined) {
+    //   this.channelSettings[synth.name] = {}
 
-      for (let i = 1; i <= 16; i++) {
-        this.channelSettings[synth.name][i] = new MidiChannel()
-      }
-    }
+    //   for (let i = 1; i <= 16; i++) {
+    //     this.channelSettings[synth.name][i] = new MidiChannel(this)
+    //   }
+    // }
   }
 
   removeSynth(name: string): void {

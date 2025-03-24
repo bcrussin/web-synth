@@ -1,9 +1,18 @@
+import type MidiDevice from './MidiDevice'
+import type Synth from './Synth'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 export interface MidiChannelOptions {
+  channelNumber: number
   param?: string
   min?: number
   max?: number
   inverted?: boolean
+  synth?: Synth
+}
+
+export interface SynthMap {
+  [name: string]: Synth
 }
 
 export default class MidiChannel {
@@ -12,7 +21,19 @@ export default class MidiChannel {
   max: number
   inverted: boolean
 
-  constructor(options?: MidiChannelOptions) {
+  device: MidiDevice
+  synths: SynthMap = {}
+  isGlobal: boolean = false
+  channelNumber: number
+
+  constructor(device: MidiDevice, options?: MidiChannelOptions) {
+    this.device = device
+    this.channelNumber = options?.channelNumber ?? 1
+
+    if (!!options?.synth) {
+      this.synths[options.synth.name] = options.synth
+    }
+
     this.param = options?.param ?? ''
     this.min = options?.min ?? 0
     this.max = options?.max ?? 1
