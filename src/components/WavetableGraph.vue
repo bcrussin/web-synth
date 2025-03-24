@@ -189,6 +189,7 @@ function pasteWavetable() {
   flex: 1;
   margin: 0 !important;
   padding: 12px;
+  border-radius: 0 0 12px 12px;
 }
 
 .graph-controls > *:not(:first-child) {
