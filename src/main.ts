@@ -11,6 +11,11 @@ import Global from './classes/Audio'
 
 import { useDark, useToggle } from '@vueuse/core'
 
+import { OhVueIcon, addIcons } from 'oh-vue-icons'
+import { FaRegularCopy, MdContentpasteRound } from 'oh-vue-icons/icons'
+
+addIcons(FaRegularCopy, MdContentpasteRound)
+
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
@@ -20,6 +25,7 @@ app.use(createPinia())
 app.use(router)
 
 app.use(ElementPlus, { size: 'small', zIndex: 3000 })
+app.component('v-icon', OhVueIcon)
 
 Global.initialize(new AudioContext())
 

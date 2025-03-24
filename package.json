@@ -17,6 +17,7 @@
   "dependencies": {
     "@primevue/themes": "^4.2.5",
     "element-plus": "^2.9.3",
+    "oh-vue-icons": "^1.0.0-rc3",
     "pinia": "^2.3.1",
     "rollup": "^4.34.4",
     "tunajs": "^1.0.15",

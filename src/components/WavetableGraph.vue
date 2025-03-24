@@ -116,26 +116,88 @@ function setTransparent(isTransparent?: boolean) {
     canvasRef.value.classList.remove('transparent')
   }
 }
+
+function copyWavetable() {
+  navigator.clipboard.writeText(`[${wavetable.value.toString()}]`)
+}
+
+function pasteWavetable() {
+  navigator.clipboard.readText().then((clipboard) => {
+    try {
+      if (!clipboard.startsWith('[')) clipboard = '[' + clipboard
+      if (!clipboard.endsWith(']')) clipboard = clipboard + ']'
+
+      const parsed = JSON.parse(clipboard)
+      if (Array.isArray(parsed)) {
+        props.synth.setWavetable(parsed)
+        props.synth.setWaveType('custom')
+      }
+    } catch (e) {
+      console.log(e)
+      return
+    }
+  })
+}
 </script>
 
 <template>
-  <canvas
-    ref="canvasRef"
-    id="wavetable-graph"
-    v-on:mousemove="onMouseMove"
-    v-on:touchmove="onTouchMove"
-  ></canvas>
+  <div class="graph-container">
+    <canvas
+      ref="canvasRef"
+      id="wavetable-graph"
+      v-on:mousemove="onMouseMove"
+      v-on:touchmove="onTouchMove"
+    ></canvas>
+
+    <div class="graph-controls">
+      <el-button id="copy-wavetable" @click="copyWavetable()">
+        <v-icon name="fa-regular-copy" scale="0.8"></v-icon>
+      </el-button>
+      <el-button id="paste-wavetable" @click="pasteWavetable()">
+        <v-icon name="md-contentpaste-round" scale="0.8"></v-icon>
+      </el-button>
+    </div>
+  </div>
 </template>
 
 <style>
+.graph-container {
+  display: flex;
+  flex-direction: column;
+}
+
 #wavetable-graph {
   border: 2px solid #35d399;
   border-radius: 8px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
   background-color: black;
 }
 
 #wavetable-graph.transparent {
   opacity: 0.5;
+}
+
+.graph-controls {
+  display: flex;
+  flex-direction: row;
+  justify-content: stretch;
+  align-items: center;
+}
+
+.graph-controls > * {
+  flex: 1;
+  margin: 0 !important;
+  padding: 12px;
+}
+
+.graph-controls > *:not(:first-child) {
+  border-left: none;
+  border-bottom-left-radius: 0;
+}
+
+.graph-controls > *:not(:last-child) {
+  border-bottom-right-radius: 0;
 }
 </style>
 
