@@ -5,7 +5,7 @@ import '@/assets/main.css'
 import Synth from '@/classes/Synth'
 import { onMounted, ref, type Ref } from 'vue'
 import WavetableGraph from '@/components/WavetableGraph.vue'
-import { usePresetsStore } from '@/stores/presets'
+import { useInstrumentsStore } from '@/stores/instruments'
 import MidiManager from '@/classes/MidiManager'
 import MidiChannel from '@/classes/MidiChannel'
 import MidiParamDialog from '../MidiParamDialog.vue'
@@ -15,7 +15,7 @@ const emit = defineEmits(['selectElement'])
 
 const wavetableGraphRef = ref<typeof WavetableGraph | null>(null)
 
-const presets = usePresetsStore()
+const presets = useInstrumentsStore()
 
 const properties = [
   { name: 'Sine', value: 'sine' },

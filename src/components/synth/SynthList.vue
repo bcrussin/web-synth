@@ -9,69 +9,68 @@ const currentSynth: Ref<string | undefined> = ref(undefined)
 const settingsDialogs = new Set<string>()
 
 function openDialog(synth: Synth) {
-  currentSynth.value = synth.name
-  // settingsDialogs.add(synth.name)
+	currentSynth.value = synth.name
+	// settingsDialogs.add(synth.name)
 }
 function closeDialog() {
-  console.log('please')
-  currentSynth.value = undefined
-  // this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
+	currentSynth.value = undefined
+	// this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
 }
 
 function addSynth(): void {
-  const synth = new Synth()
-  console.log(Synth.getSynths())
+	const synth = new Synth()
+	console.log(Synth.getSynths())
 }
 </script>
 
 <template>
-  <section id="synths-list" class="horizontal">
-    <el-button
-      class="synth-button"
-      v-for="(synth, name) in Synth.getSynths()"
-      v-bind:class="{ playing: synth.isPlaying(), suspended: Global.suspended.value }"
-      :key="name"
-      plain
-      round
-      size="default"
-      @click="openDialog(synth)"
-    >
-      {{ name }}
-    </el-button>
+	<section id="synths-list" class="horizontal">
+		<el-button
+			class="synth-button"
+			v-for="(synth, name) in Synth.getSynths()"
+			v-bind:class="{ playing: synth.isPlaying(), suspended: Global.suspended.value }"
+			:key="name"
+			plain
+			round
+			size="default"
+			@click="openDialog(synth)"
+		>
+			{{ name }}
+		</el-button>
 
-    <el-button round size="default" @click="addSynth"> + </el-button>
-  </section>
+		<el-button round size="default" @click="addSynth"> + </el-button>
+	</section>
 
-  <SynthDialog
-    v-if="currentSynth"
-    :key="currentSynth"
-    :synth="Synth.getSynth(currentSynth)"
-    @update:model-value="(val) => closeDialog()"
-  />
+	<SynthDialog
+		v-if="currentSynth"
+		:key="currentSynth"
+		:synth="Synth.getSynth(currentSynth)"
+		@update:model-value="(val) => closeDialog()"
+	/>
 </template>
 
 <style scoped>
 #synths-list {
-  justify-content: center;
-  flex-wrap: wrap;
-  gap: 8px;
+	justify-content: center;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 
 .synth-button {
-  outline: 2px solid transparent;
-  transition: outline-color 0.2s;
+	outline: 2px solid transparent;
+	transition: outline-color 0.2s;
 }
 
 .synth-button.playing {
-  outline-color: var(--playing-color);
-  box-shadow: 0 0 20px var(--playing-color);
-  transition: outline-color 0s;
+	outline-color: var(--playing-color);
+	box-shadow: 0 0 20px var(--playing-color);
+	transition: outline-color 0s;
 }
 
 .synth-button.playing.suspended {
-  outline-color: var(--suspended-color);
-  box-shadow: 0 0 20px var(--suspended-color);
-  transition: outline-color 0s;
+	outline-color: var(--suspended-color);
+	box-shadow: 0 0 20px var(--suspended-color);
+	transition: outline-color 0s;
 }
 
 /* .synth-button {
@@ -94,28 +93,28 @@ function addSynth(): void {
 
 <script lang="ts">
 export default {
-  components: { SynthDialog },
-  data() {
-    return {
-      currentSynth: undefined,
-      settingsDialogs: new Set<string>(), // Dynamically managed dialogs
-    }
-  },
-  methods: {
-    openDialog(synth: Synth) {
-      console.log(this.settingsDialogs)
-      this.settingsDialogs.add(synth.name)
-    },
-    closeDialog(id: string, isVisible: boolean) {
-      if (!isVisible) {
-        this.settingsDialogs.delete(id)
-      }
-      // this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
-    },
-    addSynth(): void {
-      const synth = new Synth()
-      console.log(Synth.getSynths())
-    },
-  },
+	components: { SynthDialog },
+	data() {
+		return {
+			currentSynth: undefined,
+			settingsDialogs: new Set<string>(), // Dynamically managed dialogs
+		}
+	},
+	methods: {
+		openDialog(synth: Synth) {
+			console.log(this.settingsDialogs)
+			this.settingsDialogs.add(synth.name)
+		},
+		closeDialog(id: string, isVisible: boolean) {
+			if (!isVisible) {
+				this.settingsDialogs.delete(id)
+			}
+			// this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
+		},
+		addSynth(): void {
+			const synth = new Synth()
+			console.log(Synth.getSynths())
+		},
+	},
 }
 </script>

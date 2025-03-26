@@ -13,27 +13,29 @@ import { useDark, useToggle } from '@vueuse/core'
 
 import { OhVueIcon, addIcons } from 'oh-vue-icons'
 import {
-  FaRegularCopy,
-  MdContentpasteRound,
-  BiSliders,
-  HiBackspace,
-  MdSettingsRound,
-  HiDatabase,
-  FaEllipsisH,
-  FaUpload,
-  FaDownload,
+	FaRegularCopy,
+	MdContentpasteRound,
+	BiSliders,
+	HiBackspace,
+	MdSettingsRound,
+	HiDatabase,
+	FaEllipsisH,
+	FaUpload,
+	FaDownload,
 } from 'oh-vue-icons/icons'
+import Keyboard from './classes/Keyboard'
+import MidiDevice from './classes/MidiDevice'
 
 addIcons(
-  FaRegularCopy,
-  MdContentpasteRound,
-  BiSliders,
-  HiBackspace,
-  MdSettingsRound,
-  HiDatabase,
-  FaEllipsisH,
-  FaUpload,
-  FaDownload,
+	FaRegularCopy,
+	MdContentpasteRound,
+	BiSliders,
+	HiBackspace,
+	MdSettingsRound,
+	HiDatabase,
+	FaEllipsisH,
+	FaUpload,
+	FaDownload,
 )
 
 const isDark = useDark()
@@ -48,5 +50,7 @@ app.use(ElementPlus, { size: 'small', zIndex: 3000 })
 app.component('v-icon', OhVueIcon)
 
 Global.initialize(new AudioContext())
+Keyboard.initialize()
+MidiDevice.initialize()
 
 app.mount('#app')
