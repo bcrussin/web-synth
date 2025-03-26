@@ -72,6 +72,8 @@ export default class Keyboard {
 	}
 
 	static keyDown(e: KeyboardEvent) {
+		if (document.activeElement instanceof HTMLInputElement) return
+
 		if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
 
 		const key = Keyboard.keyToNote(e.key.toUpperCase())

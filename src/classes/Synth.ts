@@ -7,301 +7,318 @@ import Tuna from 'tunajs'
 import MidiDevice from './MidiDevice'
 
 export interface SynthOptions {
-  name?: string
-  type?: string
-  volume?: number
-  attack?: number
-  decay?: number
-  sustain?: number
-  release?: number
-  midiDevice?: any
+	name?: string
+	type?: string
+	volume?: number
+	attack?: number
+	decay?: number
+	sustain?: number
+	release?: number
+	midiDevice?: any
 }
 
 // TODO: change `mono` to an integer polyphony value, add dynamic/static property for # of oscillators
 export default class Synth {
-  static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
+	static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
 
-  midiDevice: any // Ref<MidiDevice | null>
-  name: string
-  type: string
-  preset: string | undefined
-  attack: number
-  decay: number
-  sustain: number
-  release: number
+	midiDevice: any // Ref<MidiDevice | null>
+	name: string
+	type: string
+	preset: string | undefined
+	attack: number
+	decay: number
+	sustain: number
+	release: number
 
-  public get volume(): number {
-    return this.inputNode.gain.value
-  }
-  public set volume(value: number) {
-    this.inputNode.gain.value = value
-  }
+	public get volume(): number {
+		return this.inputNode.gain.value
+	}
+	public set volume(value: number) {
+		this.inputNode.gain.value = value
+	}
 
-  mono: boolean = false
-  oscillators: { [key: number]: Oscillator } = reactive({})
-  notes: Set<string> = reactive(new Set<string>())
-  wavetable: Array<number> | null = null
-  periodicWave: PeriodicWave | null = null
+	mono: boolean = false
+	oscillators: { [key: number]: Oscillator } = reactive({})
+	notes: Set<string> = reactive(new Set<string>())
+	wavetable: Array<number> | null = null
+	periodicWave: PeriodicWave | null = null
+	transpose: number = 0
 
-  _bypass: boolean = false
-  public get bypass() {
-    return this._bypass
-  }
-  public set bypass(enabled: boolean) {
-    this._bypass = enabled
+	_bypass: boolean = false
+	public get bypass() {
+		return this._bypass
+	}
+	public set bypass(enabled: boolean) {
+		this._bypass = enabled
 
-    if (!!enabled) {
-      this.outputNode.disconnect()
-    } else {
-      this.outputNode.connect(Global.MASTER)
-    }
-  }
+		if (!!enabled) {
+			this.outputNode.disconnect()
+		} else {
+			this.outputNode.connect(Global.MASTER)
+		}
+	}
 
-  inputNode: GainNode
-  outputNode: DynamicsCompressorNode
-  tuna: Tuna
-  effects: Tuna.TunaAudioNode[] = reactive([])
+	inputNode: GainNode
+	outputNode: DynamicsCompressorNode
+	tuna: Tuna
+	effects: Tuna.TunaAudioNode[] = reactive([])
 
-  constructor(options: SynthOptions = {}) {
-    options = options ?? {}
+	constructor(options: SynthOptions = {}) {
+		options = options ?? {}
 
-    this.midiDevice = options?.midiDevice
+		this.midiDevice = options?.midiDevice
 
-    this.tuna = new Tuna(Global.CONTEXT)
+		this.tuna = new Tuna(Global.CONTEXT)
 
-    this.inputNode = Global.CONTEXT.createGain()
+		this.inputNode = Global.CONTEXT.createGain()
 
-    this.outputNode = Global.CONTEXT.createDynamicsCompressor()
-    this.outputNode.threshold.setValueAtTime(-10, Global.CONTEXT.currentTime)
-    this.outputNode.ratio.setValueAtTime(10, Global.CONTEXT.currentTime)
-    this.outputNode.connect(Global.MASTER)
+		this.outputNode = Global.CONTEXT.createDynamicsCompressor()
+		this.outputNode.threshold.setValueAtTime(-10, Global.CONTEXT.currentTime)
+		this.outputNode.ratio.setValueAtTime(10, Global.CONTEXT.currentTime)
+		this.outputNode.connect(Global.MASTER)
 
-    this.updateEffectNodes()
+		this.updateEffectNodes()
 
-    this.type = options.type ?? 'sine'
-    this.volume = options.volume ?? 1
+		this.type = options.type ?? 'sine'
+		this.volume = options.volume ?? 1
 
-    this.attack = 0.001
-    this.release = 0.05
-    this.sustain = 1
-    this.decay = 0.5
+		this.attack = 0.001
+		this.release = 0.05
+		this.sustain = 1
+		this.decay = 0.5
 
-    this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`
-    Synth.SYNTHS.value[this.name] = this
-  }
+		this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`
+		Synth.SYNTHS.value[this.name] = this
+	}
 
-  static getSynths(): { [key: string]: Synth } {
-    return Synth.SYNTHS.value
-  }
+	static getSynths(): { [key: string]: Synth } {
+		return Synth.SYNTHS.value
+	}
 
-  static getSynth(name: string): Synth {
-    return Synth.SYNTHS.value[name]
-  }
+	static getSynth(name: string): Synth {
+		return Synth.SYNTHS.value[name]
+	}
 
-  delete(): void {
-    this.setMidiDevice()
-    delete Synth.SYNTHS.value[this.name]
-  }
+	delete(): void {
+		this.setMidiDevice()
+		delete Synth.SYNTHS.value[this.name]
+	}
 
-  updateEffectNodes() {
-    this.inputNode.disconnect()
+	updateEffectNodes() {
+		this.inputNode.disconnect()
 
-    if (this.effects.length <= 0) {
-      this.inputNode.connect(this.outputNode)
-      return
-    }
+		if (this.effects.length <= 0) {
+			this.inputNode.connect(this.outputNode)
+			return
+		}
 
-    this.effects.forEach((effect, index) => {
-      effect.disconnect(null as unknown as AudioNode)
+		this.effects.forEach((effect, index) => {
+			effect.disconnect(null as unknown as AudioNode)
 
-      if (index <= 0) this.inputNode.connect(effect)
+			if (index <= 0) this.inputNode.connect(effect)
 
-      if (index >= this.effects.length - 1) effect.connect(this.outputNode)
-      else effect.connect(this.effects[index + 1])
-    })
-  }
+			if (index >= this.effects.length - 1) effect.connect(this.outputNode)
+			else effect.connect(this.effects[index + 1])
+		})
+	}
 
-  getEffect(index: number): Tuna.TunaAudioNode {
-    return this.effects?.[index]
-  }
+	getEffect(index: number): Tuna.TunaAudioNode {
+		return this.effects?.[index]
+	}
 
-  addEffect(effect: string, options: any = {}) {
-    options.bypass = false
-    let effectNode
+	addEffect(effect: string, options: any = {}) {
+		options.bypass = false
+		let effectNode
 
-    switch (effect.toLowerCase()) {
-      case 'reverb':
-        options.wetLevel = options.wetLevel ?? 0.5
-        effectNode = new this.tuna.Convolver(options)
-        effectNode.convolver.buffer = Global.generateImpulseReponse(1, 1, false)
-        break
-      case 'chorus':
-        effectNode = new this.tuna.Chorus(options)
-        break
-      case 'delay':
-        options.wetLevel = options.wetLevel ?? 1
-        options.delayTime = options.delayTime ?? 300
-        effectNode = new this.tuna.Delay(options)
-        break
-      case 'overdrive':
-        effectNode = new this.tuna.Overdrive(options)
-        effectNode.outputGain = 5
-        effectNode.curveAmount = 0.7
-        break
-      case 'phaser':
-        effectNode = new this.tuna.Phaser(options)
-        break
-      default:
-        return
-    }
+		switch (effect.toLowerCase()) {
+			case 'reverb':
+				options.wetLevel = options.wetLevel ?? 0.5
+				effectNode = new this.tuna.Convolver(options)
+				effectNode.convolver.buffer = Global.generateImpulseReponse(1, 1, false)
+				break
+			case 'chorus':
+				effectNode = new this.tuna.Chorus(options)
+				break
+			case 'delay':
+				options.wetLevel = options.wetLevel ?? 1
+				options.delayTime = options.delayTime ?? 300
+				effectNode = new this.tuna.Delay(options)
+				break
+			case 'overdrive':
+				effectNode = new this.tuna.Overdrive(options)
+				effectNode.outputGain = 5
+				effectNode.curveAmount = 0.7
+				break
+			case 'phaser':
+				effectNode = new this.tuna.Phaser(options)
+				break
+			default:
+				return
+		}
 
-    this.effects.push(effectNode)
+		this.effects.push(effectNode)
 
-    this.updateEffectNodes()
-  }
+		this.updateEffectNodes()
+	}
 
-  deleteEffect(index: number) {
-    if (index < 0 || index >= this.effects.length) return
+	deleteEffect(index: number) {
+		if (index < 0 || index >= this.effects.length) return
 
-    // TODO: Properly disconnect/dispose effect
-    // this.effects[index].bypass = true
-    this.effects[index].disconnect(null as unknown as AudioNode)
-    this.effects.splice(index, 1)
-    this.updateEffectNodes()
-  }
+		// TODO: Properly disconnect/dispose effect
+		// this.effects[index].bypass = true
+		this.effects[index].disconnect(null as unknown as AudioNode)
+		this.effects.splice(index, 1)
+		this.updateEffectNodes()
+	}
 
-  setEffectProperty(
-    id: number,
-    property: string,
-    value: number,
-    treatAsAudioParam: boolean = false,
-  ) {
-    const effect = this.effects[id] as Record<string, any>
+	setEffectProperty(
+		id: number,
+		property: string,
+		value: number,
+		treatAsAudioParam: boolean = false,
+	) {
+		const effect = this.effects[id] as Record<string, any>
 
-    if (treatAsAudioParam) effect[property].value = value
-    else effect[property] = value
-  }
+		if (treatAsAudioParam) effect[property].value = value
+		else effect[property] = value
+	}
 
-  setProperty(property: string, value: string | number): void {
-    if (typeof value != 'number') value = parseFloat(value)
-    if (isNaN(value)) return
-    ;(this as any)[property] = value
-  }
+	setProperty(property: string, value: string | number): void {
+		if (typeof value != 'number') value = parseFloat(value)
+		if (isNaN(value)) return
+		;(this as any)[property] = value
+	}
 
-  setBypass(enabled: boolean) {
-    this.bypass = enabled
-  }
+	setBypass(enabled: boolean) {
+		this.bypass = enabled
+	}
 
-  setMidiDevice(device?: MidiDevice | string): void {
-    if (typeof device === 'string') device = MidiDevice.DEVICES[device]
+	setTranspose(value: number): void {
+		if (typeof value !== 'number') return
 
-    this.midiDevice?.removeSynth(this.name)
+		this.transpose = value
+	}
 
-    if (device == undefined) {
-      this.midiDevice = null
-      return
-    }
+	changeTranspose(value: number): void {
+		if (typeof value !== 'number') return
 
-    this.midiDevice?.removeSynth(this.name)
-    device.addSynth(this)
-    this.midiDevice = device
-  }
+		this.transpose += value
+	}
 
-  getPresetOrType(): string {
-    return this.preset ?? this.type
-  }
+	setMidiDevice(device?: MidiDevice | string): void {
+		if (typeof device === 'string') device = MidiDevice.DEVICES[device]
 
-  isPlaying(): boolean {
-    return Object.keys(this.oscillators).length > 0
-  }
+		this.midiDevice?.removeSynth(this.name)
 
-  isNotePlaying(frequency: number): boolean {
-    if (this.oscillators == undefined) return false
-    return !!this.oscillators[frequency]
-  }
+		if (device == undefined) {
+			this.midiDevice = null
+			return
+		}
 
-  getOscillator(frequency: number) {
-    return this.oscillators?.[frequency]
-  }
+		this.midiDevice?.removeSynth(this.name)
+		device.addSynth(this)
+		this.midiDevice = device
+	}
 
-  playNote(note?: string, octave?: number | string, volume?: number) {
-    if (note == undefined || octave == undefined) return
+	getPresetOrType(): string {
+		return this.preset ?? this.type
+	}
 
-    if (typeof octave != 'number') octave = parseInt(octave)
-    const frequency = Global.getFrequency(note, octave)
+	isPlaying(): boolean {
+		return Object.keys(this.oscillators).length > 0
+	}
 
-    if (frequency == undefined || this.isNotePlaying(frequency)) return
+	isNotePlaying(frequency: number): boolean {
+		if (this.oscillators == undefined) return false
+		return !!this.oscillators[frequency]
+	}
 
-    const oscillator = new Oscillator(this)
-    oscillator.attack(frequency, volume)
-    this.oscillators[frequency] = oscillator
-    this.notes.add(note + octave)
-  }
+	getOscillator(frequency: number) {
+		return this.oscillators?.[frequency]
+	}
 
-  stopNote(note?: string, octave?: number | string) {
-    if (note == undefined || octave == undefined) return
+	playNote(note?: string, octave?: number | string, volume?: number) {
+		if (note == undefined || octave == undefined) return
 
-    const frequency = Global.getFrequency(note, octave)
-    const oscillator = this.getOscillator(frequency)
+		if (typeof octave != 'number') octave = parseInt(octave)
 
-    if (frequency == undefined || oscillator == undefined) return
+		octave += this.transpose
+		const frequency = Global.getFrequency(note, octave)
 
-    // oscillator.stop();
-    oscillator.release()
-    delete this.oscillators[frequency]
-    this.notes.delete(note + octave)
+		if (frequency == undefined || this.isNotePlaying(frequency)) return
 
-    // if (this.mono || Object.keys(this.oscillators).length <= 0)
-    //   this.indicatorElement.classList.remove('playing')
-  }
+		const oscillator = new Oscillator(this)
+		oscillator.attack(frequency, volume)
+		this.oscillators[frequency] = oscillator
+		this.notes.add(note + octave)
+	}
 
-  stopAll() {
-    if (this.oscillators != undefined)
-      Object.entries(this.oscillators).forEach(([name, note]) => {
-        note.release()
-        delete this.oscillators[parseFloat(name)]
-        // this.oscillators = {}
-      })
-    this.notes.clear()
-  }
+	stopNote(note?: string, octave?: number | string) {
+		if (note == undefined || octave == undefined) return
 
-  updateFrequencies() {
-    const oscillators = Object.values(this.oscillators)
+		octave = parseInt(octave.toString())
+		octave += this.transpose
+		const frequency = Global.getFrequency(note, octave)
+		const oscillator = this.getOscillator(frequency)
 
-    oscillators.forEach((oscillator) => oscillator.setFrequency())
-  }
+		if (frequency == undefined || oscillator == undefined) return
 
-  setWaveType(type: string): void {
-    this.preset = undefined
+		// oscillator.stop();
+		oscillator.release()
+		delete this.oscillators[frequency]
+		this.notes.delete(note + octave)
 
-    if (this.type == type) return
-    this.type = type
-  }
+		// if (this.mono || Object.keys(this.oscillators).length <= 0)
+		//   this.indicatorElement.classList.remove('playing')
+	}
 
-  setPreset(preset?: string) {
-    if (this.preset == preset) return
+	stopAll() {
+		if (this.oscillators != undefined)
+			Object.entries(this.oscillators).forEach(([name, note]) => {
+				note.release()
+				delete this.oscillators[parseFloat(name)]
+				// this.oscillators = {}
+			})
+		this.notes.clear()
+	}
 
-    this.type = 'custom'
-    this.preset = preset ?? undefined
-  }
+	updateFrequencies() {
+		const oscillators = Object.values(this.oscillators)
 
-  setWavetable(wavetable: Array<number>) {
-    if (wavetable == undefined || wavetable.length <= 0) {
-      wavetable = [0, 1]
-      this.wavetable = new Array(16).fill(0)
-    } else {
-      this.wavetable = [...wavetable]
-    }
+		oscillators.forEach((oscillator) => oscillator.setFrequency())
+	}
 
-    // Presets assume stretch value of 4
-    const transformed = FFT(wavetable, 4)
+	setWaveType(type: string): void {
+		this.preset = undefined
 
-    // Create a PeriodicWave
-    this.periodicWave = Global.CONTEXT.createPeriodicWave(transformed.real, transformed.imag)
-  }
+		if (this.type == type) return
+		this.type = type
+	}
 
-  clearWavetable() {
-    this.wavetable = null
-    this.periodicWave = null
-  }
+	setPreset(preset?: string) {
+		if (this.preset == preset) return
+
+		this.type = 'custom'
+		this.preset = preset ?? undefined
+	}
+
+	setWavetable(wavetable: Array<number>) {
+		if (wavetable == undefined || wavetable.length <= 0) {
+			wavetable = [0, 1]
+			this.wavetable = new Array(16).fill(0)
+		} else {
+			this.wavetable = [...wavetable]
+		}
+
+		// Presets assume stretch value of 4
+		const transformed = FFT(wavetable, 4)
+
+		// Create a PeriodicWave
+		this.periodicWave = Global.CONTEXT.createPeriodicWave(transformed.real, transformed.imag)
+	}
+
+	clearWavetable() {
+		this.wavetable = null
+		this.periodicWave = null
+	}
 }
