@@ -20,7 +20,7 @@ const handleOpen = (key: string, keyPath: string[]) => {
 		}"
 	>
 		<div class="settings-container">
-			<el-menu @select="handleOpen">
+			<el-menu @select="handleOpen" :default-active="currentTab">
 				<el-menu-item index="general">
 					<v-icon name="md-settings-round"></v-icon> General
 				</el-menu-item>
