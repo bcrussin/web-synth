@@ -189,8 +189,8 @@ export default class MidiDevice {
 		const param = MidiDevice.STORE.getParam(channelProps.param)
 		if (param == undefined) return
 
-		percent = Global.mapToRange(percent, 0, 1, channelProps.min, channelProps.max)
 		if (channelProps.inverted) percent = 1 - percent
+		percent = Global.mapToRange(percent, 0, 1, channelProps.min, channelProps.max)
 
 		const value = percent * param.max + param.min
 
