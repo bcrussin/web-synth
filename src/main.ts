@@ -22,6 +22,8 @@ import {
 	FaEllipsisH,
 	FaUpload,
 	FaDownload,
+	MdKeyboardOutlined,
+	MdPiano,
 } from 'oh-vue-icons/icons'
 import Keyboard from './classes/Keyboard'
 import MidiDevice from './classes/MidiDevice'
@@ -36,6 +38,8 @@ addIcons(
 	FaEllipsisH,
 	FaUpload,
 	FaDownload,
+	MdKeyboardOutlined,
+	MdPiano,
 )
 
 const isDark = useDark()
