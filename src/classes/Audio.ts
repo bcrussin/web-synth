@@ -1,4 +1,4 @@
-import { usePresetsStore } from '@/stores/presets'
+import { useInstrumentsStore } from '@/stores/instruments'
 import Synth from './Synth'
 import { ref, type Ref } from 'vue'
 
@@ -46,7 +46,7 @@ export default class Global {
     Global.MASTER = Global.CONTEXT.createChannelMerger(1)
     Global.MASTER.connect(Global.volumeNode)
 
-    const presets = usePresetsStore()
+    const presets = useInstrumentsStore()
     presets.fetchPresets()
   }
 

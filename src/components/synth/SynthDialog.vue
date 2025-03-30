@@ -230,32 +230,35 @@ function toggleElementSelection() {
   z-index: 1001;
 }
 
-.selecting .selectable:after {
-  --padding: -4px;
+.selecting .selectable:after,
+.selecting .selectable:before {
+  --x-padding: -4px;
+  --y-padding: -6px;
 
   content: '';
   position: absolute;
-  top: var(--padding);
-  left: var(--padding);
-  right: var(--padding);
-  bottom: var(--padding);
-  background-color: transparent;
+  top: var(--y-padding);
+  left: var(--x-padding);
+  right: var(--x-padding);
+  bottom: var(--y-padding);
 
   z-index: 1000;
 
   border-radius: 12px;
-  border: 1px dashed #88888880;
+  border: 2px dashed #33333380;
   background-color: white;
-  /* background-color: #88888880; */
 }
 
+.dark .selecting .selectable:before,
 .dark .selecting .selectable:after {
-  background-color: #44444480;
+  border: 2px dashed #cccccc80;
+  background-color: #222222;
 }
 
-.selecting #select-element:after,
 .selecting .selectable:hover:after {
-  border: 1px solid var(--primary-color);
+  border: 2px solid var(--primary-color);
+  background-color: var(--primary-color-fade);
+  box-shadow: 0 0 8px var(--primary-color);
 }
 
 .selecting .selectable .control {

@@ -1,4 +1,5 @@
 import './assets/main.css'
+import 'element-plus/dist/index.css'
 
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
@@ -12,9 +13,35 @@ import Global from './classes/Audio'
 import { useDark, useToggle } from '@vueuse/core'
 
 import { OhVueIcon, addIcons } from 'oh-vue-icons'
-import { FaRegularCopy, MdContentpasteRound, BiSliders, HiBackspace } from 'oh-vue-icons/icons'
+import {
+	FaRegularCopy,
+	MdContentpasteRound,
+	BiSliders,
+	HiBackspace,
+	MdSettingsRound,
+	HiDatabase,
+	FaEllipsisH,
+	FaUpload,
+	FaDownload,
+	MdKeyboardOutlined,
+	MdPiano,
+} from 'oh-vue-icons/icons'
+import Keyboard from './classes/Keyboard'
+import MidiDevice from './classes/MidiDevice'
 
-addIcons(FaRegularCopy, MdContentpasteRound, BiSliders, HiBackspace)
+addIcons(
+	FaRegularCopy,
+	MdContentpasteRound,
+	BiSliders,
+	HiBackspace,
+	MdSettingsRound,
+	HiDatabase,
+	FaEllipsisH,
+	FaUpload,
+	FaDownload,
+	MdKeyboardOutlined,
+	MdPiano,
+)
 
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
@@ -28,5 +55,7 @@ app.use(ElementPlus, { size: 'small', zIndex: 3000 })
 app.component('v-icon', OhVueIcon)
 
 Global.initialize(new AudioContext())
+Keyboard.initialize()
+MidiDevice.initialize()
 
 app.mount('#app')

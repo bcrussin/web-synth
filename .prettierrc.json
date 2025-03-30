@@ -1,7 +1,16 @@
-
 {
   "$schema": "https://json.schemastore.org/prettierrc",
   "semi": false,
   "singleQuote": true,
-  "printWidth": 100
+  "useTabs": true,
+  "printWidth": 100,
+  "overrides": [
+    {
+      "files": "*.json",
+      "options": {
+        "arrayBracketNewline": true,
+        "trailingComma": "es5"
+      }
+    }
+  ]
 }

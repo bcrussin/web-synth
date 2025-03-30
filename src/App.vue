@@ -7,101 +7,98 @@ import SynthList from './components/synth/SynthList.vue'
 import MidiDevice from './classes/MidiDevice'
 import Global from './classes/Audio'
 import { ref, watchEffect } from 'vue'
+import SettingsDialog from './components/settings/SettingsDialog.vue'
+
+const settingsDialogVisible = ref(false)
 
 const volume = ref(Global.volumeNode.gain.value)
 const contextSuspended = Global.suspended
 
 watchEffect(() => {
-  volume.value = Global.volumeNode.gain.value
-  contextSuspended.value = Global.suspended.value
+	volume.value = Global.volumeNode.gain.value
+	contextSuspended.value = Global.suspended.value
 })
 
 function setGlobalVolume(value: number) {
-  volume.value = value
-  Global.volumeNode.gain.value = value
+	volume.value = value
+	Global.volumeNode.gain.value = value
 }
-
-Keyboard.initialize()
-MidiDevice.initialize()
 </script>
 
 <template>
-  <div class="wrapper">
-    <div class="synth-controls">
-      <div>
-        <span>Volume:</span>
-        <el-slider
-          :min="0"
-          :max="0.5"
-          :step="0.05"
-          class="envelope-slider"
-          style="width: 240px"
-          :model-value="volume"
-          @input="setGlobalVolume($event)"
-        >
-        </el-slider>
-      </div>
-    </div>
-    <SynthList />
+	<div class="wrapper">
+		<div class="header">
+			<div class="synth-controls">
+				<div>
+					<span>Volume:</span>
+					<el-slider
+						:min="0"
+						:max="0.5"
+						:step="0.05"
+						class="envelope-slider"
+						style="width: 240px"
+						:model-value="volume"
+						@input="setGlobalVolume($event)"
+					>
+					</el-slider>
+				</div>
+			</div>
+		</div>
 
-    <el-alert
-      v-if="contextSuspended"
-      class="context-suspended-alert"
-      type="error"
-      title="Audio Output Suspended"
-      description="Please click or press any key and then play a note in order to enable audio output."
-      :closable="false"
-    ></el-alert>
-  </div>
+		<div class="content">
+			<el-alert
+				v-if="contextSuspended"
+				class="context-suspended-alert"
+				type="error"
+				title="Audio Output Suspended"
+				description="Please click or press any key and then play a note in order to enable audio output."
+				:closable="false"
+			></el-alert>
+		</div>
 
-  <RouterView />
+		<div class="footer">
+			<div id="synths-list-container">
+				<SynthList />
+			</div>
+			<!-- <section class="horizontal">
+				<el-button link>
+					<v-icon name="md-settings-round" @click="() => (settingsDialogVisible = true)"></v-icon>
+				</el-button>
+				<SettingsDialog
+					v-if="settingsDialogVisible"
+					@update:model-value="() => (settingsDialogVisible = false)"
+				></SettingsDialog>
+			</section> -->
+		</div>
+	</div>
+
+	<RouterView />
 </template>
 
 <style scoped>
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+.wrapper {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: stretch;
+	align-items: center;
 }
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
+.wrapper .content {
+	flex: 1;
 }
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
+.footer {
+	display: flex;
+	width: 100%;
 }
 
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
+.footer #synths-list-container {
+	flex: 1;
 }
 
 .context-suspended-alert {
-  margin: 16px 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: center;
-    flex-wrap: wrap;
-  }
+	margin: 16px 0;
 }
 </style>
