@@ -192,7 +192,8 @@ export default class MidiDevice {
 		if (channelProps.inverted) percent = 1 - percent
 		percent = Global.mapToRange(percent, 0, 1, channelProps.min, channelProps.max)
 
-		const value = percent * param.max + param.min
+		let value = percent * param.max + param.min
+		if (!!param.step) value = Math.round(value / param.step) * param.step
 
 		switch (param.type) {
 			case 'synth':

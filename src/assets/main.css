@@ -83,3 +83,7 @@ section.horizontal,
 .flex-stretch>* {
   flex: 1;
 }
+
+.el-divider__text {
+  transform: translateY(-12%) !important;
+}

@@ -141,7 +141,10 @@ function stopNote(note: string, octave: number) {
       :key="key.note"
       :data-note="key.note"
       :data-octave="key.octave"
-      v-bind:class="{ black: key.isBlack, playing: props.synth.notes.has(key.note + key.octave) }"
+      v-bind:class="{
+        black: key.isBlack,
+        playing: props.synth.notes.has(Global.getFrequency(key.note, key.octave)),
+      }"
       @mousedown="playNote(key.note, key.octave)"
       @mouseover="ifMouseClicked($event, () => playNote(key.note, key.octave))"
       @mouseout="ifMouseClicked($event, () => stopNote(key.note, key.octave))"

@@ -17,7 +17,7 @@ function setMidiDevice(id: string) {
 	props.synth.setMidiDevice(id)
 }
 
-function setSynthValue(property: string, value: number | string) {
+function setSynthValue(property: string, value: number | string | boolean) {
 	props.synth.setProperty(property, value)
 }
 
@@ -27,6 +27,16 @@ function changeTranspose(value: number) {
 
 function setTranspose(value: number) {
 	props.synth.setTranspose(value)
+}
+
+function setMaxPolyphony(value: number) {
+	props.synth.setMaxPolyphony(value)
+}
+
+function getMaxPolyphony(): number {
+	if (props.synth.maxPolyphony == Infinity) return 0
+
+	return props.synth.maxPolyphony
 }
 </script>
 
@@ -64,6 +74,38 @@ function setTranspose(value: number) {
 				:min="-4"
 				:max="4"
 				@change="setTranspose"
+			/>
+		</div>
+		<el-divider content-position="left">Polyphony</el-divider>
+		<div>
+			<span>Max Voices:</span>
+			<el-input-number
+				:model-value="getMaxPolyphony()"
+				:min="0"
+				:max="32"
+				@change="setMaxPolyphony($event)"
+			/>
+		</div>
+		<el-checkbox
+			label="Legato"
+			:model-value="props.synth.legato"
+			@change="setSynthValue('legato', $event)"
+		/>
+		<el-checkbox
+			label="Glide"
+			:model-value="props.synth.glide"
+			@change="setSynthValue('glide', $event)"
+		/>
+		<div class="selectable">
+			<span>Glide Duration (ms):</span>
+			<el-input-number
+				data-param="Synth Glide Amount"
+				class="control"
+				:model-value="props.synth.glideAmountMs"
+				:min="0"
+				:max="1000"
+				:step="50"
+				@change="setSynthValue('glideAmount', $event / 1000)"
 			/>
 		</div>
 		<!-- <div>
