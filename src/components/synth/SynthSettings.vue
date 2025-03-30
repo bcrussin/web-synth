@@ -91,6 +91,21 @@ function getMaxPolyphony(): number {
 			:model-value="props.synth.legato"
 			@change="setSynthValue('legato', $event)"
 		/>
+		<el-checkbox
+			label="Glide"
+			:model-value="props.synth.glide"
+			@change="setSynthValue('glide', $event)"
+		/>
+		<div>
+			<span>Glide Duration (ms):</span>
+			<el-input-number
+				:model-value="props.synth.glideAmountMs"
+				:min="0"
+				:max="1000"
+				:step="50"
+				@change="setSynthValue('glideAmount', $event / 1000)"
+			/>
+		</div>
 		<!-- <div>
 			<span>Transpose:</span>
 			<el-button @click="changeTranspose(-1)">-</el-button>

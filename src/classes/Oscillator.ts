@@ -88,18 +88,36 @@ export default class Oscillator extends OscillatorNode {
 		return this.frequencyValue * (Math.pow(2, semitones / 12) - 1)
 	}
 
-	setFrequency(frequency?: number) {
-		if (frequency == undefined) {
-			frequency = this.frequencyValue
-		} else {
+	setFrequencyValueAndOffset(frequency?: number) {
+		if (frequency != undefined) {
 			this.frequencyValue = frequency
 		}
 
 		if (!!this.synth.midiDevice) {
 			this.frequencyOffset = this.semitonesToFrequencyOffset(this.synth.midiDevice.pitchBend)
 		}
+	}
+
+	setFrequency(frequency?: number) {
+		this.setFrequencyValueAndOffset(frequency)
+
+		if (frequency == undefined) {
+			frequency = this.frequencyValue
+		}
 
 		this.frequency.value = frequency + this.frequencyOffset
+	}
+
+	glideToFrequency(frequency: number, duration: number) {
+		this.setFrequencyValueAndOffset()
+
+		this.frequency.setValueAtTime(this.frequency.value, Global.CONTEXT.currentTime)
+		this.frequency.cancelScheduledValues(Global.CONTEXT.currentTime + 0.001)
+		this.frequency.linearRampToValueAtTime(
+			frequency + this.frequencyOffset,
+			Global.CONTEXT.currentTime + duration,
+		)
+		this.frequencyValue = frequency
 	}
 
 	startNote(frequency?: number, volume?: number) {

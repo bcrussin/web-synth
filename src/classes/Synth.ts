@@ -47,6 +47,10 @@ export default class Synth {
 	glideMode: 'speed' | 'duration'
 	glideAmount: number
 
+	get glideAmountMs() {
+		return this.glideAmount * 1000
+	}
+
 	oscillators: { [key: number]: Oscillator } = reactive({})
 	frequencyQueue: Array<number> = reactive([])
 	notes: Set<number> = reactive(new Set<number>())
@@ -96,7 +100,7 @@ export default class Synth {
 		this.legato = options.legato ?? true
 		this.glide = options.glide ?? false
 		this.glideMode = options.glideMode ?? 'speed'
-		this.glideAmount = options.glideAmount ?? 20
+		this.glideAmount = options.glideAmount ?? 0.1
 
 		this.attack = 0.001
 		this.release = 0.05
@@ -363,7 +367,9 @@ export default class Synth {
 		// Makes the oscillator act like it was newly created, test for desired functionality
 		oscillator.created = new Date()
 
-		oscillator.setFrequency(frequency)
+		if (this.glide) oscillator.glideToFrequency(frequency, this.glideAmount)
+		else oscillator.setFrequency(frequency)
+
 		this.addOscillator(oscillator, frequency)
 	}
 
