@@ -43,12 +43,22 @@ export default class Synth {
 
 	maxPolyphony: number
 	legato: boolean
-	glide: boolean
+	_glide!: boolean
 	glideMode: 'speed' | 'duration'
 	glideAmount: number
 
 	get glideAmountMs() {
 		return Math.round(this.glideAmount * 1000)
+	}
+
+	get glide() {
+		return this._glide
+	}
+
+	set glide(enabled: boolean) {
+		this._glide = enabled
+
+		if (enabled) this.legato = true
 	}
 
 	oscillators: { [key: number]: Oscillator } = reactive({})
