@@ -60,7 +60,7 @@ function setGlobalVolume(value: number) {
 			<div id="synths-list-container">
 				<SynthList />
 			</div>
-			<section class="horizontal">
+			<!-- <section class="horizontal">
 				<el-button link>
 					<v-icon name="md-settings-round" @click="() => (settingsDialogVisible = true)"></v-icon>
 				</el-button>
@@ -68,7 +68,7 @@ function setGlobalVolume(value: number) {
 					v-if="settingsDialogVisible"
 					@update:model-value="() => (settingsDialogVisible = false)"
 				></SettingsDialog>
-			</section>
+			</section> -->
 		</div>
 	</div>
 
