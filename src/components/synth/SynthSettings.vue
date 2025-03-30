@@ -101,7 +101,7 @@ function getMaxPolyphony(): number {
 			<el-input-number
 				data-param="Synth Glide Amount"
 				class="control"
-				:model-value="Math.round(props.synth.glideAmountMs)"
+				:model-value="props.synth.glideAmountMs"
 				:min="0"
 				:max="1000"
 				:step="50"
