@@ -48,7 +48,7 @@ export default class Synth {
 	glideAmount: number
 
 	get glideAmountMs() {
-		return this.glideAmount * 1000
+		return Math.round(this.glideAmount * 1000)
 	}
 
 	oscillators: { [key: number]: Oscillator } = reactive({})
