@@ -58,7 +58,7 @@ function setTranspose(value: number) {
 			></el-slider>
 		</div>
 		<div>
-			<span>Transpose:</span>
+			<span>Transpose Octaves:</span>
 			<el-input-number
 				:model-value="props.synth.transpose"
 				:min="-4"
