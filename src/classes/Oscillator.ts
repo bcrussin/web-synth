@@ -120,6 +120,16 @@ export default class Oscillator extends OscillatorNode {
 		this.frequencyValue = frequency
 	}
 
+	setVelocity(velocity: number) {
+		this.velocityNode.gain.value = velocity
+	}
+
+	glideToVelocity(velocity: number, duration: number) {
+		this.velocityNode.gain.setValueAtTime(this.velocityNode.gain.value, Global.CONTEXT.currentTime)
+		this.velocityNode.gain.cancelScheduledValues(Global.CONTEXT.currentTime + 0.001)
+		this.velocityNode.gain.linearRampToValueAtTime(velocity, Global.CONTEXT.currentTime + duration)
+	}
+
 	startNote(frequency?: number, volume?: number) {
 		this.velocityNode.gain.value = volume ?? 1
 		this.setFrequency(frequency)

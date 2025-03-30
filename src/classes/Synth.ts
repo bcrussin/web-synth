@@ -301,7 +301,7 @@ export default class Synth {
 			if (this.legato) {
 				// If legato, change oldest note frequency to new one
 				this.addNoteToQueue(oldestNote)
-				this.changeOscillatorFrequency(oldestNote, frequency)
+				this.changeOscillatorFrequency(oldestNote, frequency, volume)
 				return
 			} else {
 				// Else, release note and move it to queue
@@ -361,14 +361,21 @@ export default class Synth {
 	}
 
 	// TODO: Allow specifying a new volume as well, store volumes in frequencyQueue
-	changeOscillatorFrequency(oscillator: Oscillator, frequency: number) {
+	changeOscillatorFrequency(oscillator: Oscillator, frequency: number, volume?: number) {
 		this.removeOscillator(oscillator.frequencyValue)
 
 		// Makes the oscillator act like it was newly created, test for desired functionality
 		oscillator.created = new Date()
 
-		if (this.glide) oscillator.glideToFrequency(frequency, this.glideAmount)
-		else oscillator.setFrequency(frequency)
+		if (this.glide) {
+			oscillator.glideToFrequency(frequency, this.glideAmount)
+
+			if (!!volume) oscillator.glideToVelocity(volume, this.glideAmount)
+		} else {
+			oscillator.setFrequency(frequency)
+
+			if (!!volume) oscillator.setVelocity(volume)
+		}
 
 		this.addOscillator(oscillator, frequency)
 	}
