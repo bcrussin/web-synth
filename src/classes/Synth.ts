@@ -10,7 +10,7 @@ export interface SynthOptions {
 	name?: string
 	type?: string
 	volume?: number
-	maxPolyphony?: number
+	_maxPolyphony?: number
 	attack?: number
 	decay?: number
 	sustain?: number
@@ -41,7 +41,18 @@ export default class Synth {
 		this.inputNode.gain.value = value
 	}
 
-	maxPolyphony: number
+	_maxPolyphony: number
+
+	get maxPolyphony() {
+		return this._maxPolyphony
+	}
+
+	set maxPolyphony(value: number) {
+		if (value <= 0) value = Infinity
+
+		this._maxPolyphony = value
+	}
+
 	legato: boolean
 	_glide!: boolean
 	glideMode: 'speed' | 'duration'
@@ -106,7 +117,7 @@ export default class Synth {
 		this.type = options.type ?? 'sine'
 		this.volume = options.volume ?? 1
 
-		this.maxPolyphony = options.maxPolyphony ?? Infinity
+		this._maxPolyphony = options._maxPolyphony ?? Infinity
 		this.legato = options.legato ?? true
 		this.glide = options.glide ?? false
 		this.glideMode = options.glideMode ?? 'speed'
@@ -236,7 +247,7 @@ export default class Synth {
 	}
 
 	setMaxPolyphony(value: number) {
-		if (value <= 0) value = Infinity
+		if (typeof value !== 'number') return
 
 		this.maxPolyphony = value
 	}
@@ -271,7 +282,7 @@ export default class Synth {
 
 	hasFreeNotes(beforeRemoving?: boolean): boolean {
 		const offset = beforeRemoving ? 1 : 0
-		return Object.keys(this.oscillators).length < this.maxPolyphony + offset
+		return Object.keys(this.oscillators).length < this._maxPolyphony + offset
 	}
 
 	hasQueuedNotes(): boolean {
@@ -305,7 +316,6 @@ export default class Synth {
 
 		// Max polyphony reached
 		if (!this.hasFreeNotes()) {
-			console.log('UH')
 			const oldestNote = this.getOldestNote()!
 
 			if (this.legato) {

@@ -41,5 +41,13 @@
 		"min": 0,
 		"max": 1,
 		"step": 0.001
+	},
+	{
+		"displayName": "Synth Max Polyphony",
+		"type": "synth",
+		"property": "maxPolyphony",
+		"min": 0,
+		"max": 32,
+		"step": 1
 	}
 ]

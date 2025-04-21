@@ -255,6 +255,10 @@ function toggleElementSelection() {
   background-color: #222222;
 }
 
+.selecting .selectable:hover {
+  z-index: 1010;
+}
+
 .selecting .selectable:hover:after {
   border: 2px solid var(--primary-color);
   background-color: var(--primary-color-fade);

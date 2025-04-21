@@ -77,9 +77,11 @@ function getMaxPolyphony(): number {
 			/>
 		</div>
 		<el-divider content-position="left">Polyphony</el-divider>
-		<div>
+		<div class="selectable">
 			<span>Max Voices:</span>
 			<el-input-number
+				data-param="Synth Max Polyphony"
+				class="control"
 				:model-value="getMaxPolyphony()"
 				:min="0"
 				:max="32"
