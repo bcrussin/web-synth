@@ -77,7 +77,7 @@ export default class Synth {
 	notes: Set<number> = reactive(new Set<number>())
 	wavetable: Array<number> | null = null
 	periodicWave: PeriodicWave | null = null
-	transpose: number = 0
+	transpose: Ref<number> = ref(0)
 
 	_bypass: boolean = false
 	public get bypass() {
@@ -237,13 +237,13 @@ export default class Synth {
 	setTranspose(value: number): void {
 		if (typeof value !== 'number') return
 
-		this.transpose = value
+		this.transpose.value = value
 	}
 
 	changeTranspose(value: number): void {
 		if (typeof value !== 'number') return
 
-		this.transpose += value
+		this.transpose.value += value
 	}
 
 	setMaxPolyphony(value: number) {
@@ -293,14 +293,16 @@ export default class Synth {
 		return this.oscillators?.[frequency]
 	}
 
-	playNote(note?: string, octave?: number | string, volume?: number) {
+	playNote(note?: string, octave?: number | string, volume?: number): number | undefined {
 		if (note == undefined || octave == undefined) return
 
 		if (typeof octave != 'number') octave = parseInt(octave)
 
-		octave += this.transpose
+		octave += this.transpose.value
 		const frequency = Global.getFrequency(note, octave)
 		this.playFrequency(frequency, volume)
+
+		return frequency
 	}
 
 	playFrequency(frequency: number, volume?: number): void {
@@ -341,7 +343,7 @@ export default class Synth {
 		if (note == undefined || octave == undefined) return
 
 		octave = parseInt(octave.toString())
-		octave += this.transpose
+		octave += this.transpose.value
 		const frequency = Global.getFrequency(note, octave)
 
 		this.stopFrequency(frequency)

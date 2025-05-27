@@ -1,6 +1,7 @@
 import Synth from '@/classes/Synth.ts'
 import { useKeybindsStore, type KeybindNotes } from '@/stores/keybindsStore'
 import type { Store } from 'pinia'
+import Global from './Audio'
 
 export default class Keyboard {
 	static synth: Synth
@@ -50,6 +51,14 @@ export default class Keyboard {
 
 	static noteBindings: KeybindNotes = {}
 
+	static pressed: {
+		[key: string]: number
+	} = {}
+
+	static assignSynth(synth: Synth) {
+		Keyboard.synth = synth
+	}
+
 	static keyToNote(key: string) {
 		return Keyboard.noteBindings[key]
 	}
@@ -76,10 +85,23 @@ export default class Keyboard {
 
 		if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
 
+		switch (e.key) {
+			case '[':
+				Keyboard.synth.changeTranspose(-1)
+				// Keyboard.synth.stopAll()
+				return
+			case ']':
+				Keyboard.synth.changeTranspose(1)
+				// Keyboard.synth.stopAll()
+				return
+		}
+
 		const key = Keyboard.keyToNote(e.key.toUpperCase())
 		if (e.repeat || key == undefined) return
 
-		Keyboard.synth.playNote(key[0], key[1])
+		const freq = Keyboard.synth.playNote(key[0], key[1])
+		if (!!freq) this.pressed[e.key] = freq
+
 		e.preventDefault()
 	}
 
@@ -89,7 +111,12 @@ export default class Keyboard {
 		const key = Keyboard.keyToNote(e.key.toUpperCase())
 		if (e.repeat || key == undefined) return
 
-		Keyboard.synth.stopNote(key[0], key[1])
+		if (!!this.pressed[e.key] && !!Keyboard.synth.notes.has(this.pressed[e.key])) {
+			Keyboard.synth.stopFrequency(this.pressed[e.key])
+		} else {
+			Keyboard.synth.stopNote(key[0], key[1])
+		}
+
 		e.preventDefault()
 	}
 }
