@@ -332,7 +332,6 @@ export default class Synth {
 			}
 		}
 
-		console.log('creating new oscillator')
 		const oscillator = new Oscillator(this)
 		oscillator.attack(frequency, volume)
 
@@ -350,6 +349,7 @@ export default class Synth {
 	}
 
 	stopFrequency(frequency: number) {
+		// console.log(this.frequencyQueue.includes(frequency), frequency)
 		if (this.frequencyQueue.includes(frequency)) {
 			this.removeFromQueue(frequency)
 			return

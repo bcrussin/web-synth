@@ -8,10 +8,20 @@ export interface KeybindPresetMap {
 export interface KeybindPreset {
 	displayName: string
 	notes: KeybindNotes
+	hotkeys: Hotkeys
 }
 
 export interface KeybindNotes {
 	[key: string]: [string, number]
+}
+
+export type Hotkeys = {
+	[key in HotkeysEnum]?: string
+}
+
+export enum HotkeysEnum {
+	TransposeOctaveDown = 'transposeOctaveDown',
+	TransposeOctaveUp = 'transposeOctaveUp',
 }
 
 export const useKeybindsStore = defineStore('keybinds', {

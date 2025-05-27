@@ -1,5 +1,10 @@
 import Synth from '@/classes/Synth.ts'
-import { useKeybindsStore, type KeybindNotes } from '@/stores/keybindsStore'
+import {
+	HotkeysEnum,
+	useKeybindsStore,
+	type Hotkeys,
+	type KeybindNotes,
+} from '@/stores/keybindsStore'
 import type { Store } from 'pinia'
 import Global from './Audio'
 
@@ -50,6 +55,7 @@ export default class Keyboard {
 	// }
 
 	static noteBindings: KeybindNotes = {}
+	static hotkeyBindings: Hotkeys = {}
 
 	static pressed: {
 		[key: string]: number
@@ -67,6 +73,7 @@ export default class Keyboard {
 		Keyboard.keybindsStore = useKeybindsStore()
 		Keyboard.keybindsStore.fetchPresets().then((presets) => {
 			this.noteBindings = presets.default.notes
+			this.hotkeyBindings = presets.default.hotkeys
 		})
 
 		Keyboard.synth = new Synth({ name: 'Keyboard' })
@@ -86,13 +93,11 @@ export default class Keyboard {
 		if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
 
 		switch (e.key) {
-			case '[':
+			case this.hotkeyBindings[HotkeysEnum.TransposeOctaveDown]:
 				Keyboard.synth.changeTranspose(-1)
-				// Keyboard.synth.stopAll()
 				return
-			case ']':
+			case this.hotkeyBindings[HotkeysEnum.TransposeOctaveUp]:
 				Keyboard.synth.changeTranspose(1)
-				// Keyboard.synth.stopAll()
 				return
 		}
 
@@ -108,10 +113,17 @@ export default class Keyboard {
 	static keyUp(e: KeyboardEvent) {
 		if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
 
+		switch (e.key) {
+			case this.hotkeyBindings[HotkeysEnum.TransposeOctaveDown]:
+			case this.hotkeyBindings[HotkeysEnum.TransposeOctaveUp]:
+				return
+		}
+
 		const key = Keyboard.keyToNote(e.key.toUpperCase())
 		if (e.repeat || key == undefined) return
 
-		if (!!this.pressed[e.key] && !!Keyboard.synth.notes.has(this.pressed[e.key])) {
+		console.log(!!this.pressed[e.key], e.key)
+		if (!!this.pressed[e.key]) {
 			Keyboard.synth.stopFrequency(this.pressed[e.key])
 		} else {
 			Keyboard.synth.stopNote(key[0], key[1])

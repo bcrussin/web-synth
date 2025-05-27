@@ -38,6 +38,11 @@
 			"0": ["Eb", 6],
 			"P": ["E", 6],
 			"[": ["F", 6]
+		},
+
+		"hotkeys": {
+			"transposeOctaveDown": "[",
+			"transposeOctaveUp": "]"
 		}
 	}
 }
