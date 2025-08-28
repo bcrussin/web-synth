@@ -1,7 +1,9 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import type Synth from '@/classes/Synth'
+import Synth from '@/classes/Synth'
 import MidiManager from '@/classes/MidiManager'
+import { reactive, ref, type Ref } from 'vue';
+import MidiDevice from '@/classes/MidiDevice';
 
 const props = defineProps<{ synth: Synth }>()
 
@@ -9,12 +11,27 @@ function getChannels(channelNumber: number) {
   return MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber)
 }
 
+const currentDevice: Ref<string> = ref(props.synth.midiDevice.id);
+
 function channelExists(channelNumber: number) {
   return !!getChannels(channelNumber)
+}
+
+function selectDevice(deviceName: string): void {
+  currentDevice.value = deviceName;
 }
 </script>
 
 <template>
+  <el-select v-model="currentDevice">
+    <template #label="{label, value}">
+      <span>{{ MidiDevice.DEVICES[currentDevice].name }}</span>
+    </template>
+
+    <el-option v-for="(device, name) in MidiDevice.DEVICES" :value="device.id">
+      {{ device.name }}
+    </el-option>
+  </el-select>
   <span class="section-label">Channel Settings:</span>
   <div class="channel-params-list">
     <template v-for="channelNumber in 16" :key="channelNumber">
@@ -25,7 +42,7 @@ function channelExists(channelNumber: number) {
         :key="channelNumber"
       >
         <span>{{ channelNumber }}:</span>
-        <MidiChannelButton :synth="props.synth" :channelNumber="channelNumber"></MidiChannelButton>
+        <MidiChannelButton v-if="MidiDevice.DEVICES[currentDevice] != undefined" :synth="props.synth" :channelNumber="channelNumber" :device="MidiDevice.DEVICES[currentDevice]"></MidiChannelButton>
       </div>
     </template>
   </div>
