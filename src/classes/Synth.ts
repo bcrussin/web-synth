@@ -25,7 +25,7 @@ export interface SynthOptions {
 export default class Synth {
 	static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
 
-	midiDevice: any // Ref<MidiDevice | null>
+	midiDevice: MidiDevice // Ref<MidiDevice | null>
 	name: string
 	type: string
 	preset: string | undefined

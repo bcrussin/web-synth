@@ -20,6 +20,10 @@ export default class MidiDevice {
 
 	static STORE: any
 
+	get id() {
+		return this.input.id
+	}
+
 	input: MIDIInput
 	synths: Synth[]
 

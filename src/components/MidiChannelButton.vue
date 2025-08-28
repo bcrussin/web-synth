@@ -9,7 +9,7 @@ import { ref, type Ref } from 'vue'
 
 import { ArrowDown } from '@element-plus/icons-vue'
 
-const props = defineProps<{ synth: Synth; channelNumber: number }>()
+const props = defineProps<{ device: MidiDevice; synth: Synth; channelNumber: number }>()
 
 const dialogChannel: Ref<MidiChannel | undefined> = ref(undefined)
 const dialogIsNewChannel: Ref<boolean> = ref(false)
@@ -17,7 +17,7 @@ const midiDevice = props.synth.midiDevice as MidiDevice
 const channels = getChannels(props.channelNumber)
 
 function getChannels(channelNumber: number) {
-  return MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber)
+  return MidiManager.getChannels(props.device, props.synth, channelNumber)
 }
 
 function getFirstChannel(channelNumber: number) {
@@ -29,7 +29,7 @@ function getChannelProperty(channel: MidiChannel, property: keyof MidiChannelOpt
 }
 
 function getIndicatorStyles(channel: number) {
-  const value = midiDevice.channelValues[channel]
+  const value = props.device.channelValues[channel]
 
   const style: any = {}
 
@@ -60,7 +60,7 @@ function editChannel(channel?: MidiChannel | number) {
     return
   }
 
-  const newChannel = new MidiChannel(props.synth.midiDevice, {
+  const newChannel = new MidiChannel(props.device, {
     channelNumber: channel ?? 1,
     synth: props.synth,
   })

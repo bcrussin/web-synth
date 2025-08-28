@@ -45,7 +45,7 @@ function addSynth(): void {
 		v-if="currentSynth"
 		:key="currentSynth"
 		:synth="Synth.getSynth(currentSynth)"
-		@update:model-value="(val) => closeDialog()"
+		@update:model-value="() => closeDialog()"
 	/>
 </template>
 
