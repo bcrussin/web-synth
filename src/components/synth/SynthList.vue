@@ -19,7 +19,7 @@ function closeDialog() {
 
 function addSynth(): void {
 	const synth = new Synth()
-	console.log(Synth.getSynths())
+	// console.log(Synth.getSynths())
 }
 </script>
 
@@ -102,7 +102,6 @@ export default {
 	},
 	methods: {
 		openDialog(synth: Synth) {
-			console.log(this.settingsDialogs)
 			this.settingsDialogs.add(synth.name)
 		},
 		closeDialog(id: string, isVisible: boolean) {
@@ -113,7 +112,7 @@ export default {
 		},
 		addSynth(): void {
 			const synth = new Synth()
-			console.log(Synth.getSynths())
+			// console.log(Synth.getSynths())
 		},
 	},
 }

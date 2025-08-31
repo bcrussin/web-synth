@@ -25,7 +25,7 @@ export interface SynthOptions {
 export default class Synth {
 	static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
 
-	midiDevice: MidiDevice // Ref<MidiDevice | null>
+	midiDevice: MidiDevice | null // Ref<MidiDevice | null>
 	name: string
 	type: string
 	preset: string | undefined
@@ -77,7 +77,15 @@ export default class Synth {
 	notes: Set<number> = reactive(new Set<number>())
 	wavetable: Array<number> | null = null
 	periodicWave: PeriodicWave | null = null
-	transpose: Ref<number> = ref(0)
+	_transpose: Ref<number> = ref(0)
+	public get transpose(): number {
+		return this._transpose.value ?? this._transpose ?? 0
+	}
+	public set transpose(value: number) {
+		if (typeof value !== 'number') return
+
+		this._transpose.value = value
+	}
 
 	_bypass: boolean = false
 	public get bypass() {
@@ -237,13 +245,13 @@ export default class Synth {
 	setTranspose(value: number): void {
 		if (typeof value !== 'number') return
 
-		this.transpose.value = value
+		this.transpose = value
 	}
 
 	changeTranspose(value: number): void {
 		if (typeof value !== 'number') return
 
-		this.transpose.value += value
+		this.transpose += value
 	}
 
 	setMaxPolyphony(value: number) {
@@ -298,7 +306,7 @@ export default class Synth {
 
 		if (typeof octave != 'number') octave = parseInt(octave)
 
-		octave += this.transpose.value
+		octave += this.transpose
 		const frequency = Global.getFrequency(note, octave)
 		this.playFrequency(frequency, volume)
 
@@ -307,14 +315,6 @@ export default class Synth {
 
 	playFrequency(frequency: number, volume?: number): void {
 		if (frequency == undefined || this.isNotePlaying(frequency)) return
-
-		// const oscillator = new Oscillator(this)
-
-		// oscillator.attack(frequency, volume)
-
-		// if (!this.hasFreeNotes()) {
-		// 	this.stealOldestNote()
-		// }
 
 		// Max polyphony reached
 		if (!this.hasFreeNotes()) {
@@ -342,7 +342,7 @@ export default class Synth {
 		if (note == undefined || octave == undefined) return
 
 		octave = parseInt(octave.toString())
-		octave += this.transpose.value
+		octave += this.transpose
 		const frequency = Global.getFrequency(note, octave)
 
 		this.stopFrequency(frequency)

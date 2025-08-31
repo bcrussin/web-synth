@@ -173,7 +173,7 @@ export default class MidiDevice {
 		value: MidiChannelOptions[K],
 	) {
 		if (this.channelSettings[synth.name] == undefined) {
-			console.log(`Synth ${synth.name} has no data for channel ${channel}`)
+			console.error(`Synth ${synth.name} has no data for channel ${channel}`)
 			return //this.channelSettings[synth.name] = {}
 		}
 
@@ -182,7 +182,7 @@ export default class MidiDevice {
 
 	setChannelProperties(synth: Synth, channel: number, data: MidiChannelOptions) {
 		if (this.channelSettings[synth.name] == undefined) {
-			console.log(`Synth ${synth.name} has no data for channel ${channel}`)
+			console.error(`Synth ${synth.name} has no data for channel ${channel}`)
 			return //this.channelSettings[synth.name] = {}
 		}
 
