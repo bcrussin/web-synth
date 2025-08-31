@@ -122,7 +122,6 @@ export default class Keyboard {
 		const key = Keyboard.keyToNote(e.key.toUpperCase())
 		if (e.repeat || key == undefined) return
 
-		console.log(!!this.pressed[e.key], e.key)
 		if (!!this.pressed[e.key]) {
 			Keyboard.synth.stopFrequency(this.pressed[e.key])
 		} else {
