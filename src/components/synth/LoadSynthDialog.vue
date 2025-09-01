@@ -2,12 +2,22 @@
 import type Synth from '@/classes/Synth';
 import { SynthSerializer, SynthSerializerCategory } from '@/classes/SynthSerializer';
 import { useSynthStore } from '@/stores/synthStore';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
-const props = defineProps<{ synth: Synth }>();
+const props = defineProps<{ synth: Synth; isVisible: boolean }>();
 const emit = defineEmits<{
   (e: 'update:model-value', value: boolean): void
 }>()
+
+watch(() => props.isVisible,
+  (isVisible) => {
+    if (!isVisible) {
+      synthName.value = "";
+      pastedData.value = "";
+      includedCategories.value = categories;
+    }
+  }
+)
 
 const SynthStore = useSynthStore();
 const savedSynths = SynthStore.fetchSynths();

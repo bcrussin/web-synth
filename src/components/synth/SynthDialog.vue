@@ -173,9 +173,9 @@ function toggleElementSelection() {
       @update:model-value="() => (currentMidiChannel = undefined)"
     ></MidiParamDialog>
 
-    <SaveSynthDialog v-model="isSaving" :synth="props.synth" @close="() => (isSaving = false)"></SaveSynthDialog>
+    <SaveSynthDialog v-model="isSaving" :isVisible="isSaving" :synth="props.synth" @close="() => (isSaving = false)"></SaveSynthDialog>
 
-    <LoadSynthDialog v-model="isLoading" :synth="props.synth" @close="() => (isLoading = false)"></LoadSynthDialog>
+    <LoadSynthDialog v-model="isLoading" :isVisible="isLoading" :synth="props.synth" @close="() => (isLoading = false)"></LoadSynthDialog>
   </el-dialog>
 </template>
 
