@@ -122,7 +122,13 @@ export class SynthSerializer {
 			!!data.midi &&
 			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI))
 		) {
+			MidiManager.getChannelsForSynth(synth).forEach((channel) => {
+				MidiManager.unregisterChannel(channel)
+			})
+
 			data.midi.forEach((channelData) => {
+				if (!MidiDevice.DEVICES[channelData.device]) return
+
 				if (!!channelData.options) {
 					channelData.options.synth = synth
 				}
