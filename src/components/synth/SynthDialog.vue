@@ -10,11 +10,16 @@ import MidiDevice from '@/classes/MidiDevice'
 import { ref, type Ref } from 'vue'
 import MidiManager from '@/classes/MidiManager'
 import MidiChannel from '@/classes/MidiChannel'
+import SaveSynthDialog from './SaveSynthDialog.vue'
+import { fa } from 'element-plus/es/locales.mjs'
+import LoadSynthDialog from './LoadSynthDialog.vue'
 
 const props = defineProps<{ synth: Synth }>()
 
 const selectingElement = ref(false)
 const currentMidiChannel: Ref<MidiChannel | undefined> = ref(undefined)
+const isSaving = ref(false);
+const isLoading = ref(false);
 
 function deleteSynth(close: () => void) {
   close()
@@ -63,15 +68,6 @@ function toggleElementSelection() {
     selectingElement.value = !selectingElement.value
   }, 0)
 }
-
-// TODO: REMOVE PLEASE
-function loadTEMP() {
-  const data = prompt("Data:")
-
-  if (data == undefined) return;
-
-  props.synth.load(JSON.parse(data));
-}
 </script>
 
 <template>
@@ -92,10 +88,10 @@ function loadTEMP() {
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
-          <el-button @click="synth.save()">
+          <el-button @click="isSaving = true">
             Save
           </el-button>
-          <el-button @click="loadTEMP()">
+          <el-button @click="isLoading = true">
             Load
           </el-button>
 
@@ -176,6 +172,10 @@ function loadTEMP() {
       :isNewChannel="true"
       @update:model-value="() => (currentMidiChannel = undefined)"
     ></MidiParamDialog>
+
+    <SaveSynthDialog v-model="isSaving" :synth="props.synth"></SaveSynthDialog>
+
+    <LoadSynthDialog v-model="isLoading" :synth="props.synth"></LoadSynthDialog>
   </el-dialog>
 </template>
 

@@ -28,20 +28,6 @@ export interface SynthOptions {
 	glideAmount?: number
 }
 
-export interface SerializedSynth {
-	waveform?: {
-		attack?: number
-		decay?: number
-		sustain?: number
-		release?: number
-		preset?: string | undefined
-		wavetable?: Array<number> | null
-	}
-	effects?: any[]
-	midi?: SerializedMidiChannel[]
-	settings?: any
-}
-
 export default class Synth {
 	static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
 
@@ -377,7 +363,6 @@ export default class Synth {
 	}
 
 	stopFrequency(frequency: number) {
-		// console.log(this.frequencyQueue.includes(frequency), frequency)
 		if (this.frequencyQueue.includes(frequency)) {
 			this.removeFromQueue(frequency)
 			return
@@ -533,64 +518,5 @@ export default class Synth {
 	clearWavetable() {
 		this.wavetable = null
 		this.periodicWave = null
-	}
-
-	save() {
-		const data: SerializedSynth = {
-			waveform: {},
-			effects: [],
-			midi: [],
-			settings: {},
-		}
-
-		data.waveform = {
-			attack: this.attack,
-			decay: this.decay,
-			sustain: this.sustain,
-			release: this.release,
-			preset: this.preset,
-			wavetable: this.wavetable,
-		}
-
-		data.effects = this.effects.map((effect) => serializeTunaEffect(effect)) as any
-
-		data.midi = MidiManager.getChannelsForSynth(this).map((channel) => channel.serialize())
-
-		console.log(JSON.stringify(data))
-	}
-
-	load(data: SerializedSynth) {
-		this.attack = data.waveform?.attack ?? this.attack
-		this.decay = data.waveform?.decay ?? this.decay
-		this.sustain = data.waveform?.sustain ?? this.sustain
-		this.release = data.waveform?.release ?? this.release
-
-		if (data.waveform?.wavetable) {
-			this.setWavetable(data.waveform.wavetable)
-		}
-
-		if (data.waveform?.preset) {
-			this.setPreset(data.waveform.preset)
-		}
-
-		if (!!data.effects) {
-			this.effects = data.effects
-				.map((effectData: any) => {
-					const effect = loadTunaEffect(this.tuna, effectData)
-					if (!!effect) return effect
-				})
-				.filter((effect) => !!effect)
-		}
-
-		if (!!data.midi) {
-			data.midi.forEach((channelData) => {
-				if (!!channelData.options) {
-					channelData.options.synth = this
-				}
-
-				const channel = new MidiChannel(MidiDevice.DEVICES[channelData.device], channelData.options)
-				MidiManager.registerChannel(channel)
-			})
-		}
 	}
 }
