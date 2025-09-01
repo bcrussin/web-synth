@@ -67,7 +67,7 @@ function load(checkMissingChannels: boolean = true) {
           data.midi![index].device = replacedMidiDevices.value[channel.device];
         } else if (checkMissingChannels && !MidiDevice.DEVICES[channel.device]) {
           // Flag any MIDI devices not accounted for
-          missingDevices.set(channel.device, channel.deviceName);
+          missingDevices.set(channel.device, channel.deviceName ?? channel.device);
         }
 
       }
