@@ -90,7 +90,8 @@ export default class Synth {
 	public set transpose(value: number) {
 		if (typeof value !== 'number') return
 
-		this._transpose.value = value
+		if (typeof this._transpose === 'number') (this._transpose as any) = value
+		else this._transpose.value = value
 	}
 
 	_bypass: boolean = false
