@@ -134,7 +134,7 @@ export class SynthSerializer {
 
 		if (
 			!!data.midi &&
-			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI))
+			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.SETTINGS))
 		) {
 			synth.volume = data.settings?.volume ?? synth.volume
 			synth.transpose = data.settings?.transpose ?? synth.transpose
