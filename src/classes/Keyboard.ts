@@ -88,7 +88,9 @@ export default class Keyboard {
 	}
 
 	static keyDown(e: KeyboardEvent) {
-		if (document.activeElement instanceof HTMLInputElement) return
+		const disabledElementTypes = [HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement]
+
+		if (disabledElementTypes.some((t) => document.activeElement instanceof t)) return
 
 		if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
 
