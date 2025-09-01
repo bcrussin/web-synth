@@ -86,6 +86,8 @@ function load(checkMissingChannels: boolean = true) {
     return
   }
 
+  missingMidiDevices.value = {};
+  replacedMidiDevices.value = {};
   SynthSerializer.load(props.synth, data, includedCategories.value)
   emit('update:model-value', false);
 }
