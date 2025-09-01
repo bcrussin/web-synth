@@ -112,7 +112,6 @@ export default {
 		},
 		addSynth(): void {
 			const synth = new Synth()
-			// console.log(Synth.getSynths())
 		},
 	},
 }
