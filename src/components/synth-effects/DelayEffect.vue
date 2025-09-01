@@ -5,7 +5,7 @@ import type Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
 
-interface Delay extends Tuna.TunaAudioNode {
+export interface Delay extends Tuna.TunaAudioNode {
   feedback: { value: number }
   delayTime: { value: number }
   wetLevel: { value: number }

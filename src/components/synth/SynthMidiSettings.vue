@@ -7,11 +7,13 @@ import MidiDevice from '@/classes/MidiDevice';
 
 const props = defineProps<{ synth: Synth }>()
 
+if (!props.synth.midiDevice) throw new Error("No midi device");
+
 function getChannels(channelNumber: number) {
   return MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber)
 }
 
-const currentDevice: Ref<string> = ref(props.synth.midiDevice.id);
+const currentDevice: Ref<string> = ref(props.synth.midiDevice?.id);
 
 function channelExists(channelNumber: number) {
   return !!getChannels(channelNumber)
