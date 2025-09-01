@@ -5,11 +5,10 @@ import type Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
 
-interface Convolver extends Tuna.TunaAudioNode {
+export interface Convolver extends Tuna.TunaAudioNode {
   wetLevel: { value: number }
   dryLevel: { value: number }
   level: { value: number }
-  impulse: string
   loop: boolean
   convolver: ConvolverNode
 }
@@ -22,7 +21,7 @@ function getEffect() {
 
 const wet = ref(getEffect().wetLevel.value)
 
-const impulseDuration = ref(1)
+const impulseDuration = ref(props.synth.getEffectProperty(props.effectIndex, 'impulseDuration') ?? 1)
 
 watchEffect(() => {
   wet.value = getEffect().wetLevel.value
@@ -44,7 +43,9 @@ function updateImpulse() {
     impulseDuration.value,
     impulseDuration.value,
     false,
-  )
+  );
+
+  props.synth.setEffectProperty(props.effectIndex, 'impulseDuration', impulseDuration.value);
 }
 </script>
 

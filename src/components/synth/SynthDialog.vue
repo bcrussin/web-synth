@@ -32,11 +32,13 @@ function selectElement(target?: HTMLElement) {
     props.synth,
   )
 
-  currentMidiChannel.value = new MidiChannel(props.synth.midiDevice, {
-    channelNumber: Math.min(existingChannels.length + 1, 16),
-    synth: props.synth,
-    param: target.getAttribute('data-param') ?? undefined,
-  })
+  if (!!props.synth.midiDevice) {
+    currentMidiChannel.value = new MidiChannel(props.synth.midiDevice, {
+      channelNumber: Math.min(existingChannels.length + 1, 16),
+      synth: props.synth,
+      param: target.getAttribute('data-param') ?? undefined,
+    })
+  }
 
   // MidiManager.registerChannel(currentMidiChannel.value)
 }
@@ -61,6 +63,15 @@ function toggleElementSelection() {
     selectingElement.value = !selectingElement.value
   }, 0)
 }
+
+// TODO: REMOVE PLEASE
+function loadTEMP() {
+  const data = prompt("Data:")
+
+  if (data == undefined) return;
+
+  props.synth.load(JSON.parse(data));
+}
 </script>
 
 <template>
@@ -81,6 +92,13 @@ function toggleElementSelection() {
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
+          <el-button @click="synth.save()">
+            Save
+          </el-button>
+          <el-button @click="loadTEMP()">
+            Load
+          </el-button>
+
           <el-button
             v-if="!!synth.midiDevice"
             id="select-element"
