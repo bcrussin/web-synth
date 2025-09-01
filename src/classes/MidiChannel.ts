@@ -13,6 +13,7 @@ export interface MidiChannelOptions {
 
 export interface SerializedMidiChannel {
 	device: string
+	deviceName: string
 	options?: MidiChannelOptions
 }
 
@@ -66,6 +67,7 @@ export default class MidiChannel {
 	serialize(): SerializedMidiChannel {
 		return {
 			device: this.device.id,
+			deviceName: this.device.name,
 			options: {
 				channelNumber: this.channelNumber,
 				param: this.param,
