@@ -123,6 +123,8 @@ export class SynthSerializer {
 			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI))
 		) {
 			data.midi.forEach((channelData) => {
+				if (!MidiDevice.DEVICES[channelData.device]) return
+
 				if (!!channelData.options) {
 					channelData.options.synth = synth
 				}
