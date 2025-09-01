@@ -26,11 +26,19 @@ export interface SerializedSynth {
 		sustain?: number
 		release?: number
 		preset?: string | undefined
+		type?: string
 		wavetable?: Array<number> | null
 	}
 	effects?: any[]
 	midi?: SerializedMidiChannel[]
-	settings?: any
+	settings?: {
+		transpose?: number
+		volume?: number
+		maxPolyphony?: number
+		legato?: boolean
+		glide?: boolean
+		glideAmount?: number
+	}
 }
 
 export class SynthSerializer {
@@ -50,9 +58,11 @@ export class SynthSerializer {
 				decay: synth.decay,
 				sustain: synth.sustain,
 				release: synth.release,
-				preset: synth.preset,
-				wavetable: synth.wavetable,
+				type: synth.type,
 			}
+
+			if (!!synth.preset) data.waveform.preset = synth.preset
+			if (synth.type === 'custom' && !!synth.wavetable) data.waveform.wavetable = synth.wavetable
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.EFFECTS)) {
@@ -61,6 +71,17 @@ export class SynthSerializer {
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI)) {
 			data.midi = MidiManager.getChannelsForSynth(synth).map((channel) => channel.serialize())
+		}
+
+		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI)) {
+			data.settings = {
+				volume: synth.volume,
+				transpose: synth.transpose,
+				maxPolyphony: synth.maxPolyphony,
+				legato: synth.legato,
+				glide: synth.glide,
+				glideAmount: synth.glideAmount,
+			}
 		}
 
 		return data
@@ -74,12 +95,13 @@ export class SynthSerializer {
 			synth.decay = data.waveform?.decay ?? synth.decay
 			synth.sustain = data.waveform?.sustain ?? synth.sustain
 			synth.release = data.waveform?.release ?? synth.release
+			synth.type = data.waveform?.type ?? synth.type
 
-			if (data.waveform?.wavetable) {
+			if (!!data.waveform?.wavetable) {
 				synth.setWavetable(data.waveform.wavetable)
 			}
 
-			if (data.waveform?.preset) {
+			if (!!data.waveform?.preset) {
 				synth.setPreset(data.waveform.preset)
 			}
 		}
@@ -108,6 +130,18 @@ export class SynthSerializer {
 				const channel = new MidiChannel(MidiDevice.DEVICES[channelData.device], channelData.options)
 				MidiManager.registerChannel(channel)
 			})
+		}
+
+		if (
+			!!data.midi &&
+			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI))
+		) {
+			synth.volume = data.settings?.volume ?? synth.volume
+			synth.transpose = data.settings?.transpose ?? synth.transpose
+			synth.maxPolyphony = data.settings?.maxPolyphony ?? synth.maxPolyphony
+			synth.legato = data.settings?.legato ?? synth.legato
+			synth.glide = data.settings?.glide ?? synth.glide
+			synth.glideAmount = data.settings?.glideAmount ?? synth.glideAmount
 		}
 	}
 
