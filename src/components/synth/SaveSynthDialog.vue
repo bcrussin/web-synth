@@ -28,6 +28,13 @@ const categories = Object.values(SynthSerializerCategory).filter(
 
 const includedCategories = ref(categories)
 
+async function copy() {
+  const data = SynthSerializer.serialize(props.synth);
+
+  await navigator.clipboard.writeText(JSON.stringify(data));
+
+  emit('update:model-value', false);
+}
 
 function save() {
   const data = SynthSerializer.serialize(props.synth);
@@ -72,6 +79,7 @@ function save() {
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="$emit('update:model-value', false)">Cancel</el-button>
+        <el-button @click="copy()" id="copy-button">Copy to Clipboard</el-button>
         <el-button type="primary" @click="save()">Save</el-button>
       </span>
     </template>
