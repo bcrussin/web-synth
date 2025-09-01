@@ -5,7 +5,7 @@ import type Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
 
-interface Chorus extends Tuna.TunaAudioNode {
+export interface Chorus extends Tuna.TunaAudioNode {
   rate: number
   depth: number
   feedback: number
