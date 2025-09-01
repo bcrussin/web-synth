@@ -5,6 +5,12 @@ import Oscillator from '@/classes/Oscillator'
 import FFT from './FFT'
 import Tuna from 'tunajs'
 import MidiDevice from './MidiDevice'
+import { set } from '@vueuse/core'
+import { serializeTunaEffect } from './TunaSerializers'
+import MidiManager from './MidiManager'
+import { loadTunaEffect } from './TunaDeserializers'
+import type { SerializedMidiChannel } from './MidiChannel'
+import MidiChannel from './MidiChannel'
 
 export interface SynthOptions {
 	name?: string
@@ -84,7 +90,8 @@ export default class Synth {
 	public set transpose(value: number) {
 		if (typeof value !== 'number') return
 
-		this._transpose.value = value
+		if (typeof this._transpose === 'number') (this._transpose as any) = value
+		else this._transpose.value = value
 	}
 
 	_bypass: boolean = false
@@ -232,6 +239,14 @@ export default class Synth {
 		else effect[property] = value
 	}
 
+	getEffectProperty(id: number, property: string, treatAsAudioParam: boolean = false): any {
+		const effect = this.effects[id] as Record<string, any>
+
+		if (treatAsAudioParam) return effect[property].value
+
+		return effect[property]
+	}
+
 	setProperty(property: string, value: string | number | boolean): void {
 		if (typeof value == 'string') value = parseFloat(value)
 		if (typeof value == 'number' && isNaN(value)) return
@@ -349,7 +364,6 @@ export default class Synth {
 	}
 
 	stopFrequency(frequency: number) {
-		// console.log(this.frequencyQueue.includes(frequency), frequency)
 		if (this.frequencyQueue.includes(frequency)) {
 			this.removeFromQueue(frequency)
 			return

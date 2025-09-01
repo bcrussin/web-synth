@@ -5,9 +5,9 @@ import type Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
 
-interface Overdrive extends Tuna.TunaAudioNode {
-  outputGain: { value: number }
-  drive: { value: number }
+export interface Overdrive extends Tuna.TunaAudioNode {
+  outputDrive: { gain: { value: number } }
+  inputDrive: { gain: { value: number } }
   curveAmount: number
   algorithmIndex: { value: number }
   output: GainNode
@@ -19,12 +19,12 @@ function getEffect() {
   return props.synth.getEffect(props.effectIndex) as Overdrive
 }
 
-const outputGain = ref(getEffect().outputGain.value)
-const drive = ref(getEffect().drive.value)
+const outputGain = ref(getEffect().outputDrive.gain.value)
+const drive = ref(getEffect().inputDrive.gain.value)
 
 watchEffect(() => {
-  outputGain.value = getEffect().outputGain.value
-  drive.value = getEffect().drive.value
+  outputGain.value = getEffect().outputDrive.gain.value
+  drive.value = getEffect().inputDrive.gain.value
 })
 
 function setPropertyValue(property: string, value: number) {

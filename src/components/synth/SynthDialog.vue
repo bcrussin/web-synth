@@ -10,11 +10,16 @@ import MidiDevice from '@/classes/MidiDevice'
 import { ref, type Ref } from 'vue'
 import MidiManager from '@/classes/MidiManager'
 import MidiChannel from '@/classes/MidiChannel'
+import SaveSynthDialog from './SaveSynthDialog.vue'
+import { fa } from 'element-plus/es/locales.mjs'
+import LoadSynthDialog from './LoadSynthDialog.vue'
 
 const props = defineProps<{ synth: Synth }>()
 
 const selectingElement = ref(false)
 const currentMidiChannel: Ref<MidiChannel | undefined> = ref(undefined)
+const isSaving = ref(false);
+const isLoading = ref(false);
 
 function deleteSynth(close: () => void) {
   close()
@@ -32,11 +37,13 @@ function selectElement(target?: HTMLElement) {
     props.synth,
   )
 
-  currentMidiChannel.value = new MidiChannel(props.synth.midiDevice, {
-    channelNumber: Math.min(existingChannels.length + 1, 16),
-    synth: props.synth,
-    param: target.getAttribute('data-param') ?? undefined,
-  })
+  if (!!props.synth.midiDevice) {
+    currentMidiChannel.value = new MidiChannel(props.synth.midiDevice, {
+      channelNumber: Math.min(existingChannels.length + 1, 16),
+      synth: props.synth,
+      param: target.getAttribute('data-param') ?? undefined,
+    })
+  }
 
   // MidiManager.registerChannel(currentMidiChannel.value)
 }
@@ -81,6 +88,13 @@ function toggleElementSelection() {
       <div class="dialog-header">
         <h3 :class="titleClass" :id="titleId">{{ synth?.name }} Settings</h3>
         <div class="dialog-options">
+          <el-button @click="isSaving = true">
+            Save
+          </el-button>
+          <el-button @click="isLoading = true">
+            Load
+          </el-button>
+
           <el-button
             v-if="!!synth.midiDevice"
             id="select-element"
@@ -158,6 +172,10 @@ function toggleElementSelection() {
       :isNewChannel="true"
       @update:model-value="() => (currentMidiChannel = undefined)"
     ></MidiParamDialog>
+
+    <SaveSynthDialog v-model="isSaving" :isVisible="isSaving" :synth="props.synth" @close="() => (isSaving = false)"></SaveSynthDialog>
+
+    <LoadSynthDialog v-model="isLoading" :isVisible="isLoading" :synth="props.synth" @close="() => (isLoading = false)"></LoadSynthDialog>
   </el-dialog>
 </template>
 
