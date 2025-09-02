@@ -10,6 +10,8 @@ const props = defineProps<{ synth: Synth }>()
 if (!props.synth.midiDevice) throw new Error("No midi device");
 
 function getChannels(channelNumber: number) {
+  if (!props.synth.midiDevice) return []
+
   return MidiManager.getChannels(props.synth.midiDevice, props.synth, channelNumber)
 }
 

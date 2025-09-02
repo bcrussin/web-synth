@@ -114,10 +114,18 @@ function editChannel(channel?: MidiChannel | number) {
 .channel-button-container {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 
 .channel-button {
   width: 100%;
+}
+
+:deep(.channel-button span) {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .channel-value {
