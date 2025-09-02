@@ -92,6 +92,11 @@ function load(checkMissingChannels: boolean = true) {
   emit('update:model-value', false);
 }
 
+function resetMidiDeviceReplacement() {
+  missingMidiDevices.value = {}
+  replacedMidiDevices.value = {}
+}
+
 </script>
 
 <template>
@@ -154,7 +159,7 @@ function load(checkMissingChannels: boolean = true) {
     id="missing-devices-dialog"
     class="dark"
     modal
-    @close="() => (missingMidiDevices = {})"
+    @close="() => (resetMidiDeviceReplacement())"
     :style="{
       width: '90vw',
       maxWidth: '30rem',
@@ -164,13 +169,14 @@ function load(checkMissingChannels: boolean = true) {
       <div class="device-line" v-for="[key, value] in Object.entries(missingMidiDevices)">
         <span>{{ value }}</span>
         <el-select v-model="replacedMidiDevices[key]">
+          <el-option value="" label="None"></el-option>
           <el-option v-for="device in MidiDevice.DEVICES" :value="device.id" :label="device.name"></el-option>
         </el-select>
       </div>
 
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="replacedMidiDevices = {}">Cancel</el-button>
+          <el-button @click="resetMidiDeviceReplacement()">Cancel</el-button>
           <el-button type="primary" @click="load(false)">Continue</el-button>
         </span>
       </template>

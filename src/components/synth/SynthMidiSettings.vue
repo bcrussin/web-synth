@@ -74,6 +74,6 @@ function selectDevice(deviceName: string): void {
 }
 
 .channel-param > span {
-  flex: 0 0 2ch;
+  flex: 0 0 2.5ch;
 }
 </style>
