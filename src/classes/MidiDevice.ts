@@ -47,6 +47,14 @@ export default class MidiDevice {
 		this.addSynth(synth)
 	}
 
+	static getDeviceByName(name: string): MidiDevice | null {
+		const device = Object.values(MidiDevice.DEVICES).find((device) => device.name == name)
+
+		if (device == undefined) return null
+
+		return MidiDevice.DEVICES[device.id]
+	}
+
 	static async initialize() {
 		this.STORE = useMidiStore()
 		await this.STORE.fetchParams()
