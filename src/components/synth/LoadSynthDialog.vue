@@ -56,15 +56,23 @@ function load(checkMissingChannels: boolean = true) {
 
   const missingDevices = new Map<string, string>();
 
-  if (!!data.midi) {
-    data.midi.forEach((channel, index) => {
+  const midiData = data.midi
+
+  if (!!midiData) {
+    midiData.forEach((channel, index) => {
 
       // Check if device ID currently exists
       if (!MidiDevice.DEVICES[channel.device]) {
 
+        // Use existing device if it has the same name as the missing one
+        const deviceWithSameName = MidiDevice.getDeviceByName(channel.deviceName);
+        if (!!deviceWithSameName) {
+          midiData[index].device = deviceWithSameName.id;
+        }
+
         // If not, check if an existing device has been assigned to that ID
         if (!!replacedMidiDevices.value[channel.device]) {
-          data.midi![index].device = replacedMidiDevices.value[channel.device];
+          midiData[index].device = replacedMidiDevices.value[channel.device];
         } else if (checkMissingChannels && !MidiDevice.DEVICES[channel.device]) {
           // Flag any MIDI devices not accounted for
           missingDevices.set(channel.device, channel.deviceName ?? channel.device);
@@ -164,7 +172,7 @@ function resetMidiDeviceReplacement() {
       width: '90vw',
       maxWidth: '30rem',
     }">
-      <p id="missing-devices-message">Some MIDI devices can no longer be found. Assign them to an existing device or leave blank to skip channels for that device:</p>
+      <p id="missing-devices-message">Some of the provided MIDI devices no longer exist. Assign them to an existing device or leave blank to skip channels for that device:</p>
 
       <div class="device-line" v-for="[key, value] in Object.entries(missingMidiDevices)">
         <span>{{ value }}</span>
