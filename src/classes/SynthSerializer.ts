@@ -6,10 +6,10 @@ import { loadTunaEffect } from './TunaDeserializers'
 import { serializeTunaEffect } from './TunaSerializers'
 
 export enum SynthSerializerCategory {
-	WAVEFORM,
-	EFFECTS,
-	MIDI,
-	SETTINGS,
+	WAVEFORM = 'waveform',
+	EFFECTS = 'effects',
+	MIDI = 'midi',
+	SETTINGS = 'settings',
 }
 
 export const CATEGORY_NAMES = {
@@ -20,7 +20,7 @@ export const CATEGORY_NAMES = {
 }
 
 export interface SerializedSynth {
-	waveform?: {
+	[SynthSerializerCategory.WAVEFORM]?: {
 		attack?: number
 		decay?: number
 		sustain?: number
@@ -29,9 +29,9 @@ export interface SerializedSynth {
 		type?: string
 		wavetable?: Array<number> | null
 	}
-	effects?: any[]
-	midi?: SerializedMidiChannel[]
-	settings?: {
+	[SynthSerializerCategory.EFFECTS]?: any[]
+	[SynthSerializerCategory.MIDI]?: SerializedMidiChannel[]
+	[SynthSerializerCategory.SETTINGS]?: {
 		transpose?: number
 		volume?: number
 		maxPolyphony?: number
@@ -48,7 +48,7 @@ export class SynthSerializer {
 		const data: SerializedSynth = {}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
-			data.waveform = {
+			data[SynthSerializerCategory.WAVEFORM] = {
 				attack: synth.attack,
 				decay: synth.decay,
 				sustain: synth.sustain,
@@ -61,15 +61,19 @@ export class SynthSerializer {
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.EFFECTS)) {
-			data.effects = synth.effects.map((effect) => serializeTunaEffect(effect)) as any
+			data[SynthSerializerCategory.EFFECTS] = synth.effects.map((effect) =>
+				serializeTunaEffect(effect),
+			) as any
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI)) {
-			data.midi = MidiManager.getChannelsForSynth(synth).map((channel) => channel.serialize())
+			data[SynthSerializerCategory.MIDI] = MidiManager.getChannelsForSynth(synth).map((channel) =>
+				channel.serialize(),
+			)
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI)) {
-			data.settings = {
+			data[SynthSerializerCategory.SETTINGS] = {
 				volume: synth.volume,
 				transpose: synth.transpose,
 				maxPolyphony: synth.maxPolyphony,
@@ -86,26 +90,28 @@ export class SynthSerializer {
 		const cateogoriesAreDefined = !!categories
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
-			synth.attack = data.waveform?.attack ?? synth.attack
-			synth.decay = data.waveform?.decay ?? synth.decay
-			synth.sustain = data.waveform?.sustain ?? synth.sustain
-			synth.release = data.waveform?.release ?? synth.release
-			synth.type = data.waveform?.type ?? synth.type
+			const waveformData = data[SynthSerializerCategory.WAVEFORM]
 
-			if (!!data.waveform?.wavetable) {
-				synth.setWavetable(data.waveform.wavetable)
+			synth.attack = waveformData?.attack ?? synth.attack
+			synth.decay = waveformData?.decay ?? synth.decay
+			synth.sustain = waveformData?.sustain ?? synth.sustain
+			synth.release = waveformData?.release ?? synth.release
+			synth.type = waveformData?.type ?? synth.type
+
+			if (!!waveformData?.wavetable) {
+				synth.setWavetable(waveformData.wavetable)
 			}
 
-			if (!!data.waveform?.preset) {
-				synth.setPreset(data.waveform.preset)
+			if (!!waveformData?.preset) {
+				synth.setPreset(waveformData.preset)
 			}
 		}
 
 		if (
-			!!data.effects &&
+			!!data[SynthSerializerCategory.EFFECTS] &&
 			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.EFFECTS))
 		) {
-			synth.effects = data.effects
+			synth.effects = data[SynthSerializerCategory.EFFECTS]
 				.map((effectData: any) => {
 					const effect = loadTunaEffect(synth.tuna, effectData)
 					if (!!effect) return effect
@@ -116,14 +122,14 @@ export class SynthSerializer {
 		}
 
 		if (
-			!!data.midi &&
+			!!data[SynthSerializerCategory.MIDI] &&
 			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI))
 		) {
 			MidiManager.getChannelsForSynth(synth).forEach((channel) => {
 				MidiManager.unregisterChannel(channel)
 			})
 
-			data.midi.forEach((channelData) => {
+			data[SynthSerializerCategory.MIDI].forEach((channelData) => {
 				if (!MidiDevice.DEVICES[channelData.device]) return
 
 				if (!!channelData.options) {
@@ -136,19 +142,32 @@ export class SynthSerializer {
 		}
 
 		if (
-			!!data.midi &&
+			!!data[SynthSerializerCategory.SETTINGS] &&
 			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.SETTINGS))
 		) {
-			synth.volume = data.settings?.volume ?? synth.volume
-			synth.transpose = data.settings?.transpose ?? synth.transpose
-			synth.maxPolyphony = data.settings?.maxPolyphony ?? synth.maxPolyphony
-			synth.legato = data.settings?.legato ?? synth.legato
-			synth.glide = data.settings?.glide ?? synth.glide
-			synth.glideAmount = data.settings?.glideAmount ?? synth.glideAmount
+			const settingsData = data[SynthSerializerCategory.SETTINGS]
+
+			synth.volume = settingsData?.volume ?? synth.volume
+			synth.transpose = settingsData?.transpose ?? synth.transpose
+			synth.maxPolyphony = settingsData?.maxPolyphony ?? synth.maxPolyphony
+			synth.legato = settingsData?.legato ?? synth.legato
+			synth.glide = settingsData?.glide ?? synth.glide
+			synth.glideAmount = settingsData?.glideAmount ?? synth.glideAmount
 		}
 	}
 
 	static getCategoryName(category: SynthSerializerCategory): string {
 		return CATEGORY_NAMES?.[category] ?? ''
+	}
+
+	static getPresetCategories(preset: SerializedSynth) {
+		if (!preset || typeof preset !== 'object') {
+			return []
+		}
+
+		const categoryNames = (Object.keys(preset) as SynthSerializerCategory[]).map((key) =>
+			SynthSerializer.getCategoryName(key),
+		)
+		return categoryNames.filter((category) => !!category)
 	}
 }

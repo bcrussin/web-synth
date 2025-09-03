@@ -21,14 +21,12 @@ watch(() => props.isVisible,
 )
 
 const SynthStore = useSynthStore();
-const savedSynths = SynthStore.fetchSynths();
+const synthPresets = SynthStore.fetchSynths();
 
 const missingMidiDevices: Ref<{ [key: string]: string }> = ref({}); // { missingId: missingName }
 const replacedMidiDevices: Ref<{ [key: string]: string }> = ref({}) // { missingId: newId }
 
-const categories = Object.values(SynthSerializerCategory).filter(
-  v => typeof v === "number"
-) as number[];
+const categories = Object.values(SynthSerializerCategory);
 
 const includedCategories = ref(categories)
 
@@ -47,7 +45,7 @@ function load(checkMissingChannels: boolean = true) {
 
   switch(currentTab.value) {
     case Tab.PRESET:
-      data = savedSynths[synthName.value];
+      data = synthPresets[synthName.value];
       break;
     case Tab.PASTE_DATA:
       data = JSON.parse(pastedData.value);
@@ -120,18 +118,23 @@ function resetMidiDeviceReplacement() {
     }"
   >
     <el-tabs v-model="currentTab" id="load-dialog-tabs">
+
       <el-tab-pane :label="Tab.PRESET" :name="Tab.PRESET">
         <div class="flex-stretch">
           <div class="control-item" id="preset-name">
             <span>Synth:</span>
             <el-select v-model="synthName">
-              <el-option v-for="(synth, name) in savedSynths" :value="name">
-                {{ name }}
+              <el-option v-for="(synthPreset, name) in synthPresets" :key="name" :value="name" style="height: fit-content;" class="preset-option">
+                <div>{{ name }}</div>
+                <div class="preset-tags-container">
+                  <el-tag type="primary" v-for="category in SynthSerializer.getPresetCategories(synthPreset)">{{ category }}</el-tag>
+                </div>
               </el-option>
             </el-select>
           </div>
         </div>
       </el-tab-pane>
+
       <el-tab-pane :label="Tab.PASTE_DATA" :name="Tab.PASTE_DATA">
         <el-input
           id="pasted-data"
@@ -141,6 +144,7 @@ function resetMidiDeviceReplacement() {
           placeholder="Paste synth data..."
         />
       </el-tab-pane>
+
     </el-tabs>
 
     <div class="flex-stretch">
@@ -229,5 +233,21 @@ function resetMidiDeviceReplacement() {
   flex-shrink: 1;
   flex-basis: auto;
   max-width: 50%;
+}
+
+.preset-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  line-height: initial;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.preset-tags-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 </style>
