@@ -38,7 +38,7 @@ const categories = Object.values(SynthSerializerCategory).filter(
 const includedCategories = ref(categories)
 
 async function copy() {
-  const data = SynthSerializer.serialize(props.synth);
+  const data = SynthSerializer.serialize(props.synth, includedCategories.value);
 
   await navigator.clipboard.writeText(JSON.stringify(data));
 
@@ -46,7 +46,7 @@ async function copy() {
 }
 
 function save() {
-  const data = SynthSerializer.serialize(props.synth);
+  const data = SynthSerializer.serialize(props.synth, includedCategories.value);
   const name = !!presetName.value ? presetName.value : props.synth.name;
 
   SynthStore.saveSynth(name, data);
