@@ -154,7 +154,7 @@ function resetMidiDeviceReplacement() {
         <div class="flex-stretch">
           <div class="control-item" id="preset-name">
             <span>Synth:</span>
-            <el-select v-model="synthName" filterable clearable @change="selectPreset" @clear="enableAllCategories()">
+            <el-select v-model="synthName" @change="selectPreset" @clear="enableAllCategories()" filterable clearable default-first-option>
               <el-option v-for="(synthPreset, name) in synthPresets" :key="name" :value="name" style="height: fit-content;" class="preset-option">
                 <div>{{ name }}</div>
                 <div class="preset-tags-container">
