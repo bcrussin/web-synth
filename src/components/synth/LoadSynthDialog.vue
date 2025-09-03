@@ -16,9 +16,15 @@ watch(() => props.isVisible,
       synthName.value = "";
       pastedData.value = "";
       includedCategories.value = categories;
+      enableAllCategories();
     }
   }
 )
+
+enum Tab {
+  PRESET = "Preset",
+  PASTE_DATA = "Paste Data"
+}
 
 const SynthStore = useSynthStore();
 const synthPresets = SynthStore.fetchSynths();
@@ -27,18 +33,43 @@ const missingMidiDevices: Ref<{ [key: string]: string }> = ref({}); // { missing
 const replacedMidiDevices: Ref<{ [key: string]: string }> = ref({}) // { missingId: newId }
 
 const categories = Object.values(SynthSerializerCategory);
-
-const includedCategories = ref(categories)
+const disabledCategories: Ref<SynthSerializerCategory[]> = ref([])
+const includedCategories: Ref<SynthSerializerCategory[]> = ref(categories)
 
 const synthName = ref("");
 const pastedData = ref("");
 
-enum Tab {
-  PRESET = "Preset",
-  PASTE_DATA = "Paste Data"
+function enableAllCategories(): void {
+  disabledCategories.value = [];
+}
+
+// Disabled any categories not included in the selected preset
+function selectPreset(name: string) {
+  const presetCategories = SynthSerializer.getPresetCategories(synthPresets[name]);
+
+  if (presetCategories.length > 0) {
+    disabledCategories.value = categories.filter(category => {
+      return !presetCategories.includes(category);
+    });
+  }
+}
+
+// Check if any enabled categories are selected
+function isAnyCategorySelected(): boolean {
+  return includedCategories.value.some(category => !disabledCategories.value.includes(category));
 }
 
 const currentTab = ref(Tab.PRESET);
+
+// Categories should only be disabled if the preset tab is selected
+watch(currentTab, (tab) => {
+  if (tab === Tab.PRESET) {
+    selectPreset(synthName.value);
+    return;
+  }
+
+  enableAllCategories();
+})
 
 function load(checkMissingChannels: boolean = true) {
   let data: SerializedSynth = {};
@@ -123,7 +154,7 @@ function resetMidiDeviceReplacement() {
         <div class="flex-stretch">
           <div class="control-item" id="preset-name">
             <span>Synth:</span>
-            <el-select v-model="synthName">
+            <el-select v-model="synthName" filterable clearable @change="selectPreset" @clear="enableAllCategories()">
               <el-option v-for="(synthPreset, name) in synthPresets" :key="name" :value="name" style="height: fit-content;" class="preset-option">
                 <div>{{ name }}</div>
                 <div class="preset-tags-container">
@@ -152,7 +183,9 @@ function resetMidiDeviceReplacement() {
         <span>Categories:</span>
 
         <el-checkbox-group v-model="includedCategories" id="category-list">
-          <el-checkbox v-for="category in categories" :label="SynthSerializer.getCategoryName(category)" :value="category" />
+          <el-checkbox v-for="category in categories" :label="SynthSerializer.getCategoryName(category)"
+            :value="category" :disabled="disabledCategories.includes(category)" />
+            <!-- disabledCategories.includes(category) ? false :  -->
         </el-checkbox-group>
       </div>
     </div>
@@ -160,7 +193,7 @@ function resetMidiDeviceReplacement() {
     <template #footer>
       <span class="dialog-footer">
         <el-button @click="$emit('update:model-value', false)">Cancel</el-button>
-        <el-button type="primary" @click="load()">Load</el-button>
+        <el-button type="primary" :disabled="!isAnyCategorySelected()" @click="load()">Load</el-button>
       </span>
     </template>
 

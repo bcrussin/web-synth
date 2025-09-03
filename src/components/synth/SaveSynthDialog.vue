@@ -23,6 +23,7 @@ const savedSynths = SynthStore.fetchSynths();
 
 const presetName = ref("");
 
+// Search for any preset names containing query string
 function filterPresetNames(query: string, callback: any) {
   const names = Object.keys(savedSynths)
     .filter(name => name.toLowerCase().includes(query.toLowerCase()))
@@ -31,10 +32,9 @@ function filterPresetNames(query: string, callback: any) {
   callback(names);
 }
 
+// Enable only the categories included in the selected preset
 function selectPreset(name: string) {
   const presetCategories = SynthSerializer.getPresetCategories(savedSynths[name]);
-  console.log(presetCategories)
-
   if (presetCategories.length > 0) {
     includedCategories.value = categories.filter(category => {
       return presetCategories.includes(category)

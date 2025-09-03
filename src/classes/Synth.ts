@@ -190,6 +190,7 @@ export default class Synth {
 			case 'reverb':
 				options.wetLevel = options.wetLevel ?? 0.5
 				effectNode = new this.tuna.Convolver(options)
+				;(effectNode as any).impulseDuration = 1
 				effectNode.convolver.buffer = Global.generateImpulseReponse(1, 1, false)
 				break
 			case 'chorus':
