@@ -11,6 +11,7 @@ export interface Convolver extends Tuna.TunaAudioNode {
   level: { value: number }
   loop: boolean
   convolver: ConvolverNode
+  impulseDuration: number;
 }
 
 const props = defineProps<{ synth: Synth; effectIndex: number }>()
@@ -21,7 +22,7 @@ function getEffect() {
 
 const wet = ref(getEffect().wetLevel.value)
 
-const impulseDuration = ref(props.synth.getEffectProperty(props.effectIndex, 'impulseDuration') ?? 1)
+const impulseDuration = ref(props.synth.getEffectProperty(props.effectIndex, 'impulseDuration'))
 
 watchEffect(() => {
   wet.value = getEffect().wetLevel.value
