@@ -15,7 +15,7 @@ export const useSynthStore = defineStore('synth', {
 		},
 		saveSynth(name: string, data: SerializedSynth) {
 			this.synths[name] = data
-			localStorage.setItem('synths', JSON.stringify(this.synths))
+			localStorage.setItem('synths', JSON.stringify(data))
 		},
 		fetchSynths() {
 			const synths = localStorage.getItem('synths')

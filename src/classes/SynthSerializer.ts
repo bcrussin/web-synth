@@ -45,12 +45,7 @@ export class SynthSerializer {
 	static serialize(synth: Synth, categories?: SynthSerializerCategory[]) {
 		const cateogoriesAreDefined = !!categories
 
-		const data: SerializedSynth = {
-			waveform: {},
-			effects: [],
-			midi: [],
-			settings: {},
-		}
+		const data: SerializedSynth = {}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
 			data.waveform = {
