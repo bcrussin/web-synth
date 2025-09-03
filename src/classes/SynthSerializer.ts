@@ -160,7 +160,7 @@ export class SynthSerializer {
 		return CATEGORY_NAMES?.[category] ?? ''
 	}
 
-	static getPresetCategories(preset: SerializedSynth) {
+	static getPresetCategoryNames(preset: SerializedSynth) {
 		if (!preset || typeof preset !== 'object') {
 			return []
 		}
@@ -169,5 +169,16 @@ export class SynthSerializer {
 			SynthSerializer.getCategoryName(key),
 		)
 		return categoryNames.filter((category) => !!category)
+	}
+
+	static getPresetCategories(preset: SerializedSynth) {
+		if (!preset || typeof preset !== 'object') {
+			return []
+		}
+
+		const categoryNames = Object.keys(preset).filter((key: any) =>
+			Object.values(SynthSerializerCategory).includes(key),
+		)
+		return categoryNames
 	}
 }

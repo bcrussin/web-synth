@@ -127,7 +127,7 @@ function resetMidiDeviceReplacement() {
               <el-option v-for="(synthPreset, name) in synthPresets" :key="name" :value="name" style="height: fit-content;" class="preset-option">
                 <div>{{ name }}</div>
                 <div class="preset-tags-container">
-                  <el-tag type="primary" v-for="category in SynthSerializer.getPresetCategories(synthPreset)">{{ category }}</el-tag>
+                  <el-tag type="primary" v-for="category in SynthSerializer.getPresetCategoryNames(synthPreset)">{{ category }}</el-tag>
                 </div>
               </el-option>
             </el-select>
