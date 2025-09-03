@@ -31,6 +31,17 @@ function filterPresetNames(query: string, callback: any) {
   callback(names);
 }
 
+function selectPreset(name: string) {
+  const presetCategories = SynthSerializer.getPresetCategories(savedSynths[name]);
+  console.log(presetCategories)
+
+  if (presetCategories.length > 0) {
+    includedCategories.value = categories.filter(category => {
+      return presetCategories.includes(category)
+    })
+  }
+}
+
 const categories = Object.values(SynthSerializerCategory);
 
 const includedCategories = ref(categories)
@@ -68,7 +79,7 @@ function save() {
     <div class="flex-stretch">
       <div class="control-item" id="preset-name">
         <span>Preset Name:</span>
-        <el-autocomplete v-model="presetName" :placeholder="props.synth.name" :fetch-suggestions="filterPresetNames" clearable>
+        <el-autocomplete v-model="presetName" :placeholder="props.synth.name" :fetch-suggestions="filterPresetNames" clearable @select="(e: any) => selectPreset(e.value)">
           <template #default="{ item }">
             <div  class="preset-option">
               <div>{{ item.value }}</div>
