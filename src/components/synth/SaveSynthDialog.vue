@@ -31,9 +31,7 @@ function filterPresetNames(query: string, callback: any) {
   callback(names);
 }
 
-const categories = Object.values(SynthSerializerCategory).filter(
-  v => typeof v === "number"
-) as number[];
+const categories = Object.values(SynthSerializerCategory);
 
 const includedCategories = ref(categories)
 
@@ -70,7 +68,16 @@ function save() {
     <div class="flex-stretch">
       <div class="control-item" id="preset-name">
         <span>Preset Name:</span>
-        <el-autocomplete v-model="presetName" :placeholder="props.synth.name" :fetch-suggestions="filterPresetNames" clearable></el-autocomplete>
+        <el-autocomplete v-model="presetName" :placeholder="props.synth.name" :fetch-suggestions="filterPresetNames" clearable>
+          <template #default="{ item }">
+            <div  class="preset-option">
+              <div>{{ item.value }}</div>
+              <div class="preset-tags-container">
+                <el-tag type="primary" v-for="category in SynthSerializer.getPresetCategories(savedSynths[item.value])">{{ category }}</el-tag>
+              </div>
+            </div>
+          </template>
+        </el-autocomplete>
       </div>
     </div>
 
@@ -103,5 +110,21 @@ function save() {
   margin-left: 16px;
   display: flex;
   flex-direction: column;
+}
+
+.preset-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  line-height: initial;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.preset-tags-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 </style>
