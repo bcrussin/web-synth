@@ -116,6 +116,8 @@ export class SynthSerializer {
 					if (!!effect) return effect
 				})
 				.filter((effect) => !!effect)
+
+			synth.updateEffectNodes()
 		}
 
 		if (
