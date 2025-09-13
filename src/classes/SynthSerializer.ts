@@ -184,9 +184,9 @@ export class SynthSerializer {
 			return []
 		}
 
-		const categoryNames = Object.keys(preset).filter((key: any) =>
+		const categories = Object.keys(preset).filter((key: any) =>
 			Object.values(SynthSerializerCategory).includes(key),
 		)
-		return categoryNames
+		return categories
 	}
 }
