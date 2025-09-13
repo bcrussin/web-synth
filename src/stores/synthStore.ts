@@ -15,9 +15,6 @@ export const useSynthStore = defineStore('synth', {
 		},
 		saveSynth(name: string, data: SerializedSynth) {
 			this.synths[name] = data
-			console.log(this.synths)
-			// console.log(JSON.stringify(this.synths))
-			debugStringify(this.synths)
 			localStorage.setItem('synths', JSON.stringify(this.synths))
 		},
 		fetchSynths() {
@@ -31,22 +28,3 @@ export const useSynthStore = defineStore('synth', {
 		},
 	},
 })
-
-function debugStringify(obj: any) {
-	const seen = new WeakSet()
-
-	return JSON.stringify(
-		obj,
-		function (key, value) {
-			if (typeof value === 'object' && value !== null) {
-				if (seen.has(value)) {
-					console.warn('Circular reference found at key:', key, 'in parent:', this)
-					return '[Circular]'
-				}
-				seen.add(value)
-			}
-			return value
-		},
-		2,
-	)
-}
