@@ -1,16 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { reactive, ref, type Ref } from 'vue'
+import { reactive, ref, shallowReactive, shallowRef, triggerRef, watch, type Ref } from 'vue'
 import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import FFT from './FFT'
 import Tuna from 'tunajs'
 import MidiDevice from './MidiDevice'
-import { set } from '@vueuse/core'
-import { serializeTunaEffect } from './TunaSerializers'
-import MidiManager from './MidiManager'
-import { loadTunaEffect } from './TunaDeserializers'
-import type { SerializedMidiChannel } from './MidiChannel'
-import MidiChannel from './MidiChannel'
 
 export interface SynthOptions {
 	name?: string
@@ -29,10 +23,21 @@ export interface SynthOptions {
 }
 
 export default class Synth {
-	static SYNTHS: Ref<{ [key: string]: Synth }> = ref({})
+	static SYNTHS: Ref<{ [key: UUID]: Synth }> = shallowRef({})
 
 	midiDevice: MidiDevice | null // Ref<MidiDevice | null>
-	name: string
+
+	id: UUID = crypto.randomUUID()
+
+	nameRef: Ref<string>
+
+	get name() {
+		return this.nameRef.value
+	}
+	set name(value: string) {
+		this.nameRef.value = value
+	}
+
 	type: string
 	preset: string | undefined
 	attack: number
@@ -143,21 +148,23 @@ export default class Synth {
 		this.sustain = 1
 		this.decay = 0.5
 
-		this.name = options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`
-		Synth.SYNTHS.value[this.name] = this
+		this.nameRef = ref(options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`)
+		Synth.SYNTHS.value[this.id] = this
+		triggerRef(Synth.SYNTHS)
 	}
 
-	static getSynths(): { [key: string]: Synth } {
+	static getSynths(): { [key: UUID]: Synth } {
 		return Synth.SYNTHS.value
 	}
 
-	static getSynth(name: string): Synth {
-		return Synth.SYNTHS.value[name]
+	static getSynth(id: UUID): any {
+		return shallowReactive(Synth.SYNTHS.value[id])
 	}
 
 	delete(): void {
 		this.setMidiDevice()
-		delete Synth.SYNTHS.value[this.name]
+		delete Synth.SYNTHS.value[this.id]
+		triggerRef(Synth.SYNTHS)
 	}
 
 	updateEffectNodes() {
@@ -509,6 +516,7 @@ export default class Synth {
 		} else {
 			this.wavetable = [...wavetable]
 		}
+		console.log(wavetable, this.wavetable)
 
 		// Presets assume stretch value of 4
 		const transformed = FFT(wavetable, 4)

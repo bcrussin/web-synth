@@ -10,8 +10,9 @@ import MidiManager from '@/classes/MidiManager'
 import MidiChannel from '@/classes/MidiChannel'
 import MidiParamDialog from '../MidiParamDialog.vue'
 
-const props = defineProps<{ selectingElement: any; synth: Synth }>()
+const props = defineProps<{ selectingElement: any; synthId: UUID }>()
 const emit = defineEmits(['selectElement'])
+const synth = Synth.getSynth(props.synthId)
 
 const wavetableGraphRef = ref<typeof WavetableGraph | null>(null)
 
@@ -30,25 +31,25 @@ const wavetableSizeMarks = {
 }
 
 function getSynthType(): string {
-	return props.synth.getPresetOrType()
+	return synth.getPresetOrType()
 }
 
 function setSynthValue(property: string, value: number | string) {
-	props.synth.setProperty(property, value)
+	synth.setProperty(property, value)
 }
 
 function setWaveType(value: string): void {
 	const option = getPresets().find((preset) => preset.value == value)
 	if (option.isPreset) {
 		const instrument = presets.getInstrument(option.value)
-		props.synth.setWavetable(instrument.wavetable)
-		props.synth.setPreset(option.value)
-		props.synth.setProperty('attack', instrument.attack)
-		props.synth.setProperty('decay', instrument.decay)
-		props.synth.setProperty('sustain', instrument.sustain)
-		props.synth.setProperty('release', instrument.release)
+		synth.setWavetable(instrument.wavetable)
+		synth.setPreset(option.value)
+		synth.setProperty('attack', instrument.attack)
+		synth.setProperty('decay', instrument.decay)
+		synth.setProperty('sustain', instrument.sustain)
+		synth.setProperty('release', instrument.release)
 	} else {
-		props.synth.setWaveType(option.value)
+		synth.setWaveType(option.value)
 	}
 }
 
@@ -130,7 +131,7 @@ function getPresets() {
 	</div>
 
 	<div id="wavetable-container">
-		<WavetableGraph ref="wavetableGraphRef" :synth="synth"></WavetableGraph>
+		<WavetableGraph ref="wavetableGraphRef" :synthId="synth.id"></WavetableGraph>
 
 		<div id="settings-footer" class="flex horizontal">
 			<el-select id="wavetable-presets" :model-value="getSynthType()" @change="setWaveType($event)">

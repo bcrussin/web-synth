@@ -5,38 +5,39 @@ import MidiDevice from '@/classes/MidiDevice'
 import Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 
-const props = defineProps<{ synth: Synth }>()
+const props = defineProps<{ synthId: UUID }>()
+const synth = Synth.getSynth(props.synthId)
 
-const midiDevice = ref(props.synth.midiDevice?.input?.id)
+const midiDevice = ref(synth.midiDevice?.input?.id)
 
 watchEffect(() => {
-	midiDevice.value = props.synth.midiDevice?.input?.id
+	midiDevice.value = synth.midiDevice?.input?.id
 })
 
 function setMidiDevice(id: string) {
-	props.synth.setMidiDevice(id)
+	synth.setMidiDevice(id)
 }
 
 function setSynthValue(property: string, value: number | string | boolean) {
-	props.synth.setProperty(property, value)
+	synth.setProperty(property, value)
 }
 
 function changeTranspose(value: number) {
-	props.synth.changeTranspose(value)
+	synth.changeTranspose(value)
 }
 
 function setTranspose(value: number) {
-	props.synth.setTranspose(value)
+	synth.setTranspose(value)
 }
 
 function setMaxPolyphony(value: number) {
-	props.synth.setMaxPolyphony(value)
+	synth.setMaxPolyphony(value)
 }
 
 function getMaxPolyphony(): number {
-	if (props.synth.maxPolyphony == Infinity) return 0
+	if (synth.maxPolyphony == Infinity) return 0
 
-	return props.synth.maxPolyphony
+	return synth.maxPolyphony
 }
 </script>
 
@@ -69,12 +70,7 @@ function getMaxPolyphony(): number {
 		</div>
 		<div>
 			<span>Transpose Octaves:</span>
-			<el-input-number
-				:model-value="props.synth.transpose"
-				:min="-4"
-				:max="4"
-				@change="setTranspose"
-			/>
+			<el-input-number :model-value="synth.transpose" :min="-4" :max="4" @change="setTranspose" />
 		</div>
 		<el-divider content-position="left">Polyphony</el-divider>
 		<div class="selectable">
@@ -90,12 +86,12 @@ function getMaxPolyphony(): number {
 		</div>
 		<el-checkbox
 			label="Legato"
-			:model-value="props.synth.legato"
+			:model-value="synth.legato"
 			@change="setSynthValue('legato', $event)"
 		/>
 		<el-checkbox
 			label="Glide"
-			:model-value="props.synth.glide"
+			:model-value="synth.glide"
 			@change="setSynthValue('glide', $event)"
 		/>
 		<div class="selectable">
@@ -103,7 +99,7 @@ function getMaxPolyphony(): number {
 			<el-input-number
 				data-param="Synth Glide Amount"
 				class="control"
-				:model-value="props.synth.glideAmountMs"
+				:model-value="synth.glideAmountMs"
 				:min="0"
 				:max="1000"
 				:step="50"
@@ -113,7 +109,7 @@ function getMaxPolyphony(): number {
 		<!-- <div>
 			<span>Transpose:</span>
 			<el-button @click="changeTranspose(-1)">-</el-button>
-			<span>{{ props.synth.transpose }}</span>
+			<span>{{ synth.transpose }}</span>
 			<el-button @click="changeTranspose(1)">+</el-button>
 		</div> -->
 	</div>

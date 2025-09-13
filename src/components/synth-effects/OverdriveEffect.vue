@@ -1,101 +1,102 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import Global from '@/classes/Audio'
-import type Synth from '@/classes/Synth'
+import Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
 
 export interface Overdrive extends Tuna.TunaAudioNode {
-  outputDrive: { gain: { value: number } }
-  inputDrive: { gain: { value: number } }
-  curveAmount: number
-  algorithmIndex: { value: number }
-  output: GainNode
+	outputDrive: { gain: { value: number } }
+	inputDrive: { gain: { value: number } }
+	curveAmount: number
+	algorithmIndex: { value: number }
+	output: GainNode
 }
 
-const props = defineProps<{ synth: Synth; effectIndex: number }>()
+const props = defineProps<{ synthId: UUID; effectIndex: number }>()
+const synth = Synth.getSynth(props.synthId)
 
 function getEffect() {
-  return props.synth.getEffect(props.effectIndex) as Overdrive
+	return synth.getEffect(props.effectIndex) as Overdrive
 }
 
 const outputGain = ref(getEffect().outputDrive.gain.value)
 const drive = ref(getEffect().inputDrive.gain.value)
 
 watchEffect(() => {
-  outputGain.value = getEffect().outputDrive.gain.value
-  drive.value = getEffect().inputDrive.gain.value
+	outputGain.value = getEffect().outputDrive.gain.value
+	drive.value = getEffect().inputDrive.gain.value
 })
 
 function setPropertyValue(property: string, value: number) {
-  props.synth.setEffectProperty(props.effectIndex, property, value, true)
+	synth.setEffectProperty(props.effectIndex, property, value, true)
 }
 
 function setProperty(property: string, value: number) {
-  props.synth.setEffectProperty(props.effectIndex, property, value)
+	synth.setEffectProperty(props.effectIndex, property, value)
 }
 </script>
 
 <template>
-  <div class="effect-property">
-    <span>Gain:</span>
-    <el-slider
-      :min="0"
-      :max="5"
-      :step="0.1"
-      v-model="outputGain"
-      @input="setPropertyValue('outputGain', $event)"
-    >
-    </el-slider>
-  </div>
-  <div class="effect-property">
-    <span>Drive:</span>
-    <el-slider
-      :min="0"
-      :max="0.8"
-      :step="0.05"
-      v-model="drive"
-      @input="setPropertyValue('drive', $event)"
-    >
-    </el-slider>
-  </div>
-  <div class="effect-property">
-    <span>Curve Amount:</span>
-    <el-slider
-      :min="0"
-      :max="1"
-      :step="0.1"
-      :model-value="getEffect().curveAmount"
-      @input="setProperty('curveAmount', $event)"
-    >
-    </el-slider>
-  </div>
-  <div class="effect-property">
-    <span>Algorithm:</span>
-    <el-slider
-      :min="0"
-      :max="5"
-      :step="1"
-      :model-value="getEffect().algorithmIndex"
-      @input="setProperty('algorithmIndex', $event)"
-    >
-    </el-slider>
-  </div>
+	<div class="effect-property">
+		<span>Gain:</span>
+		<el-slider
+			:min="0"
+			:max="5"
+			:step="0.1"
+			v-model="outputGain"
+			@input="setPropertyValue('outputGain', $event)"
+		>
+		</el-slider>
+	</div>
+	<div class="effect-property">
+		<span>Drive:</span>
+		<el-slider
+			:min="0"
+			:max="0.8"
+			:step="0.05"
+			v-model="drive"
+			@input="setPropertyValue('drive', $event)"
+		>
+		</el-slider>
+	</div>
+	<div class="effect-property">
+		<span>Curve Amount:</span>
+		<el-slider
+			:min="0"
+			:max="1"
+			:step="0.1"
+			:model-value="getEffect().curveAmount"
+			@input="setProperty('curveAmount', $event)"
+		>
+		</el-slider>
+	</div>
+	<div class="effect-property">
+		<span>Algorithm:</span>
+		<el-slider
+			:min="0"
+			:max="5"
+			:step="1"
+			:model-value="getEffect().algorithmIndex"
+			@input="setProperty('algorithmIndex', $event)"
+		>
+		</el-slider>
+	</div>
 </template>
 
 <style scoped>
 .effect-property {
-  display: flex;
-  flex-direction: row;
-  place-content: center;
-  gap: 8px;
+	display: flex;
+	flex-direction: row;
+	place-content: center;
+	gap: 8px;
 }
 
 .effect-property span {
-  white-space: nowrap;
+	white-space: nowrap;
 }
 
 .el-slider {
-  margin: 0 16px;
+	margin: 0 16px;
 }
 </style>

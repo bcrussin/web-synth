@@ -7,7 +7,7 @@ import MidiChannel, { type MidiChannelOptions } from './MidiChannel'
 import MidiManager from './MidiManager'
 
 interface SynthParams {
-	[synthName: string]: {
+	[synthId: UUID]: {
 		[channel: number]: MidiChannel
 	}
 }
@@ -154,7 +154,7 @@ export default class MidiDevice {
 		return velocityMapped
 	}
 
-	addSynth(synth: Synth | string) {
+	addSynth(synth: Synth | UUID) {
 		if (typeof synth === 'string') synth = Synth.getSynth(synth)
 
 		if (synth == undefined) return
@@ -162,16 +162,16 @@ export default class MidiDevice {
 		this.synths.push(synth)
 	}
 
-	removeSynth(name: string): void {
-		this.synths = this.synths.filter((synth) => synth.name != name)
+	removeSynth(id: string): void {
+		this.synths = this.synths.filter((synth) => synth.id != id)
 	}
 
-	getChannelProperties(synthName: string, channel: number) {
-		return this.channelSettings[synthName][channel]
+	getChannelProperties(synthId: UUID, channel: number) {
+		return this.channelSettings[synthId][channel]
 	}
 
-	getChannelProperty(synthName: string, channel: number, property: keyof MidiChannelOptions) {
-		return this.channelSettings[synthName][channel].getProperty(property)
+	getChannelProperty(synthId: UUID, channel: number, property: keyof MidiChannelOptions) {
+		return this.channelSettings[synthId][channel].getProperty(property)
 	}
 
 	setChannelProperty<K extends keyof MidiChannelOptions>(
@@ -180,21 +180,21 @@ export default class MidiDevice {
 		property: K,
 		value: MidiChannelOptions[K],
 	) {
-		if (this.channelSettings[synth.name] == undefined) {
+		if (this.channelSettings[synth.id] == undefined) {
 			console.error(`Synth ${synth.name} has no data for channel ${channel}`)
 			return //this.channelSettings[synth.name] = {}
 		}
 
-		this.channelSettings[synth.name][channel].setProperty(property, value)
+		this.channelSettings[synth.id][channel].setProperty(property, value)
 	}
 
 	setChannelProperties(synth: Synth, channel: number, data: MidiChannelOptions) {
-		if (this.channelSettings[synth.name] == undefined) {
+		if (this.channelSettings[synth.id] == undefined) {
 			console.error(`Synth ${synth.name} has no data for channel ${channel}`)
 			return //this.channelSettings[synth.name] = {}
 		}
 
-		this.channelSettings[synth.name][channel].setProperties(data)
+		this.channelSettings[synth.id][channel].setProperties(data)
 	}
 
 	setParam(channelProps: MidiChannel, percent: number, synth?: Synth) {

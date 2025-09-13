@@ -91,11 +91,7 @@ export class SynthSerializer {
 		return data
 	}
 
-	static load(
-		synth: Synth,
-		data: DeepReadonly<SerializedSynth>,
-		categories?: SynthSerializerCategory[],
-	) {
+	static load(synth: Synth, data: SerializedSynth, categories?: SynthSerializerCategory[]) {
 		const cateogoriesAreDefined = !!categories
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
@@ -108,7 +104,7 @@ export class SynthSerializer {
 			synth.type = waveformData?.type ?? synth.type
 
 			if (!!waveformData?.wavetable) {
-				synth.setWavetable([...waveformData.wavetable])
+				synth.setWavetable(waveformData.wavetable)
 			}
 
 			if (!!waveformData?.preset) {
@@ -141,7 +137,6 @@ export class SynthSerializer {
 			data[SynthSerializerCategory.MIDI].forEach((channelData) => {
 				if (!MidiDevice.DEVICES[channelData.device]) return
 
-				// Important spread here, otherwise we mutate the actual save data and cause a cyclical object ref
 				let options: MidiChannelOptions = { ...channelData.options, synth }
 
 				const channel = new MidiChannel(MidiDevice.DEVICES[channelData.device], options)

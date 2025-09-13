@@ -6,7 +6,8 @@ import { ElMessage } from 'element-plus'
 
 class InvalidWaveformError extends Error {}
 
-const props = defineProps<{ synth: Synth }>()
+const props = defineProps<{ synthId: UUID }>()
+const synth = Synth.getSynth(props.synthId)
 
 const wavetable: Ref<number[], number[]> = ref([])
 let ctx: CanvasRenderingContext2D | null | undefined
@@ -15,14 +16,14 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 defineExpose({ wavetable, resizeWavetable, setTransparent })
 
 watch(
-	() => props.synth.type,
+	() => synth.type,
 	(newType: string | null) => {
 		setTransparent()
 	},
 )
 
 watch(
-	() => props.synth.wavetable,
+	() => synth.wavetable,
 	(newWaveTable: number[] | null) => {
 		if (!!newWaveTable) {
 			wavetable.value = newWaveTable
@@ -32,8 +33,8 @@ watch(
 )
 
 onMounted(() => {
-	if (!!props.synth.wavetable) {
-		wavetable.value = props.synth.wavetable
+	if (!!synth.wavetable) {
+		wavetable.value = synth.wavetable
 		resizeWavetable()
 	} else {
 		wavetable.value = new Array(length).fill(0)
@@ -62,7 +63,7 @@ function resizeWavetable(size?: number) {
 	}
 
 	render()
-	props.synth.setWavetable(wavetable.value)
+	synth.setWavetable(wavetable.value)
 }
 
 function render() {
@@ -93,8 +94,8 @@ function edit(e: MouseEvent | Touch) {
 
 	render()
 
-	props.synth.setWavetable(wavetable.value)
-	props.synth.setWaveType('custom')
+	synth.setWavetable(wavetable.value)
+	synth.setWaveType('custom')
 	// setWaveType("custom");
 }
 
@@ -111,7 +112,7 @@ function onTouchMove(e: TouchEvent) {
 function setTransparent(isTransparent?: boolean) {
 	if (canvasRef.value == undefined) return
 
-	isTransparent = isTransparent ?? !(!!props.synth.preset || props.synth.type == 'custom')
+	isTransparent = isTransparent ?? !(!!synth.preset || synth.type == 'custom')
 
 	if (isTransparent) {
 		canvasRef.value.classList.add('transparent')
@@ -126,8 +127,8 @@ function copyWavetable() {
 
 function pasteWavetable() {
 	navigator.clipboard.readText().then((clipboard) => {
-		const originalWavetable = props.synth.wavetable
-		const originalWaveType = props.synth.type
+		const originalWavetable = synth.wavetable
+		const originalWaveType = synth.type
 
 		try {
 			if (!clipboard.startsWith('[')) clipboard = '[' + clipboard
@@ -140,8 +141,8 @@ function pasteWavetable() {
 
 				if (!parsedNumeric) throw new InvalidWaveformError('Array must contain numbers only')
 
-				props.synth.setWavetable(parsedNumeric)
-				props.synth.setWaveType('custom')
+				synth.setWavetable(parsedNumeric)
+				synth.setWaveType('custom')
 			}
 		} catch (err) {
 			if (err instanceof InvalidWaveformError) {
@@ -151,8 +152,8 @@ function pasteWavetable() {
 				showPasteError()
 
 				// Restore original wave data if something goes wrong
-				if (!!originalWavetable) props.synth.setWavetable(originalWavetable)
-				if (!!originalWaveType) props.synth.setWaveType(originalWaveType)
+				if (!!originalWavetable) synth.setWavetable(originalWavetable)
+				if (!!originalWaveType) synth.setWaveType(originalWaveType)
 			}
 		}
 	})
