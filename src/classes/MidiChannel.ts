@@ -41,7 +41,7 @@ export default class MidiChannel {
 		this.channelNumber = options?.channelNumber ?? 1
 
 		if (!!options?.synth) {
-			this.synths[options.synth.name] = options.synth
+			this.synths[options.synth.id] = options.synth
 		}
 
 		this.param = options?.param ?? ''

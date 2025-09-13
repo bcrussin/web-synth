@@ -3,13 +3,28 @@ import Synth from '@/classes/Synth'
 import SynthDialog from './SynthDialog.vue'
 
 import Global from '@/classes/Audio'
-import { ref, type Ref } from 'vue'
+import { ref, watch, type Ref } from 'vue'
 
 const currentSynth: Ref<string | undefined> = ref(undefined)
 const settingsDialogs = new Set<string>()
 
-function openDialog(synth: Synth) {
-	currentSynth.value = synth.name
+const synthList = ref()
+
+// watch(
+// 	() => Synth.SYNTHS.value,
+// 	() => {
+// 		const synthRefs = Object.keys(Synth.getSynths()).reduce((acc: any, name) => {
+// 			acc[name] = Synth.getSynth(name)
+// 			return acc
+// 		}, {})
+
+// 		synthList.value = synthRefs
+// 	},
+// 	{ deep: true },
+// )
+
+function openDialog(synthId: UUID) {
+	currentSynth.value = synthId
 	// settingsDialogs.add(synth.name)
 }
 function closeDialog() {
@@ -27,15 +42,15 @@ function addSynth(): void {
 	<section id="synths-list" class="horizontal">
 		<el-button
 			class="synth-button"
-			v-for="(synth, name) in Synth.getSynths()"
+			v-for="(synth, id) in Synth.getSynths()"
 			v-bind:class="{ playing: synth.isPlaying(), suspended: Global.suspended.value }"
-			:key="name"
+			:key="id"
 			plain
 			round
 			size="default"
-			@click="openDialog(synth)"
+			@click="openDialog(id)"
 		>
-			{{ name }}
+			{{ synth.nameRef }}
 		</el-button>
 
 		<el-button round size="default" @click="addSynth"> + </el-button>
@@ -44,7 +59,7 @@ function addSynth(): void {
 	<SynthDialog
 		v-if="currentSynth"
 		:key="currentSynth"
-		:synth="Synth.getSynth(currentSynth)"
+		:synthId="currentSynth"
 		@update:model-value="() => closeDialog()"
 	/>
 </template>

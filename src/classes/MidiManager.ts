@@ -4,8 +4,8 @@ import type Synth from './Synth'
 import type MidiChannel from './MidiChannel'
 
 export default class MidiManager {
-	static channelsByDevice = reactive(new Map<string, Map<string, Set<MidiChannel>>>())
-	static channelsBySynth = reactive(new Map<string, Set<MidiChannel>>())
+	static channelsByDevice = reactive(new Map<string, Map<UUID, Set<MidiChannel>>>())
+	static channelsBySynth = reactive(new Map<UUID, Set<MidiChannel>>())
 	static globalChannels = reactive(new Map<string, Set<MidiChannel>>())
 
 	static registerChannel(channel: MidiChannel) {
@@ -26,17 +26,17 @@ export default class MidiManager {
 			const deviceSynths = this.channelsByDevice.get(deviceName)
 
 			Object.values(channel.synths).forEach((synth) => {
-				if (!deviceSynths!.has(synth.name)) {
-					this.channelsByDevice.get(deviceName)!.set(synth.name, new Set())
+				if (!deviceSynths!.has(synth.id)) {
+					this.channelsByDevice.get(deviceName)!.set(synth.id, new Set())
 				}
 
-				const synthChannels = deviceSynths!.get(synth.name)
+				const synthChannels = deviceSynths!.get(synth.id)
 				synthChannels!.add(channel)
 
-				if (!this.channelsBySynth.has(synth.name)) {
-					this.channelsBySynth.set(synth.name, new Set())
+				if (!this.channelsBySynth.has(synth.id)) {
+					this.channelsBySynth.set(synth.id, new Set())
 				}
-				this.channelsBySynth.get(synth.name)!.add(channel)
+				this.channelsBySynth.get(synth.id)!.add(channel)
 			})
 		}
 	}
@@ -48,9 +48,9 @@ export default class MidiManager {
 			this.globalChannels.delete(deviceName)
 		} else {
 			Object.values(channel.synths).forEach((synth) => {
-				this.channelsByDevice.get(deviceName)?.get(synth.name)?.delete(channel)
+				this.channelsByDevice.get(deviceName)?.get(synth.id)?.delete(channel)
 
-				this.channelsBySynth.get(synth.name)?.delete(channel)
+				this.channelsBySynth.get(synth.id)?.delete(channel)
 			})
 		}
 	}
@@ -58,12 +58,12 @@ export default class MidiManager {
 	static getChannels(device: MidiDevice, synth: Synth, channelNumber: number): MidiChannel[] {
 		if (!device) return []
 
-		const allChannels = Array.from(this.channelsByDevice.get(device.name)?.get(synth.name) ?? [])
+		const allChannels = Array.from(this.channelsByDevice.get(device.name)?.get(synth.id) ?? [])
 		return Array.from(allChannels.filter((channel) => channel.channelNumber == channelNumber))
 	}
 
 	static getChannelsForSynth(synth: Synth): MidiChannel[] {
-		return Array.from(this.channelsBySynth.get(synth.name) ?? [])
+		return Array.from(this.channelsBySynth.get(synth.id) ?? [])
 	}
 
 	static getChannelsForDevice(device: MidiDevice): MidiChannel[] {
@@ -75,7 +75,7 @@ export default class MidiManager {
 	static getChannelsForDeviceAndSynth(device: MidiDevice | null, synth: Synth): MidiChannel[] {
 		if (!device) return []
 
-		return Array.from(this.channelsByDevice.get(device.name)?.get(synth.name) ?? [])
+		return Array.from(this.channelsByDevice.get(device.name)?.get(synth.id) ?? [])
 	}
 
 	static getGlobalChannel(device: MidiDevice): MidiChannel | undefined {
