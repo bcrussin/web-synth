@@ -81,10 +81,10 @@ function save() {
         <span>Preset Name:</span>
         <el-autocomplete v-model="presetName" :placeholder="props.synth.name" :fetch-suggestions="filterPresetNames" clearable @select="(e: any) => selectPreset(e.value)">
           <template #default="{ item }">
-            <div  class="preset-option">
+            <div class="preset-option">
               <div>{{ item.value }}</div>
               <div class="preset-tags-container">
-                <el-tag type="primary" v-for="category in SynthSerializer.getPresetCategories(savedSynths[item.value])">{{ category }}</el-tag>
+                <el-tag type="primary" v-for="category in SynthSerializer.getPresetCategoryNames(savedSynths[item.value])">{{ category }}</el-tag>
               </div>
             </div>
           </template>
