@@ -14,7 +14,7 @@ export interface MidiChannelOptions {
 export interface SerializedMidiChannel {
 	device: string
 	deviceName: string
-	options?: MidiChannelOptions
+	options: Omit<MidiChannelOptions, 'synth'>
 }
 
 export interface SynthMap {
