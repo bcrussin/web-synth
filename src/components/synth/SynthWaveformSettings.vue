@@ -65,32 +65,6 @@ function getPresets() {
 
 	return [...properties, ...presetOptions]
 }
-
-// function controlSelected(e: Event) {
-//   if (props.selectingElement) {
-//     console.log(e)
-//     const target = e.target as HTMLElement
-//     const control = target.querySelector('.control')
-//     emit('selectElement', control)
-//   }
-// }
-
-// onMounted(() => {
-//   const elements = document.querySelectorAll('.selectable')
-//   elements.forEach((element) => {
-//     element.addEventListener('click', controlSelected)
-//   })
-// })
-
-// function getPresets() {
-//   const presetOptions: any = { label: 'Presets', items: [] }
-
-//   Object.entries(presets.instruments).forEach(([name, data]: [string, any]) => {
-//     presetOptions.items.push({ name: data.displayName, value: name, isPreset: true })
-//   })
-
-//   return [{ label: 'Wave Types', items: properties }, presetOptions]
-// }
 </script>
 
 <template>
@@ -182,35 +156,6 @@ function getPresets() {
 		</div>
 	</div>
 </template>
-
-<!-- <script lang="ts">
-export default {
-  props: {
-    synth: Synth,
-  },
-  data() {
-    return {
-      properties: [
-        { name: 'Sine', value: 'sine' },
-        { name: 'Sawtooth', value: 'sawtooth' },
-        { name: 'Triangle', value: 'triangle' },
-      ],
-    }
-  },
-  methods: {
-    setSynthValue(property: string, value: number | string) {
-      if (this.synth == undefined) return
-
-      this.synth.setProperty(property, value)
-    },
-    setWaveType(option: { name: string; value: string }): void {
-      if (this.synth == undefined) return
-
-      this.synth.setWaveType(option.value)
-    },
-  },
-}
-</script> -->
 
 <style scoped>
 #wavetable-container {

@@ -4,6 +4,8 @@ import '@/assets/main.css'
 import { onMounted, ref, watch, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
 
+class InvalidWaveformError extends Error {}
+
 const props = defineProps<{ synth: Synth }>()
 
 const wavetable: Ref<number[], number[]> = ref([])
@@ -124,30 +126,59 @@ function copyWavetable() {
 
 function pasteWavetable() {
 	navigator.clipboard.readText().then((clipboard) => {
+		const originalWavetable = props.synth.wavetable
+		const originalWaveType = props.synth.type
+
 		try {
 			if (!clipboard.startsWith('[')) clipboard = '[' + clipboard
 			if (!clipboard.endsWith(']')) clipboard = clipboard + ']'
 
 			const parsed = JSON.parse(clipboard)
+
 			if (Array.isArray(parsed)) {
-				props.synth.setWavetable(parsed)
+				const parsedNumeric = parseWavetable(parsed)
+
+				if (!parsedNumeric) throw new InvalidWaveformError('Array must contain numbers only')
+
+				props.synth.setWavetable(parsedNumeric)
 				props.synth.setWaveType('custom')
 			}
 		} catch (err) {
-			console.error(err)
-			showPasteError()
-			return
+			if (err instanceof InvalidWaveformError) {
+				showPasteError(err.message)
+			} else {
+				console.error(err)
+				showPasteError()
+
+				// Restore original wave data if something goes wrong
+				if (!!originalWavetable) props.synth.setWavetable(originalWavetable)
+				if (!!originalWaveType) props.synth.setWaveType(originalWaveType)
+			}
 		}
 	})
 }
 
-function saveWavetable() {}
-function exportWavetable() {}
-function importWavetable() {}
+function parseWavetable(data: any[]): number[] | null {
+	const values: number[] = []
 
-function showPasteError() {
+	const isValid = data.every((value) => {
+		const number = Number(value)
+		if (!Number.isFinite(number)) return false
+
+		values.push(number)
+		return true
+	})
+
+	if (!isValid) return null
+
+	return values
+}
+
+function showPasteError(message?: string) {
+	message = message ?? 'Invalid waveform data in clipboard'
+
 	ElMessage.error({
-		message: 'Invalid waveform data in clipboard',
+		message: message,
 	})
 }
 </script>
@@ -168,25 +199,6 @@ function showPasteError() {
 			<el-button id="paste-wavetable" @click="pasteWavetable()">
 				<v-icon name="md-contentpaste-round" scale="0.8"></v-icon>
 			</el-button>
-
-			<!-- More Options -->
-			<el-dropdown id="wavetable-more" trigger="click">
-				<el-button>
-					<v-icon name="fa-ellipsis-h" scale="0.8"></v-icon>
-				</el-button>
-
-				<template #dropdown>
-					<el-dropdown-item @click="saveWavetable()">
-						<v-icon name="hi-database" scale="0.8"></v-icon> Save Locally
-					</el-dropdown-item>
-					<el-dropdown-item @click="importWavetable()">
-						<v-icon name="fa-upload" scale="0.8"></v-icon> Import from File
-					</el-dropdown-item>
-					<el-dropdown-item @click="exportWavetable()">
-						<v-icon name="fa-download" scale="0.8"></v-icon> Save to File
-					</el-dropdown-item>
-				</template>
-			</el-dropdown>
 		</div>
 	</div>
 </template>
