@@ -1,9 +1,14 @@
-import MidiChannel, { type SerializedMidiChannel } from './MidiChannel'
+import MidiChannel, { type SerializedMidiChannel, type MidiChannelOptions } from './MidiChannel'
 import MidiDevice from './MidiDevice'
 import MidiManager from './MidiManager'
 import type Synth from './Synth'
 import { loadTunaEffect } from './TunaDeserializers'
 import { serializeTunaEffect } from './TunaSerializers'
+
+// Used to prevent accidental mutation of saved data
+type DeepReadonly<T> = {
+	readonly [P in keyof T]: DeepReadonly<T[P]>
+}
 
 export enum SynthSerializerCategory {
 	WAVEFORM = 'waveform',
@@ -72,7 +77,7 @@ export class SynthSerializer {
 			)
 		}
 
-		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI)) {
+		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.SETTINGS)) {
 			data[SynthSerializerCategory.SETTINGS] = {
 				volume: synth.volume,
 				transpose: synth.transpose,
@@ -86,7 +91,11 @@ export class SynthSerializer {
 		return data
 	}
 
-	static load(synth: Synth, data: SerializedSynth, categories?: SynthSerializerCategory[]) {
+	static load(
+		synth: Synth,
+		data: DeepReadonly<SerializedSynth>,
+		categories?: SynthSerializerCategory[],
+	) {
 		const cateogoriesAreDefined = !!categories
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
@@ -99,7 +108,7 @@ export class SynthSerializer {
 			synth.type = waveformData?.type ?? synth.type
 
 			if (!!waveformData?.wavetable) {
-				synth.setWavetable(waveformData.wavetable)
+				synth.setWavetable([...waveformData.wavetable])
 			}
 
 			if (!!waveformData?.preset) {
@@ -132,11 +141,10 @@ export class SynthSerializer {
 			data[SynthSerializerCategory.MIDI].forEach((channelData) => {
 				if (!MidiDevice.DEVICES[channelData.device]) return
 
-				if (!!channelData.options) {
-					channelData.options.synth = synth
-				}
+				// Important spread here, otherwise we mutate the actual save data and cause a cyclical object ref
+				let options: MidiChannelOptions = { ...channelData.options, synth }
 
-				const channel = new MidiChannel(MidiDevice.DEVICES[channelData.device], channelData.options)
+				const channel = new MidiChannel(MidiDevice.DEVICES[channelData.device], options)
 				MidiManager.registerChannel(channel)
 			})
 		}
