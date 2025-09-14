@@ -29,7 +29,7 @@ watch(
 )
 
 enum Tab {
-	PRESET = 'Preset',
+	SAVED = 'Saved',
 	PASTE_DATA = 'Paste Data',
 }
 
@@ -66,11 +66,11 @@ function isAnyCategorySelected(): boolean {
 	return includedCategories.value.some((category) => !disabledCategories.value.includes(category))
 }
 
-const currentTab = ref(Tab.PRESET)
+const currentTab = ref(Tab.SAVED)
 
 // Categories should only be disabled if the preset tab is selected
 watch(currentTab, (tab) => {
-	if (tab === Tab.PRESET) {
+	if (tab === Tab.SAVED) {
 		selectPreset(synthName.value)
 		return
 	}
@@ -82,7 +82,7 @@ function load(checkMissingChannels: boolean = true) {
 	let data: SerializedSynth = {}
 
 	switch (currentTab.value) {
-		case Tab.PRESET:
+		case Tab.SAVED:
 			data = structuredClone(toRaw(synthPresets[synthName.value]))
 			break
 		case Tab.PASTE_DATA:
@@ -138,7 +138,7 @@ function resetMidiDeviceReplacement() {
 
 <template>
 	<el-dialog
-		:title="`Load Synth: ${synth.name}`"
+		:title="`Load Preset`"
 		id="load-dialog"
 		class="dark"
 		modal
@@ -149,7 +149,7 @@ function resetMidiDeviceReplacement() {
 		}"
 	>
 		<el-tabs v-model="currentTab" id="load-dialog-tabs">
-			<el-tab-pane :label="Tab.PRESET" :name="Tab.PRESET">
+			<el-tab-pane :label="Tab.SAVED" :name="Tab.SAVED">
 				<div class="flex-stretch">
 					<div class="control-item" id="preset-name">
 						<span>Synth:</span>

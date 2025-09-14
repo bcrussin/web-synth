@@ -69,7 +69,7 @@ function save() {
 
 <template>
 	<el-dialog
-		:title="`Save as Preset: ${synth.name}`"
+		:title="`Save as Preset`"
 		id="save-dialog"
 		class="dark"
 		modal
