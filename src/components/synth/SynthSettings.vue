@@ -3,7 +3,8 @@ import '@/assets/main.css'
 
 import MidiDevice from '@/classes/MidiDevice'
 import Synth from '@/classes/Synth'
-import { ref, watchEffect } from 'vue'
+import { RefreshLeft } from '@element-plus/icons-vue'
+import { computed, ref, watchEffect } from 'vue'
 
 const props = defineProps<{ synthId: UUID }>()
 const synth = Synth.getSynth(props.synthId)
@@ -68,10 +69,32 @@ function getMaxPolyphony(): number {
 				@input="setSynthValue('volume', $event)"
 			></el-slider>
 		</div>
-		<div>
-			<span>Transpose Octaves:</span>
-			<el-input-number :model-value="synth.transpose" :min="-4" :max="4" @change="setTranspose" />
+
+		<el-divider content-position="left">Transpose</el-divider>
+		<div class="transpose-input selectable">
+			<span>Octaves:</span>
+			<el-input-number
+				class="control"
+				v-model="synth.octaves"
+				data-param="Synth Transpose (Octaves)"
+			/>
 		</div>
+		<div class="transpose-input selectable">
+			<span>Semitones:</span>
+			<el-input-number
+				class="control"
+				v-model="synth.semitones"
+				data-param="Synth Transpose (Semitones)"
+			/>
+		</div>
+		<el-button
+			:icon="RefreshLeft"
+			@click="setTranspose(0)"
+			:disabled="synth.transpose == 0"
+			circle
+			text
+		></el-button>
+
 		<el-divider content-position="left">Polyphony</el-divider>
 		<div class="selectable">
 			<span>Max Voices:</span>
@@ -114,3 +137,13 @@ function getMaxPolyphony(): number {
 		</div> -->
 	</div>
 </template>
+
+<style scoped>
+.transpose-input .el-input-number {
+	width: fit-content;
+}
+
+.transpose-input :deep(.el-input__inner) {
+	width: 4ch; /* 3 digits + minus sign + a bit of breathing room */
+}
+</style>

@@ -85,9 +85,13 @@ export default class Synth {
 
 	oscillators: { [key: number]: Oscillator } = reactive({})
 	frequencyQueue: Array<number> = reactive([])
+
 	notes: Set<number> = reactive(new Set<number>())
+	pressedNotes: Set<string> = reactive(new Set<string>())
+
 	wavetable: Array<number> | null = null
 	periodicWave: PeriodicWave | null = null
+
 	_transpose: Ref<number> = ref(0)
 	public get transpose(): number {
 		return this._transpose.value ?? this._transpose ?? 0
@@ -97,6 +101,33 @@ export default class Synth {
 
 		if (typeof this._transpose === 'number') (this._transpose as any) = value
 		else this._transpose.value = value
+	}
+
+	public get semitones() {
+		let n = this.transpose % 12
+
+		if (n > 11) n -= 12
+		if (n < -11) n += 12
+		return n
+	}
+	public set semitones(val) {
+		const extraOctaves = Math.floor(val / 12)
+		val = ((val % 12) + 12) % 12
+		if (val > 11) val -= 12
+
+		this.transpose = (this.octaves + extraOctaves) * 12 + val
+	}
+
+	get octaves() {
+		let semitones = this.transpose % 12
+
+		if (semitones > 0) return Math.floor(this.transpose / 12)
+		else return Math.ceil(this.transpose / 12)
+	}
+	set octaves(val) {
+		let semitones = this.transpose % 12
+
+		this.transpose = val * 12 + semitones
 	}
 
 	_bypass: boolean = false
@@ -329,8 +360,11 @@ export default class Synth {
 
 		if (typeof octave != 'number') octave = parseInt(octave)
 
-		octave += this.transpose
-		const frequency = Global.getFrequency(note, octave)
+		// octave += this.transpose
+		this.pressedNotes.add(note.toString() + octave.toString())
+
+		const transposed = Global.transposeNote(note, octave, this.transpose)
+		const frequency = Global.getFrequency(transposed.note, transposed.octave)
 		this.playFrequency(frequency, volume)
 
 		return frequency
@@ -365,8 +399,10 @@ export default class Synth {
 		if (note == undefined || octave == undefined) return
 
 		octave = parseInt(octave.toString())
-		octave += this.transpose
-		const frequency = Global.getFrequency(note, octave)
+		this.pressedNotes.delete(note.toString() + octave.toString())
+
+		const transposed = Global.transposeNote(note, octave, this.transpose)
+		const frequency = Global.getFrequency(transposed.note, transposed.octave)
 
 		this.stopFrequency(frequency)
 	}
@@ -487,6 +523,7 @@ export default class Synth {
 				// this.oscillators = {}
 			})
 		this.notes.clear()
+		this.pressedNotes.clear()
 	}
 
 	updateFrequencies() {
@@ -516,7 +553,6 @@ export default class Synth {
 		} else {
 			this.wavetable = [...wavetable]
 		}
-		console.log(wavetable, this.wavetable)
 
 		// Presets assume stretch value of 4
 		const transformed = FFT(wavetable, 4)

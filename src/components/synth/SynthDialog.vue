@@ -94,7 +94,6 @@ function saveSynthName() {
 		synthNameInput.value.textContent = synth.name
 	}
 
-	console.log(name, synth.name, !!name)
 	isEditingName.value = false
 
 	synthNameInput.value.blur()
@@ -321,7 +320,7 @@ function saveSynthName() {
 .selecting .selectable:after,
 .selecting .selectable:before {
 	--x-padding: -4px;
-	--y-padding: -6px;
+	--y-padding: -2px;
 
 	content: '';
 	position: absolute;
@@ -332,7 +331,7 @@ function saveSynthName() {
 
 	z-index: 1000;
 
-	border-radius: 12px;
+	border-radius: 8px;
 	border: 2px dashed #33333380;
 	background-color: white;
 }

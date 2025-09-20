@@ -49,5 +49,21 @@
 		"min": 0,
 		"max": 32,
 		"step": 1
+	},
+	{
+		"displayName": "Synth Transpose (Octaves)",
+		"type": "synth",
+		"property": "octaves",
+		"min": -32,
+		"max": 32,
+		"step": 1
+	},
+	{
+		"displayName": "Synth Transpose (Semitones)",
+		"type": "synth",
+		"property": "transpose",
+		"min": -32,
+		"max": 32,
+		"step": 1
 	}
 ]
