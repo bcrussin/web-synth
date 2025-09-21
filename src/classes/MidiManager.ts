@@ -57,11 +57,7 @@ export default class MidiManager {
 		}
 	}
 
-	static getChannels(
-		device: MidiDevice,
-		synth: Synth,
-		channelNumber: number,
-	): Reactive<MidiChannel[]> {
+	static getChannels(device: MidiDevice, synth: Synth, channelNumber: number): MidiChannelLike[] {
 		if (!device) return []
 
 		const allChannels = Array.from(this.channelsByDevice.get(device.name)?.get(synth.id) ?? [])
