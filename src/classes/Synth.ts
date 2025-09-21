@@ -84,10 +84,10 @@ export default class Synth {
 	}
 
 	oscillators: { [key: number]: Oscillator } = reactive({})
-	frequencyQueue: Array<number> = reactive([])
+	noteQueue: Array<number> = reactive([])
 
 	notes: Set<number> = reactive(new Set<number>())
-	pressedNotes: Set<string> = reactive(new Set<string>())
+	// pressedNotes: Set<number> = reactive(new Set<string>())
 
 	wavetable: Array<number> | null = null
 	periodicWave: PeriodicWave | null = null
@@ -101,6 +101,8 @@ export default class Synth {
 
 		if (typeof this._transpose === 'number') (this._transpose as any) = value
 		else this._transpose.value = value
+
+		this.updateNotes()
 	}
 
 	public get semitones() {
@@ -168,7 +170,7 @@ export default class Synth {
 		this.type = options.type ?? 'sine'
 		this.volume = options.volume ?? 1
 
-		this._maxPolyphony = options._maxPolyphony ?? Infinity
+		this._maxPolyphony = options._maxPolyphony ?? 1 //Infinity
 		this.legato = options.legato ?? true
 		this.glide = options.glide ?? false
 		this.glideMode = options.glideMode ?? 'speed'
@@ -337,9 +339,13 @@ export default class Synth {
 		return Object.keys(this.oscillators).length > 0
 	}
 
-	isNotePlaying(frequency: number): boolean {
+	isNotePlaying(note: string, octave: number): boolean {
+		return this.isSemitonePlaying(Global.getSemitone(note, octave))
+	}
+
+	isSemitonePlaying(semitone: number) {
 		if (this.oscillators == undefined) return false
-		return !!this.oscillators[frequency] || !!this.frequencyQueue.includes(frequency)
+		return !!this.oscillators[semitone] || !!this.noteQueue.includes(semitone)
 	}
 
 	hasFreeNotes(beforeRemoving?: boolean): boolean {
@@ -348,11 +354,11 @@ export default class Synth {
 	}
 
 	hasQueuedNotes(): boolean {
-		return this.frequencyQueue.length > 0
+		return this.noteQueue.length > 0
 	}
 
-	getOscillator(frequency: number) {
-		return this.oscillators?.[frequency]
+	getOscillator(semitone: number) {
+		return this.oscillators?.[semitone]
 	}
 
 	playNote(note?: string, octave?: number | string, volume?: number): number | undefined {
@@ -360,176 +366,173 @@ export default class Synth {
 
 		if (typeof octave != 'number') octave = parseInt(octave)
 
-		// octave += this.transpose
-		this.pressedNotes.add(note.toString() + octave.toString())
+		const semitone = Global.getSemitone(note, octave)
 
-		const transposed = Global.transposeNote(note, octave, this.transpose)
-		const frequency = Global.getFrequency(transposed.note, transposed.octave)
-		this.playFrequency(frequency, volume)
-
-		return frequency
+		this.playSemitone(semitone, volume)
+		return semitone
 	}
 
-	playFrequency(frequency: number, volume?: number): void {
-		if (frequency == undefined || this.isNotePlaying(frequency)) return
+	playSemitone(semitone: number, volume?: number) {
+		this.notes.add(semitone)
+
+		// const frequency = Global.getFrequency(transposed.note, transposed.octave)
+		if (semitone == undefined || this.isSemitonePlaying(semitone)) return
 
 		// Max polyphony reached
 		if (!this.hasFreeNotes()) {
-			const oldestNote = this.getOldestNote()!
+			const oldest = this.getOldestOscillator()!
 
 			if (this.legato) {
 				// If legato, change oldest note frequency to new one
-				this.addNoteToQueue(oldestNote)
-				this.changeOscillatorFrequency(oldestNote, frequency, volume)
+				this.addNoteToQueue(oldest.baseSemitone)
+				this.changeOscillatorNote(oldest, semitone, volume)
 				return
 			} else {
 				// Else, release note and move it to queue
-				oldestNote.release()
-				this.removeOscillator(oldestNote, true)
+				oldest.release()
+				this.removeOscillator(oldest, true)
 			}
 		}
 
 		const oscillator = new Oscillator(this)
-		oscillator.attack(frequency, volume)
+		oscillator.attack(semitone, volume)
 
-		this.addOscillator(oscillator, frequency)
+		this.addOscillator(oscillator, semitone)
+
+		return
 	}
 
 	stopNote(note?: string, octave?: number | string) {
 		if (note == undefined || octave == undefined) return
 
 		octave = parseInt(octave.toString())
-		this.pressedNotes.delete(note.toString() + octave.toString())
+		const semitone = Global.getSemitone(note, octave)
 
-		const transposed = Global.transposeNote(note, octave, this.transpose)
-		const frequency = Global.getFrequency(transposed.note, transposed.octave)
-
-		this.stopFrequency(frequency)
+		this.stopSemitone(semitone)
 	}
 
-	stopFrequency(frequency: number) {
-		if (this.frequencyQueue.includes(frequency)) {
-			this.removeFromQueue(frequency)
+	stopSemitone(semitone: number) {
+		this.notes.delete(semitone)
+
+		if (this.noteQueue.includes(semitone)) {
+			this.removeFromQueue(semitone)
 			return
 		}
 
-		const oscillator = this.getOscillator(frequency)
+		const oscillator = this.getOscillator(semitone)
 
-		if (frequency == undefined || oscillator == undefined) return
+		if (semitone == undefined || oscillator == undefined) return
 
 		// If there are queued notes and space to unqueue
 		if (this.hasFreeNotes(true) && this.hasQueuedNotes()) {
-			const newFrequency = this.frequencyQueue.pop()!
+			const newSemitone = this.noteQueue.pop()!
 
 			if (this.legato) {
 				// If legato, reuse the released note for the queued frequency
-				this.changeOscillatorFrequency(oscillator, newFrequency)
+				this.changeOscillatorNote(oscillator, newSemitone)
 				return
 			} else {
 				// Else, release as normal and create a new oscillator for queued frequency
-				this.removeFromQueue(frequency)
+				this.removeFromQueue(newSemitone)
 
 				const newOscillator = new Oscillator(this)
-				newOscillator.attack(newFrequency)
+				newOscillator.attack(newSemitone)
 
-				this.addOscillator(newOscillator, newFrequency)
+				this.addOscillator(newOscillator, newSemitone)
 			}
 		}
 
-		this.removeOscillator(frequency)
+		this.removeOscillator(oscillator)
 		oscillator.release()
 	}
 
 	// TODO: Allow specifying a new volume as well, store volumes in frequencyQueue
-	changeOscillatorFrequency(oscillator: Oscillator, frequency: number, volume?: number) {
-		this.removeOscillator(oscillator.frequencyValue)
+	changeOscillatorNote(oscillator: Oscillator, semitone: number, volume?: number) {
+		this.removeOscillator(oscillator)
 
 		// Makes the oscillator act like it was newly created, test for desired functionality
 		oscillator.created = new Date()
 
 		if (this.glide) {
-			oscillator.glideToFrequency(frequency, this.glideAmount)
+			oscillator.glideToNote(semitone, this.glideAmount)
 
 			if (!!volume) oscillator.glideToVelocity(volume, this.glideAmount)
 		} else {
-			oscillator.setFrequency(frequency)
+			oscillator.setSemitone(semitone)
 
 			if (!!volume) oscillator.setVelocity(volume)
 		}
 
-		this.addOscillator(oscillator, frequency)
+		this.addOscillator(oscillator, semitone)
 	}
 
-	addOscillator(oscillator: Oscillator, frequency?: number) {
-		const frequencyValue = frequency ?? oscillator.frequencyValue
+	addOscillator(oscillator: Oscillator, semitone: number) {
+		semitone = semitone ?? oscillator.baseSemitone
 
-		this.oscillators[frequencyValue] = oscillator
-		this.notes.add(frequencyValue)
+		this.oscillators[semitone] = oscillator
+		// this.notes.add(semitone)
 	}
 
-	removeOscillator(oscillator: Oscillator | number, addToQueue: boolean = false) {
-		let frequency
+	removeOscillator(oscillator: Oscillator, addToQueue: boolean = false) {
+		let semitone = oscillator.baseSemitone
 
-		if (typeof oscillator === 'number') frequency = oscillator
-		else frequency = oscillator.frequencyValue
-
-		this.notes.delete(frequency)
-
-		if (!!this.oscillators[frequency]) {
-			delete this.oscillators[frequency]
+		if (!!this.oscillators[semitone]) {
+			delete this.oscillators[semitone]
 		}
 
+		// this.notes.delete(semitone)
+
 		if (addToQueue) {
-			this.frequencyQueue.push(frequency)
+			this.noteQueue.push(semitone)
 		}
 	}
 
 	// Max Polyphony Functions
 
-	getOldestNote(): Oscillator | undefined {
-		let oldestNote: Oscillator | undefined = undefined
+	getOldestOscillator(): Oscillator | undefined {
+		let oldest: Oscillator | undefined = undefined
 
 		Object.values(this.oscillators).forEach((oscillator) => {
-			if (oldestNote == undefined || oscillator.created < oldestNote.created) {
-				oldestNote = oscillator
+			if (oldest == undefined || oscillator.created < oldest.created) {
+				oldest = oscillator
 			}
 		})
 
-		return oldestNote
+		return oldest
 	}
 
-	addNoteToQueue(frequency: Oscillator | number) {
-		if (typeof frequency !== 'number') {
-			frequency = frequency.frequencyValue
-		}
-
-		this.frequencyQueue.push(frequency)
+	addNoteToQueue(semitone: number) {
+		this.noteQueue.push(semitone)
 		// this.removeOscillator(frequency)
 	}
 
-	removeFromQueue(frequency: number) {
-		this.frequencyQueue = this.frequencyQueue.filter((queueFreq) => queueFreq != frequency)
+	removeFromQueue(semitone: number) {
+		this.noteQueue = this.noteQueue.filter((note) => note != semitone)
 	}
 
 	// Property Setters
 
 	stopAll() {
-		this.frequencyQueue = []
+		this.noteQueue = []
 
 		if (this.oscillators != undefined)
 			Object.entries(this.oscillators).forEach(([name, note]) => {
 				note.release()
 				delete this.oscillators[parseFloat(name)]
-				// this.oscillators = {}
 			})
 		this.notes.clear()
-		this.pressedNotes.clear()
 	}
 
 	updateFrequencies() {
 		const oscillators = Object.values(this.oscillators)
 
 		oscillators.forEach((oscillator) => oscillator.setFrequency())
+	}
+
+	updateNotes() {
+		const oscillators = Object.values(this.oscillators)
+
+		oscillators.forEach((oscillator) => oscillator.setSemitone())
 	}
 
 	setWaveType(type: string): void {

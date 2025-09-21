@@ -7,6 +7,9 @@ import { inject } from 'vue'
 export default class Oscillator extends OscillatorNode {
 	created: Date
 	synth: Synth
+
+	baseSemitone: number
+
 	frequencyValue: number
 	frequencyOffset: number
 
@@ -25,6 +28,8 @@ export default class Oscillator extends OscillatorNode {
 
 		this.frequencyValue = 0
 		this.frequencyOffset = 0
+
+		this.baseSemitone = 0
 
 		this.velocityNode = Global.CONTEXT.createGain()
 		this.velocityNode.gain.value = 1
@@ -98,6 +103,12 @@ export default class Oscillator extends OscillatorNode {
 		}
 	}
 
+	setSemitone(semitone?: number) {
+		if (semitone != undefined) this.baseSemitone = semitone
+
+		this.setFrequency(this.semitoneToFrequency(this.baseSemitone))
+	}
+
 	setFrequency(frequency?: number) {
 		this.setFrequencyValueAndOffset(frequency)
 
@@ -106,6 +117,25 @@ export default class Oscillator extends OscillatorNode {
 		}
 
 		this.frequency.value = frequency + this.frequencyOffset
+	}
+
+	noteToFrequency(note: string, octave: number) {
+		const transposed = Global.transposeNote(note, octave, this.synth.transpose)
+		const frequency = Global.noteToFrequency(transposed.note, transposed.octave)
+
+		return frequency
+	}
+
+	semitoneToFrequency(semitone: number) {
+		const frequency = Global.semitoneToFrequency(semitone + this.synth.transpose)
+
+		return frequency
+	}
+
+	glideToNote(semitone: number, duration: number) {
+		this.baseSemitone = semitone
+
+		this.glideToFrequency(this.semitoneToFrequency(semitone), duration)
 	}
 
 	glideToFrequency(frequency: number, duration: number) {
@@ -136,9 +166,12 @@ export default class Oscillator extends OscillatorNode {
 		this.start()
 	}
 
-	attack(frequency?: number, volume?: number) {
+	attack(semitone: number, volume?: number) {
+		this.baseSemitone = semitone
+
 		this.velocityNode.gain.value = volume ?? 1
-		this.setFrequency(frequency)
+
+		this.setFrequency(this.semitoneToFrequency(semitone))
 		this.envAttack()
 		this.start()
 	}

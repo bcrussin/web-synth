@@ -88,7 +88,7 @@ export default class Global {
 		}
 	}
 
-	static getFrequency(note: string | number, octave: number | string): number {
+	static noteToFrequency(note: string | number, octave: number | string): number {
 		if (typeof octave != 'number') octave = parseInt(octave)
 
 		let frequency: number = 0
@@ -101,6 +101,24 @@ export default class Global {
 		}
 
 		return frequency
+	}
+
+	static semitoneToFrequency(semitone: number) {
+		const noteIndex = semitone % 12
+		const octave = Math.floor(semitone / 12)
+
+		const frequency = Object.values(Global.NOTES)[noteIndex]?.[octave]
+
+		return frequency
+	}
+
+	static getSemitone(note: string | number, octave: number | string): number {
+		if (typeof octave != 'number') octave = parseInt(octave)
+
+		let semitones: number = 0
+		let noteIndex = Object.keys(Global.NOTES).indexOf(note.toString())
+
+		return noteIndex + octave * Object.keys(Global.NOTES).length
 	}
 
 	static getKeyElemAttributes(key?: Element | null) {
