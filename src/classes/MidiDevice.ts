@@ -129,7 +129,7 @@ export default class MidiDevice {
 
 		if (command >= 224 && command <= 239) {
 			this.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
-			this.synths.forEach((synth) => synth.updateFrequencies())
+			this.synths.forEach((synth) => synth.updateOscillatorFrequencies())
 		}
 
 		if (command == 176) {
@@ -159,7 +159,7 @@ export default class MidiDevice {
 
 		if (synth == undefined) return
 
-		this.synths.push(synth)
+		this.synths.push(synth as Synth)
 	}
 
 	removeSynth(id: string): void {

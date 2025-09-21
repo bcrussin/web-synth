@@ -3,23 +3,23 @@ import Synth from './Synth'
 import { ref, type Ref } from 'vue'
 
 export default class Global {
-	static _CONTEXT: AudioContext
+	static _context: AudioContext
 
-	public static get CONTEXT() {
-		Global.suspended.value = Global._CONTEXT.state === 'suspended'
-		return Global._CONTEXT
+	public static get context() {
+		Global.suspended.value = Global._context.state === 'suspended'
+		return Global._context
 	}
 
-	public static set CONTEXT(context: AudioContext) {
-		Global._CONTEXT = context
+	public static set context(context: AudioContext) {
+		Global._context = context
 	}
 
-	static MASTER: ChannelMergerNode
+	static master: ChannelMergerNode
 
 	static volumeNode: GainNode
 	static suspended: Ref<boolean> = ref(false)
 
-	static NOTES: { [key: string]: Array<number> } = {
+	private static notes: { [key: string]: Array<number> } = {
 		C: [16.35, 32.7, 65.41, 130.81, 261.63, 523.25, 1046.5, 2093.0, 4186.01],
 		Db: [17.32, 34.65, 69.3, 138.59, 277.18, 554.37, 1108.73, 2217.46, 4434.92],
 		D: [18.35, 36.71, 73.42, 146.83, 293.66, 587.33, 1174.66, 2349.32, 4698.64],
@@ -34,32 +34,51 @@ export default class Global {
 		B: [30.87, 61.74, 123.47, 246.94, 493.88, 987.77, 1975.53, 3951.07],
 	}
 
+	static readonly ENHARMONIC_MAP: Record<string, string> = {
+		'C#': 'Db',
+		'D#': 'Eb',
+		'F#': 'Gb',
+		'G#': 'Ab',
+		'A#': 'Bb',
+	}
+
 	static WAVE_TYPES: Array<string> = ['sine', 'sawtooth', 'triangle']
 
 	static initialize(audioContext: AudioContext) {
-		Global.CONTEXT = audioContext
+		Global.context = audioContext
 
-		Global.volumeNode = Global.CONTEXT.createGain()
-		Global.volumeNode.connect(Global.CONTEXT.destination)
+		Global.volumeNode = Global.context.createGain()
+		Global.volumeNode.connect(Global.context.destination)
 		Global.volumeNode.gain.value = 0.3
 
-		Global.MASTER = Global.CONTEXT.createChannelMerger(1)
-		Global.MASTER.connect(Global.volumeNode)
+		Global.master = Global.context.createChannelMerger(1)
+		Global.master.connect(Global.volumeNode)
 
 		const presets = useInstrumentsStore()
 		presets.fetchPresets()
 	}
 
 	static updateContextState() {
-		Global.suspended.value = Global.CONTEXT.state === 'suspended'
+		Global.suspended.value = Global.context.state === 'suspended'
+	}
+
+	/**
+	 * Convert a sharp note to its flat counterpart if needed
+	 */
+	static normalizeNote(note: string) {
+		return Global.ENHARMONIC_MAP[note] ?? note
+	}
+
+	static getNotes() {
+		return Object.keys(Global.notes)
 	}
 
 	static getNoteFromMIDI(note: number) {
-		return Object.keys(Global.NOTES)[note % 12]
+		return Object.keys(Global.notes)[note % 12]
 	}
 
 	// static getFrequency(note: string, octave: number): number {
-	//   return Global.NOTES[note]?.[octave]
+	//   return Global.notes[note]?.[octave]
 	// }
 
 	static getNoteIndex(note: string | number): number {
@@ -68,15 +87,16 @@ export default class Global {
 		if (typeof note == 'number') {
 			index = note
 		} else {
-			index = Object.keys(Global.NOTES).indexOf(note)
+			note = Global.normalizeNote(note)
+			index = Object.keys(Global.notes).indexOf(note)
 		}
 
 		return index
 	}
 
 	static transposeNote(note: string, octave: number, transpose: number): any {
-		const notes = Object.keys(Global.NOTES)
-		let index = this.getNoteIndex(note)
+		const notes = Global.getNotes()
+		let index = Global.getNoteIndex(note)
 		let newIndex = index + transpose
 
 		octave += Math.floor(newIndex / notes.length)
@@ -88,6 +108,11 @@ export default class Global {
 		}
 	}
 
+	static getNoteFrequencies(note: string) {
+		note = Global.normalizeNote(note)
+		return Global.notes?.[note]
+	}
+
 	static noteToFrequency(note: string | number, octave: number | string): number {
 		if (typeof octave != 'number') octave = parseInt(octave)
 
@@ -96,7 +121,7 @@ export default class Global {
 			frequency = note
 		} else {
 			if (octave != undefined && !isNaN(octave)) {
-				frequency = Global.NOTES[note]?.[octave]
+				frequency = Global.getNoteFrequencies(note)?.[octave]
 			}
 		}
 
@@ -107,7 +132,7 @@ export default class Global {
 		const noteIndex = semitone % 12
 		const octave = Math.floor(semitone / 12)
 
-		const frequency = Object.values(Global.NOTES)[noteIndex]?.[octave]
+		const frequency = Object.values(Global.notes)[noteIndex]?.[octave]
 
 		return frequency
 	}
@@ -115,10 +140,9 @@ export default class Global {
 	static getSemitone(note: string | number, octave: number | string): number {
 		if (typeof octave != 'number') octave = parseInt(octave)
 
-		let semitones: number = 0
-		let noteIndex = Object.keys(Global.NOTES).indexOf(note.toString())
+		let noteIndex = Global.getNoteIndex(note.toString())
 
-		return noteIndex + octave * Object.keys(Global.NOTES).length
+		return noteIndex + octave * 12
 	}
 
 	static getKeyElemAttributes(key?: Element | null) {
@@ -134,9 +158,9 @@ export default class Global {
 	}
 
 	static generateImpulseReponse(duration: number, decay: number, reverse: boolean) {
-		const sampleRate = Global.CONTEXT.sampleRate
+		const sampleRate = Global.context.sampleRate
 		const length = sampleRate * duration
-		const impulse = Global.CONTEXT.createBuffer(2, length, sampleRate)
+		const impulse = Global.context.createBuffer(2, length, sampleRate)
 		const impulseL = impulse.getChannelData(0)
 		const impulseR = impulse.getChannelData(1)
 

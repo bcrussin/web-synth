@@ -102,7 +102,7 @@ export default class Synth {
 		if (typeof this._transpose === 'number') (this._transpose as any) = value
 		else this._transpose.value = value
 
-		this.updateNotes()
+		this.updateOscillatorNotes()
 	}
 
 	public get semitones() {
@@ -142,7 +142,7 @@ export default class Synth {
 		if (!!enabled) {
 			this.outputNode.disconnect()
 		} else {
-			this.outputNode.connect(Global.MASTER)
+			this.outputNode.connect(Global.master)
 		}
 	}
 
@@ -156,14 +156,14 @@ export default class Synth {
 
 		this.midiDevice = options?.midiDevice
 
-		this.tuna = new Tuna(Global.CONTEXT)
+		this.tuna = new Tuna(Global.context)
 
-		this.inputNode = Global.CONTEXT.createGain()
+		this.inputNode = Global.context.createGain()
 
-		this.outputNode = Global.CONTEXT.createDynamicsCompressor()
-		this.outputNode.threshold.setValueAtTime(-10, Global.CONTEXT.currentTime)
-		this.outputNode.ratio.setValueAtTime(10, Global.CONTEXT.currentTime)
-		this.outputNode.connect(Global.MASTER)
+		this.outputNode = Global.context.createDynamicsCompressor()
+		this.outputNode.threshold.setValueAtTime(-10, Global.context.currentTime)
+		this.outputNode.ratio.setValueAtTime(10, Global.context.currentTime)
+		this.outputNode.connect(Global.master)
 
 		this.updateEffectNodes()
 
@@ -298,12 +298,6 @@ export default class Synth {
 		this.bypass = enabled
 	}
 
-	setTranspose(value: number): void {
-		if (typeof value !== 'number') return
-
-		this.transpose = value
-	}
-
 	changeTranspose(value: number): void {
 		if (typeof value !== 'number') return
 
@@ -316,10 +310,12 @@ export default class Synth {
 		this.maxPolyphony = value
 	}
 
+	/**
+	 * Assign a MIDI device to the synth
+	 * @param device A MidiDevice object, or a string containing its ID
+	 */
 	setMidiDevice(device?: MidiDevice | string): void {
 		if (typeof device === 'string') device = MidiDevice.DEVICES[device]
-
-		this.midiDevice?.removeSynth(this.name)
 
 		if (device == undefined) {
 			this.midiDevice = null
@@ -331,6 +327,9 @@ export default class Synth {
 		this.midiDevice = device
 	}
 
+	/**
+	 * Return the synth's preset name, or wave type if no preset is set.
+	 */
 	getPresetOrType(): string {
 		return this.preset ?? this.type
 	}
@@ -361,6 +360,13 @@ export default class Synth {
 		return this.oscillators?.[semitone]
 	}
 
+	/**
+	 * Play a synth note
+	 * @param note The note name (e.g., "C", "Db", "F#", etc.)
+	 * @param octave The octave number (0-8)
+	 * @param volume The volume level, from 0 (silent) to 1 (max)
+	 * @returns
+	 */
 	playNote(note?: string, octave?: number | string, volume?: number): number | undefined {
 		if (note == undefined || octave == undefined) return
 
@@ -372,6 +378,12 @@ export default class Synth {
 		return semitone
 	}
 
+	/**
+	 * Play a synth note
+	 * @param semitone The absolute pitch in semitones (C0 = 0, C#0 = 1, D0 = 2, etc.)
+	 * @param volume The volume level, from 0 (silent) to 1 (max)
+	 * @returns
+	 */
 	playSemitone(semitone: number, volume?: number) {
 		this.notes.add(semitone)
 
@@ -402,6 +414,13 @@ export default class Synth {
 		return
 	}
 
+	/**
+	 * Stop a synth note
+	 * @param note The note name (e.g., "C", "Db", "F#", etc.)
+	 * @param octave The octave number (0-8)
+	 * @param volume The volume level, from 0 (silent) to 1 (max)
+	 * @returns
+	 */
 	stopNote(note?: string, octave?: number | string) {
 		if (note == undefined || octave == undefined) return
 
@@ -411,6 +430,12 @@ export default class Synth {
 		this.stopSemitone(semitone)
 	}
 
+	/**
+	 * Stop a synth note
+	 * @param semitone The absolute pitch in semitones (C0 = 0, C#0 = 1, D0 = 2, etc.)
+	 * @param volume The volume level, from 0 (silent) to 1 (max)
+	 * @returns
+	 */
 	stopSemitone(semitone: number) {
 		this.notes.delete(semitone)
 
@@ -435,8 +460,9 @@ export default class Synth {
 				// Else, release as normal and create a new oscillator for queued frequency
 				this.removeFromQueue(newSemitone)
 
+				// New note should have the same volume as the note that was just released
 				const newOscillator = new Oscillator(this)
-				newOscillator.attack(newSemitone)
+				newOscillator.attack(newSemitone, oscillator.velocity)
 
 				this.addOscillator(newOscillator, newSemitone)
 			}
@@ -460,7 +486,11 @@ export default class Synth {
 		} else {
 			oscillator.setSemitone(semitone)
 
-			if (!!volume) oscillator.setVelocity(volume)
+			/*
+        I feel like legato notes should keep previous volume, but uncomment this to use the
+        velocity of the newly pressed note instead if desired.
+      */
+			// if (!!volume) oscillator.setVelocity(volume)
 		}
 
 		this.addOscillator(oscillator, semitone)
@@ -523,13 +553,23 @@ export default class Synth {
 		this.notes.clear()
 	}
 
-	updateFrequencies() {
+	/**
+	 * Recompute all oscillator frequencies along with any frequency-related effects.
+	 *
+	 * Use this to refresh oscillator notes after changes to pitch-related settings (pitch bend, etc.).
+	 */
+	updateOscillatorFrequencies() {
 		const oscillators = Object.values(this.oscillators)
 
 		oscillators.forEach((oscillator) => oscillator.setFrequency())
 	}
 
-	updateNotes() {
+	/**
+	 * Recompute all oscillator notes and frequencies along with any note or frequency-related effects.
+	 *
+	 * Use this to refresh oscillator notes after changes to note-related settings (transposition, etc.).
+	 */
+	updateOscillatorNotes() {
 		const oscillators = Object.values(this.oscillators)
 
 		oscillators.forEach((oscillator) => oscillator.setSemitone())
@@ -561,7 +601,7 @@ export default class Synth {
 		const transformed = FFT(wavetable, 4)
 
 		// Create a PeriodicWave
-		this.periodicWave = Global.CONTEXT.createPeriodicWave(transformed.real, transformed.imag)
+		this.periodicWave = Global.context.createPeriodicWave(transformed.real, transformed.imag)
 	}
 
 	clearWavetable() {

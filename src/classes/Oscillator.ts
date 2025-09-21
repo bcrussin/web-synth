@@ -20,8 +20,16 @@ export default class Oscillator extends OscillatorNode {
 	eg: any
 	emptyEg: any
 
+	get velocity() {
+		return this.velocityNode.gain.value
+	}
+
+	set velocity(value: number) {
+		this.velocityNode.gain.value = value
+	}
+
 	constructor(synth: Synth) {
-		super(Global.CONTEXT)
+		super(Global.context)
 
 		this.created = new Date()
 		this.synth = synth
@@ -31,17 +39,17 @@ export default class Oscillator extends OscillatorNode {
 
 		this.baseSemitone = 0
 
-		this.velocityNode = Global.CONTEXT.createGain()
+		this.velocityNode = Global.context.createGain()
 		this.velocityNode.gain.value = 1
 		this.velocityNode.connect(synth.inputNode)
 
-		this.gainNode = Global.CONTEXT.createGain()
+		this.gainNode = Global.context.createGain()
 		this.gainNode.gain.value = 0
 		this.gainNode.connect(this.velocityNode)
 
-		this.lowPassFilter = Global.CONTEXT.createBiquadFilter()
+		this.lowPassFilter = Global.context.createBiquadFilter()
 		this.lowPassFilter.type = 'lowpass'
-		this.lowPassFilter.frequency.setTargetAtTime(2000, Global.CONTEXT.currentTime, 0)
+		this.lowPassFilter.frequency.setTargetAtTime(2000, Global.context.currentTime, 0)
 		this.lowPassFilter.connect(this.gainNode)
 
 		this.connect(this.lowPassFilter)
@@ -52,14 +60,14 @@ export default class Oscillator extends OscillatorNode {
 			this.type = (synth.type as OscillatorType) ?? 'sine'
 		}
 
-		this.eg = new EnvGen(Global.CONTEXT, this.gainNode.gain)
+		this.eg = new EnvGen(Global.context, this.gainNode.gain)
 		this.eg.mode = 'ADSR'
 		this.eg.attackTime = synth.attack
 		this.eg.releaseTime = synth.release
 		this.eg.decayTime = synth.decay
 		this.eg.sustainLevel = synth.sustain
 
-		this.emptyEg = new EnvGen(Global.CONTEXT, this.gainNode.gain)
+		this.emptyEg = new EnvGen(Global.context, this.gainNode.gain)
 		this.emptyEg.mode = 'ASR'
 		this.emptyEg.attackTime = 0.01
 		this.emptyEg.releaseTime = 0.05
@@ -141,23 +149,26 @@ export default class Oscillator extends OscillatorNode {
 	glideToFrequency(frequency: number, duration: number) {
 		this.setFrequencyValueAndOffset()
 
-		this.frequency.setValueAtTime(this.frequency.value, Global.CONTEXT.currentTime)
-		this.frequency.cancelScheduledValues(Global.CONTEXT.currentTime + 0.001)
+		this.frequency.setValueAtTime(this.frequency.value, Global.context.currentTime)
+		this.frequency.cancelScheduledValues(Global.context.currentTime + 0.001)
 		this.frequency.linearRampToValueAtTime(
 			frequency + this.frequencyOffset,
-			Global.CONTEXT.currentTime + duration,
+			Global.context.currentTime + duration,
 		)
 		this.frequencyValue = frequency
 	}
 
+	/**
+	 * Quickly glide to the given velocity without clipping
+	 */
 	setVelocity(velocity: number) {
-		this.velocityNode.gain.value = velocity
+		this.glideToVelocity(velocity, 0.05)
 	}
 
 	glideToVelocity(velocity: number, duration: number) {
-		this.velocityNode.gain.setValueAtTime(this.velocityNode.gain.value, Global.CONTEXT.currentTime)
-		this.velocityNode.gain.cancelScheduledValues(Global.CONTEXT.currentTime + 0.001)
-		this.velocityNode.gain.linearRampToValueAtTime(velocity, Global.CONTEXT.currentTime + duration)
+		this.velocityNode.gain.setValueAtTime(this.velocityNode.gain.value, Global.context.currentTime)
+		this.velocityNode.gain.cancelScheduledValues(Global.context.currentTime + 0.001)
+		this.velocityNode.gain.linearRampToValueAtTime(velocity, Global.context.currentTime + duration)
 	}
 
 	startNote(frequency?: number, volume?: number) {
@@ -181,7 +192,7 @@ export default class Oscillator extends OscillatorNode {
 
 		// Magic number currently, otherwise synth stops before release fully plays out
 		const stopDelay = this.synth.release > 0.005 ? this.synth.release * 5 : 0.01
-		this.stop(Global.CONTEXT.currentTime + stopDelay)
+		this.stop(Global.context.currentTime + stopDelay)
 	}
 
 	stopNote() {

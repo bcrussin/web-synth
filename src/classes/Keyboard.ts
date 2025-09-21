@@ -103,10 +103,10 @@ export default class Keyboard {
 				return
 		}
 
-		const key = Keyboard.keyToNote(e.key.toUpperCase())
-		if (e.repeat || key == undefined) return
+		const note = Keyboard.keyToNote(e.key.toUpperCase())
+		if (e.repeat || note == undefined) return
 
-		const semitone = Keyboard.synth.playNote(key[0], key[1])
+		const semitone = Keyboard.synth.playNote(note[0], note[1])
 		if (!!semitone) this.pressed[e.key] = semitone
 
 		e.preventDefault()

@@ -35,7 +35,7 @@ function generateKeys(componentWidth: number) {
 
 	let counter = 0
 	for (let i = octaveStart; i <= NUM_OCTAVES + octaveStart; i++) {
-		Object.keys(Global.NOTES).forEach((note, j) => {
+		Global.getNotes().forEach((note, j) => {
 			if (counter >= maxNotes) return
 
 			const isBlack = note.includes('b')
