@@ -170,7 +170,7 @@ export default class Synth {
 		this.type = options.type ?? 'sine'
 		this.volume = options.volume ?? 1
 
-		this._maxPolyphony = options._maxPolyphony ?? 1 //Infinity
+		this._maxPolyphony = options._maxPolyphony ?? Infinity
 		this.legato = options.legato ?? true
 		this.glide = options.glide ?? false
 		this.glideMode = options.glideMode ?? 'speed'
