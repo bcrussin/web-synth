@@ -23,12 +23,8 @@ function setSynthValue(property: string, value: number | string | boolean) {
 	synth.setProperty(property, value)
 }
 
-function changeTranspose(value: number) {
-	synth.changeTranspose(value)
-}
-
 function setTranspose(value: number) {
-	synth.setTranspose(value)
+	synth.transpose = value
 }
 
 function setMaxPolyphony(value: number) {
