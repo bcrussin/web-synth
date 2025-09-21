@@ -145,7 +145,7 @@ function stopNote(note: string, octave: number) {
 			:data-octave="key.octave"
 			v-bind:class="{
 				black: key.isBlack,
-				playing: synth.pressedNotes.has(`${key.note}${key.octave}`),
+				playing: synth.notes.has(Global.getSemitone(key.note, key.octave)),
 			}"
 			@mousedown="playNote(key.note, key.octave)"
 			@mouseover="ifMouseClicked($event, () => playNote(key.note, key.octave))"

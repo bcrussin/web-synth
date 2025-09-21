@@ -106,8 +106,8 @@ export default class Keyboard {
 		const key = Keyboard.keyToNote(e.key.toUpperCase())
 		if (e.repeat || key == undefined) return
 
-		const freq = Keyboard.synth.playNote(key[0], key[1])
-		if (!!freq) this.pressed[e.key] = freq
+		const semitone = Keyboard.synth.playNote(key[0], key[1])
+		if (!!semitone) this.pressed[e.key] = semitone
 
 		e.preventDefault()
 	}
@@ -121,13 +121,13 @@ export default class Keyboard {
 				return
 		}
 
-		const key = Keyboard.keyToNote(e.key.toUpperCase())
-		if (e.repeat || key == undefined) return
+		const note = Keyboard.keyToNote(e.key.toUpperCase())
+		if (e.repeat || note == undefined) return
 
 		if (!!this.pressed[e.key]) {
-			Keyboard.synth.stopFrequency(this.pressed[e.key])
+			Keyboard.synth.stopSemitone(this.pressed[e.key])
 		} else {
-			Keyboard.synth.stopNote(key[0], key[1])
+			Keyboard.synth.stopNote(note[0], note[1])
 		}
 
 		e.preventDefault()
