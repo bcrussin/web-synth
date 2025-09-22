@@ -6,12 +6,16 @@ export default class Global {
 	static _context: AudioContext
 
 	public static get context() {
-		Global.suspended.value = Global._context.state === 'suspended'
 		return Global._context
 	}
 
 	public static set context(context: AudioContext) {
 		Global._context = context
+		Global.suspended.value = Global._context.state === 'suspended'
+
+		context.onstatechange = () => {
+			Global.suspended.value = Global._context.state === 'suspended'
+		}
 	}
 
 	static master: ChannelMergerNode
