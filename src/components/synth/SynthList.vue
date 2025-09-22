@@ -6,36 +6,26 @@ import Global from '@/classes/Audio'
 import { ref, watch, type Ref } from 'vue'
 
 const currentSynth: Ref<string | undefined> = ref(undefined)
-const settingsDialogs = new Set<string>()
-
-const synthList = ref()
-
-// watch(
-// 	() => Synth.SYNTHS.value,
-// 	() => {
-// 		const synthRefs = Object.keys(Synth.getSynths()).reduce((acc: any, name) => {
-// 			acc[name] = Synth.getSynth(name)
-// 			return acc
-// 		}, {})
-
-// 		synthList.value = synthRefs
-// 	},
-// 	{ deep: true },
-// )
 
 function openDialog(synthId: UUID) {
 	currentSynth.value = synthId
-	// settingsDialogs.add(synth.name)
 }
 function closeDialog() {
 	currentSynth.value = undefined
-	// this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
 }
 
 function addSynth(): void {
 	const synth = new Synth()
-	// console.log(Synth.getSynths())
 }
+
+function getGlowSize(synth: Synth) {
+	let size = synth.signalLevel.value * 60
+	size = Math.min(Math.max(0, size), 40)
+
+	return `${size}px`
+}
+
+Synth.beginUpdatingSignalLevels()
 </script>
 
 <template>
@@ -43,7 +33,15 @@ function addSynth(): void {
 		<el-button
 			class="synth-button"
 			v-for="(synth, id) in Synth.getSynths()"
-			v-bind:class="{ playing: synth.isPlaying(), suspended: Global.suspended.value }"
+			v-bind:class="{
+				playing: synth.isPlaying(),
+				audible: synth.isAudible(),
+				bypassed: synth.bypass,
+				suspended: Global.suspended.value,
+			}"
+			:style="{
+				'--glow-size': getGlowSize(synth),
+			}"
 			:key="id"
 			plain
 			round
@@ -72,38 +70,32 @@ function addSynth(): void {
 }
 
 .synth-button {
+	--accent-color: var(--playing-color);
+
 	outline: 2px solid transparent;
-	transition: outline-color 0.2s;
+	transition:
+		outline-color 0.2s,
+		color 0.2s;
 }
 
 .synth-button.playing {
-	outline-color: var(--playing-color);
-	box-shadow: 0 0 20px var(--playing-color);
+	outline-color: var(--accent-color);
+	color: var(--accent-color);
 	transition: outline-color 0s;
 }
 
-.synth-button.playing.suspended {
-	outline-color: var(--suspended-color);
-	box-shadow: 0 0 20px var(--suspended-color);
-	transition: outline-color 0s;
+.synth-button.audible {
+	box-shadow: 0 0 var(--glow-size) var(--accent-color);
 }
 
-/* .synth-button {
-  padding: 2px 4px;
-  border: 3px solid transparent;
-  border-radius: 8px;
-  white-space: nowrap;
-  transition:
-    border-color 0.3s,
-    box-shadow 0.3s;
+.synth-button.suspended {
+	--accent-color: var(--suspended-color);
 }
 
-.synth-button.playing {
-  --playing-color: rgb(40, 188, 40);
-  box-shadow: 0 0 8px 2px var(--playing-color);
-  border-color: var(--playing-color);
-  transition-duration: 0s;
-} */
+.synth-button.bypassed {
+	border-style: dashed;
+	opacity: 0.8;
+}
 </style>
 
 <script lang="ts">

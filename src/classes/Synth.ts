@@ -24,6 +24,7 @@ export interface SynthOptions {
 
 export default class Synth {
 	static SYNTHS: Ref<{ [key: UUID]: Synth }> = shallowRef({})
+	private static _animationFrameId: number | undefined
 
 	midiDevice: MidiDevice | null // Ref<MidiDevice | null>
 
@@ -142,14 +143,38 @@ export default class Synth {
 		if (!!enabled) {
 			this.outputNode.disconnect()
 		} else {
-			this.outputNode.connect(Global.master)
+			this.outputNode.connect(this.analyserNode)
 		}
 	}
 
 	inputNode: GainNode
 	outputNode: DynamicsCompressorNode
+	analyserNode: AnalyserNode
 	tuna: Tuna
 	effects: Tuna.TunaAudioNode[] = reactive([])
+	signalLevel = ref(0)
+
+	static updateSignalLevels() {
+		Object.values(Synth.SYNTHS.value).forEach((synth) => {
+			synth?.updateSignalLevel()
+		})
+	}
+
+	static beginUpdatingSignalLevels() {
+		const update = () => {
+			Synth.updateSignalLevels()
+			Synth._animationFrameId = requestAnimationFrame(update)
+		}
+
+		if (!this._animationFrameId) update()
+	}
+
+	static stopUpdatingSignalLevels() {
+		if (this._animationFrameId) {
+			cancelAnimationFrame(this._animationFrameId)
+			this._animationFrameId = undefined
+		}
+	}
 
 	constructor(options: SynthOptions = {}) {
 		options = options ?? {}
@@ -158,13 +183,15 @@ export default class Synth {
 
 		this.tuna = new Tuna(Global.context)
 
-		this.inputNode = Global.context.createGain()
+		this.analyserNode = Global.context.createAnalyser()
+		this.analyserNode.connect(Global.master)
 
 		this.outputNode = Global.context.createDynamicsCompressor()
 		this.outputNode.threshold.setValueAtTime(-10, Global.context.currentTime)
 		this.outputNode.ratio.setValueAtTime(10, Global.context.currentTime)
-		this.outputNode.connect(Global.master)
+		this.outputNode.connect(this.analyserNode)
 
+		this.inputNode = Global.context.createGain()
 		this.updateEffectNodes()
 
 		this.type = options.type ?? 'sine'
@@ -192,6 +219,32 @@ export default class Synth {
 
 	static getSynth(id: UUID): any {
 		return shallowReactive(Synth.SYNTHS.value[id])
+	}
+
+	updateSignalLevel(): number {
+		const buffer = new Uint8Array(this.analyserNode.fftSize)
+		this.analyserNode.getByteTimeDomainData(buffer)
+
+		// Compute root mean square (RMS)
+		let sumSquares = 0
+		for (let i = 0; i < buffer.length; i++) {
+			const normalized = (buffer[i] - 128) / 128
+			sumSquares += normalized * normalized
+		}
+
+		let db = 20 * Math.log10(sumSquares / buffer.length)
+		let linearVolume = Math.min(Math.max(0, (db + 90) / 90), 1)
+
+		let curvedVolume = Math.pow(linearVolume, 2)
+		curvedVolume = Math.min(Math.max(0, curvedVolume), 1)
+
+		const smoothing = 0.9
+
+		let smoothed = this.signalLevel.value ?? curvedVolume
+		smoothed += (curvedVolume - smoothed) * smoothing
+
+		this.signalLevel.value = smoothed < 0.01 ? 0 : smoothed
+		return this.signalLevel.value
 	}
 
 	delete(): void {
@@ -334,8 +387,12 @@ export default class Synth {
 		return this.preset ?? this.type
 	}
 
+	isAudible(): boolean {
+		return !this.bypass && (this.signalLevel.value > 0 || Object.keys(this.oscillators).length > 0)
+	}
+
 	isPlaying(): boolean {
-		return Object.keys(this.oscillators).length > 0
+		return !this.bypass && Object.keys(this.oscillators).length > 0
 	}
 
 	isNotePlaying(note: string, octave: number): boolean {
