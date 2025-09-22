@@ -45,8 +45,8 @@ section {
   color: white;
   /* background-color: #222222;
   border: 1px solid white; */
-  box-shadow: 0 0 12px #888888a0;
-  border-radius: 6px;
+  box-shadow: 0 0 12px #88888840;
+  border-radius: 48px;
 }
 
 section.vertical,
