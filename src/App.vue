@@ -51,7 +51,7 @@ function setGlobalVolume(value: number) {
 				class="context-suspended-alert"
 				type="error"
 				title="Audio Output Suspended"
-				description="Please click or press any key and then play a note in order to enable audio output."
+				description="Please click or press the keyboard and then play a note in order to enable audio output."
 				:closable="false"
 			></el-alert>
 		</div>
