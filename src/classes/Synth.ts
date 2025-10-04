@@ -657,6 +657,15 @@ export default class Synth {
 		// Presets assume stretch value of 4
 		const transformed = FFT(wavetable, 4)
 
+		const max = Math.max(...transformed.real.map(Math.abs), ...transformed.imag.map(Math.abs))
+
+		if (max > 0) {
+			for (let i = 0; i < transformed.real.length; i++) {
+				transformed.real[i] /= max
+				transformed.imag[i] /= max
+			}
+		}
+
 		// Create a PeriodicWave
 		this.periodicWave = Global.context.createPeriodicWave(transformed.real, transformed.imag)
 	}
