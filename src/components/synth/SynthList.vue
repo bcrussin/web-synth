@@ -5,7 +5,7 @@ import SynthDialog from './SynthDialog.vue'
 import Global from '@/classes/Audio'
 import { ref, watch, type Ref } from 'vue'
 
-const currentSynth: Ref<string | undefined> = ref(undefined)
+const currentSynth: Ref<UUID | undefined> = ref(undefined)
 
 function openDialog(synthId: UUID) {
 	currentSynth.value = synthId

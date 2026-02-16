@@ -136,11 +136,11 @@ export default class MidiDevice {
 			const channels = MidiManager.getChannelsForDevice(this)
 			const channelNumber = note
 
+			const percent = velocity / 127
+			this.channelValues[channelNumber] = percent
+
 			channels.forEach((channel: MidiChannel) => {
 				if (channel.channelNumber == channelNumber) {
-					const percent = velocity / 127
-
-					this.channelValues[channelNumber] = percent
 					this.setParam(channel, percent, channel.synth)
 				}
 			})
