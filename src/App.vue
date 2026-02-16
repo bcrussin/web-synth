@@ -8,6 +8,7 @@ import MidiDevice from './classes/MidiDevice'
 import Global from './classes/Audio'
 import { ref, watchEffect } from 'vue'
 import SettingsDialog from './components/settings/SettingsDialog.vue'
+import TutorialButton from './components/tutorial/TutorialButton.vue'
 
 const settingsDialogVisible = ref(false)
 
@@ -27,7 +28,30 @@ function setGlobalVolume(value: number) {
 
 <template>
 	<div class="wrapper">
+		<TutorialButton class="tutorial-button"></TutorialButton>
+
 		<div class="header">
+			<div class="welcome-container">
+				<h1>Welcome!</h1>
+				<p>
+					First time here? Click the <v-icon :name="'fa-question'"></v-icon> button in the top right
+					for help getting started.
+				</p>
+			</div>
+		</div>
+
+		<div class="content"></div>
+
+		<div class="footer">
+			<el-alert
+				v-if="contextSuspended"
+				class="context-suspended-alert"
+				type="error"
+				title="Audio Output Suspended"
+				description="Please click or press the keyboard and then play a note in order to enable audio output."
+				:closable="false"
+			></el-alert>
+
 			<div class="synth-controls">
 				<div>
 					<span>Volume:</span>
@@ -43,20 +67,7 @@ function setGlobalVolume(value: number) {
 					</el-slider>
 				</div>
 			</div>
-		</div>
 
-		<div class="content">
-			<el-alert
-				v-if="contextSuspended"
-				class="context-suspended-alert"
-				type="error"
-				title="Audio Output Suspended"
-				description="Please click or press the keyboard and then play a note in order to enable audio output."
-				:closable="false"
-			></el-alert>
-		</div>
-
-		<div class="footer">
 			<div id="synths-list-container">
 				<SynthList />
 			</div>
@@ -91,6 +102,7 @@ function setGlobalVolume(value: number) {
 
 .footer {
 	display: flex;
+	flex-direction: column;
 	width: 100%;
 }
 
@@ -100,5 +112,18 @@ function setGlobalVolume(value: number) {
 
 .context-suspended-alert {
 	margin: 16px 0;
+	align-self: center;
+	width: auto;
+}
+
+.welcome-container {
+	text-align: center;
+}
+
+:deep(.tutorial-button) {
+	position: fixed;
+	top: 16px;
+	right: 16px;
+	z-index: 5000;
 }
 </style>

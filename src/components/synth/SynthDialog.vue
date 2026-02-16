@@ -11,6 +11,7 @@ import MidiManager from '@/classes/MidiManager'
 import MidiChannel from '@/classes/MidiChannel'
 import SaveSynthDialog from './SaveSynthDialog.vue'
 import LoadSynthDialog from './LoadSynthDialog.vue'
+import Keyboard from '@/classes/Keyboard'
 
 const props = defineProps<{ synthId: UUID }>()
 const synth = Synth.getSynth(props.synthId)
@@ -151,7 +152,7 @@ function saveSynthName() {
 					</el-button>
 
 					<el-popconfirm
-						v-if="synth.name != 'Keyboard'"
+						v-if="synth.id !== Keyboard.synth.id"
 						title="Are you sure you would like to delete this synth?"
 						:width="200"
 						:hide-icon="true"

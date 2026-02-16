@@ -97,10 +97,7 @@ function editChannel(channel?: MidiChannel | number) {
 			</template>
 		</el-dropdown>
 
-		<div
-			class="channel-value"
-			:style="getIndicatorStyles(getFirstChannel(channelNumber)?.channelNumber)"
-		></div>
+		<div class="channel-value" :style="getIndicatorStyles(channelNumber)"></div>
 	</div>
 
 	<MidiParamDialog
