@@ -117,7 +117,7 @@ function getPresets() {
 		<div class="selectable">
 			<span>Release:</span>
 			<el-slider
-				:min="0"
+				:min="0.01"
 				:max="0.5"
 				:step="0.05"
 				name="release"

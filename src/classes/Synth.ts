@@ -204,7 +204,7 @@ export default class Synth {
 		this.glideAmount = options.glideAmount ?? 0.1
 
 		this.attack = 0.001
-		this.release = 0.05
+		this.release = 0.01
 		this.sustain = 1
 		this.decay = 0.5
 
