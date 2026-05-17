@@ -48,7 +48,9 @@ Synth.beginUpdatingSignalLevels()
 			size="default"
 			@click="openDialog(id)"
 		>
-			{{ synth.nameRef }}
+			<span class="synth-button-name">
+				{{ synth.nameRef }}
+			</span>
 		</el-button>
 
 		<el-button round size="default" @click="addSynth"> + </el-button>
@@ -76,6 +78,12 @@ Synth.beginUpdatingSignalLevels()
 	transition:
 		outline-color 0.2s,
 		color 0.2s;
+
+	.synth-button-name {
+		max-width: 32ch;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 
 .synth-button.playing {

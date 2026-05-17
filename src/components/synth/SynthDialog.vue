@@ -22,7 +22,8 @@ const isSaving = ref(false)
 const isLoading = ref(false)
 const isEditingName = ref(false)
 
-const synthNameInput = ref<HTMLElement | null>(null)
+const synthNameInput = ref<HTMLInputElement | null>(null)
+const pendingSynthName = ref('')
 
 function deleteSynth(close: () => void) {
 	close()
@@ -67,37 +68,29 @@ function toggleElementSelection() {
 	}, 0)
 }
 
-function focusSynthName() {
-	if (!isEditingName.value && synthNameInput.value) {
-		synthNameInput.value.focus()
-
-		nextTick(() => {
-			const selection = window.getSelection()
-			const range = document.createRange()
-
-			range.selectNodeContents(synthNameInput?.value!)
-			selection?.removeAllRanges()
-			selection?.addRange(range)
-		})
-	}
-
+function editSynthName(selectAll: boolean = false) {
+	pendingSynthName.value = synth.name
 	isEditingName.value = true
+
+	nextTick(() => {
+		synthNameInput.value?.focus()
+
+		if (selectAll) synthNameInput.value?.select()
+	})
 }
 
 function saveSynthName() {
-	if (!synthNameInput.value) return
+	if (!pendingSynthName.value) return
 
-	const name = synthNameInput.value.textContent.trim()
+	const name = pendingSynthName.value.trim()
 
 	if (!!name && name != synth.name) {
 		synth.name = name
 	} else {
-		synthNameInput.value.textContent = synth.name
+		pendingSynthName.value = synth.name
 	}
 
 	isEditingName.value = false
-
-	synthNameInput.value.blur()
 }
 </script>
 
@@ -117,22 +110,19 @@ function saveSynthName() {
 		<template #header="{ close, titleId, titleClass }">
 			<div class="dialog-header">
 				<div class="synth-name-container" :id="titleId" :class="titleClass">
-					<!-- TODO: Instead of preventing paste, hijack the command and strip newlines before pasting -->
-					<h3
-						class="synth-name"
-						contenteditable="plaintext-only"
-						spellcheck="false"
-						@focus="focusSynthName"
-						@blur="saveSynthName"
-						@keydown.stop
-						@keydown.enter.prevent="saveSynthName"
-						@paste.prevent
-						ref="synthNameInput"
-					>
+					<h3 v-if="!isEditingName" class="synth-name" @click="editSynthName()">
 						{{ synth.nameRef }}
 					</h3>
 
-					<el-button v-if="!isEditingName" @click="focusSynthName()" :icon="Edit" text round>
+					<el-input
+						v-else
+						class="synth-name-input"
+						v-model="pendingSynthName"
+						@blur="saveSynthName()"
+						ref="synthNameInput"
+					></el-input>
+
+					<el-button v-if="!isEditingName" @click="editSynthName(true)" :icon="Edit" text round>
 					</el-button>
 				</div>
 
@@ -238,6 +228,7 @@ function saveSynthName() {
 	height: 1lh;
 	display: flex;
 	justify-content: space-between;
+	gap: 16px;
 }
 
 .dialog-options {
@@ -246,9 +237,12 @@ function saveSynthName() {
 }
 
 .synth-name-container {
+	flex: 1;
 	display: flex;
 	align-items: center;
 	gap: 8px;
+
+	min-width: 0;
 }
 
 .synth-name {
@@ -256,10 +250,11 @@ function saveSynthName() {
 	border-radius: 8px;
 	white-space: nowrap;
 	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.synth-name:focus {
-	padding: 4px 1.5ch;
+.synth-name-input {
+	flex: 1;
 }
 
 .synth-controls {

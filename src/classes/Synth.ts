@@ -1,5 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { reactive, ref, shallowReactive, shallowRef, triggerRef, watch, type Ref } from 'vue'
+import {
+	reactive,
+	ref,
+	shallowReactive,
+	shallowRef,
+	triggerRef,
+	watch,
+	type Ref,
+	type ShallowReactive,
+} from 'vue'
 import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import FFT from './FFT'
@@ -217,7 +226,7 @@ export default class Synth {
 		return Synth.SYNTHS.value
 	}
 
-	static getSynth(id: UUID): any {
+	static getSynth(id: UUID): ShallowReactive<Synth> {
 		return shallowReactive(Synth.SYNTHS.value[id])
 	}
 
