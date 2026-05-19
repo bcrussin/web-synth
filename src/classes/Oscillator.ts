@@ -54,18 +54,18 @@ export default class Oscillator extends OscillatorNode {
 
 		this.connect(this.lowPassFilter)
 
-		if (!!this.synth.periodicWave && !Global.WAVE_TYPES.includes(synth.type)) {
+		if (!!this.synth.periodicWave && !Global.WAVE_TYPES.includes(synth.state.type)) {
 			this.setPeriodicWave(this.synth.periodicWave)
 		} else {
-			this.type = (synth.type as OscillatorType) ?? 'sine'
+			this.type = (synth.state.type as OscillatorType) ?? 'sine'
 		}
 
 		this.eg = new EnvGen(Global.context, this.gainNode.gain)
 		this.eg.mode = 'ADSR'
-		this.eg.attackTime = synth.parameters.get(SynthParam.Attack).value
-		this.eg.releaseTime = synth.parameters.get(SynthParam.Release).value
-		this.eg.decayTime = synth.parameters.get(SynthParam.Decay).value
-		this.eg.sustainLevel = synth.parameters.get(SynthParam.Sustain).value
+		this.eg.attackTime = synth.params.get(SynthParam.Attack).value
+		this.eg.releaseTime = synth.params.get(SynthParam.Release).value
+		this.eg.decayTime = synth.params.get(SynthParam.Decay).value
+		this.eg.sustainLevel = synth.params.get(SynthParam.Sustain).value
 
 		this.emptyEg = new EnvGen(Global.context, this.gainNode.gain)
 		this.emptyEg.mode = 'ASR'
@@ -107,7 +107,7 @@ export default class Oscillator extends OscillatorNode {
 		}
 
 		if (!!this.synth.midiDevice) {
-			this.frequencyOffset = this.semitonesToFrequencyOffset(this.synth.midiDevice.pitchBend)
+			this.frequencyOffset = this.semitonesToFrequencyOffset(this.synth.midiDevice.state.pitchBend)
 		}
 	}
 
@@ -128,14 +128,14 @@ export default class Oscillator extends OscillatorNode {
 	}
 
 	noteToFrequency(note: string, octave: number) {
-		const transposed = Global.transposeNote(note, octave, this.synth.transpose)
+		const transposed = Global.transposeNote(note, octave, this.synth.state.transpose)
 		const frequency = Global.noteToFrequency(transposed.note, transposed.octave)
 
 		return frequency
 	}
 
 	semitoneToFrequency(semitone: number) {
-		const frequency = Global.semitoneToFrequency(semitone + this.synth.transpose)
+		const frequency = Global.semitoneToFrequency(semitone + this.synth.state.transpose)
 
 		return frequency
 	}
@@ -192,8 +192,8 @@ export default class Oscillator extends OscillatorNode {
 
 		// TODO: Magic number currently, otherwise synth stops before release fully plays out
 		const stopDelay =
-			this.synth.parameters.get(SynthParam.Release).value > 0.005
-				? this.synth.parameters.get(SynthParam.Release).value * 5
+			this.synth.params.get(SynthParam.Release).value > 0.005
+				? this.synth.params.get(SynthParam.Release).value * 5
 				: 0.01
 		this.stop(Global.context.currentTime + stopDelay)
 	}

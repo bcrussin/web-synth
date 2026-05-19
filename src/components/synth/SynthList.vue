@@ -11,9 +11,9 @@ const audioStore = useAudioStore()
 
 const currentSynth: Ref<UUID | undefined> = ref(undefined)
 
-const synthRefs = computed(() =>
-	Object.fromEntries(Object.entries(audioStore.synths).map(([id, synth]) => [id, useSynth(synth)])),
-)
+// const synthRefs = computed(() =>
+// 	Object.fromEntries(Object.entries(audioStore.synths).map(([id, synth]) => [id, useSynth(synth)])),
+// )
 
 function openDialog(synthId: UUID) {
 	currentSynth.value = synthId
@@ -57,7 +57,7 @@ Synth.beginUpdatingSignalLevels()
 			@click="openDialog(id)"
 		>
 			<span class="synth-button-name">
-				{{ synthRefs[id].name }}
+				{{ synth.state.name }}
 			</span>
 		</el-button>
 
@@ -125,7 +125,7 @@ export default {
 	},
 	methods: {
 		openDialog(synth: Synth) {
-			this.settingsDialogs.add(synth.name)
+			this.settingsDialogs.add(synth.state.name)
 		},
 		closeDialog(id: string, isVisible: boolean) {
 			if (!isVisible) {

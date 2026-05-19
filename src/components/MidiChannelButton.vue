@@ -19,11 +19,11 @@ const dialogChannel: Ref<MidiChannel | undefined> = ref(undefined)
 const dialogIsNewChannel: Ref<boolean> = ref(false)
 
 const midiDevice = computed(() => audioStore.getMidiDevice(props.deviceId))
-const midiDeviceRef = useMidiDevice(midiDevice.value)
+// const midiDeviceRef = useMidiDevice(midiDevice.value)
 
 const indicatorStyles = computed(() => {
 	return (channel: number) => {
-		const channelValues = midiDeviceRef.channelValues.value
+		const channelValues = midiDevice.value.state.channelValues
 		const value = channelValues[channel]
 
 		const style: any = {}
