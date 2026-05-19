@@ -18,7 +18,7 @@ import { useAudioStore } from '@/stores/audioStore'
 const props = defineProps<{ synthId: UUID }>()
 const audioStore = useAudioStore()
 const synth = audioStore.getSynth(props.synthId)
-const synthRef = useSynth(synth)
+// const synthRef = useSynth(synth)
 
 const selectingElement = ref(false)
 const currentMidiChannel: Ref<MidiChannel | undefined> = ref(undefined)
@@ -73,7 +73,7 @@ function toggleElementSelection() {
 }
 
 function editSynthName(selectAll: boolean = false) {
-	pendingSynthName.value = synth.name
+	pendingSynthName.value = synth.state.name
 	isEditingName.value = true
 
 	nextTick(() => {
@@ -88,10 +88,10 @@ function saveSynthName() {
 
 	const name = pendingSynthName.value.trim()
 
-	if (!!name && name != synth.name) {
-		synthRef.name.value = name
+	if (!!name && name != synth.state.name) {
+		synth.state.name = name
 	} else {
-		pendingSynthName.value = synth.name
+		pendingSynthName.value = synth.state.name
 	}
 
 	isEditingName.value = false
@@ -115,7 +115,7 @@ function saveSynthName() {
 			<div class="dialog-header">
 				<div class="synth-name-container" :id="titleId" :class="titleClass">
 					<h3 v-if="!isEditingName" class="synth-name" @click="editSynthName()">
-						{{ synthRef.name }}
+						{{ synth.state.name }}
 					</h3>
 
 					<el-input

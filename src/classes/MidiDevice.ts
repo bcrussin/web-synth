@@ -5,12 +5,8 @@ import { getMidiStore, useMidiStore, type MIDIParam } from '@/stores/midiStore'
 import MidiChannel, { type MidiChannelOptions } from './MidiChannel'
 import MidiManager from './MidiManager'
 import { getAudioStore } from '@/stores/audioStore'
-
-interface SynthParams {
-	[synthId: UUID]: {
-		[channel: number]: MidiChannel
-	}
-}
+import MidiDeviceState from '@/states/MidiDeviceState'
+import { reactive, type Reactive } from 'vue'
 
 export default class MidiDevice {
 	static DEFAULTS = {
@@ -22,12 +18,8 @@ export default class MidiDevice {
 	}
 
 	input: MIDIInput
-	synthIds: Set<UUID>
 
-	channelValues: number[]
-	channelSettings: SynthParams
-	pitchBend: number
-	velocityCurve: number | null = null
+	state: Reactive<MidiDeviceState>
 
 	get name(): string {
 		return this.input.name ?? ''
@@ -35,11 +27,7 @@ export default class MidiDevice {
 
 	constructor(input: MIDIInput) {
 		this.input = input
-		this.pitchBend = 0
-		this.channelValues = new Array(16).fill(0)
-		this.channelSettings = {}
-
-		this.synthIds = new Set()
+		this.state = reactive(new MidiDeviceState(this))
 		const synth = new Synth({ name: input?.name ?? undefined, midiDevice: this })
 		this.addSynth(synth)
 	}
@@ -102,19 +90,19 @@ export default class MidiDevice {
 			case 144: // noteOn
 				if (velocity > 0) {
 					velocity = this.mapVelocityToCurve(velocity)
-					for (const synthId of this.synthIds) {
+					for (const synthId of this.state.synthIds) {
 						const synth = getAudioStore().getSynth(synthId)
 						synth.playNote(noteLetter, octave, MidiDevice.mapToRange(velocity, 0, 127, 0, 1))
 					}
 				} else {
-					for (const synthId of this.synthIds) {
+					for (const synthId of this.state.synthIds) {
 						const synth = getAudioStore().getSynth(synthId)
 						synth.stopNote(noteLetter, octave)
 					}
 				}
 				break
 			case 128: // noteOff
-				for (const synthId of this.synthIds) {
+				for (const synthId of this.state.synthIds) {
 					const synth = getAudioStore().getSynth(synthId)
 					synth.stopNote(noteLetter, octave)
 				}
@@ -122,8 +110,8 @@ export default class MidiDevice {
 		}
 
 		if (command >= 224 && command <= 239) {
-			this.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
-			for (const synthId of this.synthIds) {
+			this.state.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
+			for (const synthId of this.state.synthIds) {
 				const synth = getAudioStore().getSynth(synthId)
 				synth.updateOscillatorFrequencies()
 			}
@@ -134,7 +122,7 @@ export default class MidiDevice {
 			const channelNumber = note
 
 			const percent = velocity / 127
-			this.channelValues[channelNumber] = percent
+			this.state.channelValues[channelNumber] = percent
 
 			channels.forEach((channel: MidiChannel) => {
 				if (channel.channelNumber == channelNumber) {
@@ -145,7 +133,7 @@ export default class MidiDevice {
 	}
 
 	mapVelocityToCurve(velocity: number) {
-		const curve = this.velocityCurve ?? MidiDevice.DEFAULTS.velocityCurve
+		const curve = this.state.velocityCurve ?? MidiDevice.DEFAULTS.velocityCurve
 
 		const velocityMapped = 127 * Math.pow(velocity / 127, curve)
 		return velocityMapped
@@ -156,19 +144,19 @@ export default class MidiDevice {
 
 		if (synth == undefined) return
 
-		this.synthIds.add(synth.id)
+		this.state.synthIds.add(synth.id)
 	}
 
 	removeSynth(id: UUID): void {
-		this.synthIds.delete(id)
+		this.state.synthIds.delete(id)
 	}
 
 	getChannelProperties(synthId: UUID, channel: number) {
-		return this.channelSettings[synthId][channel]
+		return this.state.channelSettings[synthId][channel]
 	}
 
 	getChannelProperty(synthId: UUID, channel: number, property: keyof MidiChannelOptions) {
-		return this.channelSettings[synthId][channel].getProperty(property)
+		return this.state.channelSettings[synthId][channel].getProperty(property)
 	}
 
 	setChannelProperty<K extends keyof MidiChannelOptions>(
@@ -177,21 +165,21 @@ export default class MidiDevice {
 		property: K,
 		value: MidiChannelOptions[K],
 	) {
-		if (this.channelSettings[synth.id] == undefined) {
-			console.error(`Synth ${synth.name} has no data for channel ${channel}`)
+		if (this.state.channelSettings[synth.id] == undefined) {
+			console.error(`Synth ${synth.state.name} has no data for channel ${channel}`)
 			return //this.channelSettings[synth.name] = {}
 		}
 
-		this.channelSettings[synth.id][channel].setProperty(property, value)
+		this.state.channelSettings[synth.id][channel].setProperty(property, value)
 	}
 
 	setChannelProperties(synth: Synth, channel: number, data: MidiChannelOptions) {
-		if (this.channelSettings[synth.id] == undefined) {
-			console.error(`Synth ${synth.name} has no data for channel ${channel}`)
+		if (this.state.channelSettings[synth.id] == undefined) {
+			console.error(`Synth ${synth.state.name} has no data for channel ${channel}`)
 			return //this.channelSettings[synth.name] = {}
 		}
 
-		this.channelSettings[synth.id][channel].setProperties(data)
+		this.state.channelSettings[synth.id][channel].setProperties(data)
 	}
 
 	setParam(channelProps: MidiChannel, percent: number, synthId?: UUID) {
@@ -210,7 +198,7 @@ export default class MidiDevice {
 					const synth = getAudioStore().getSynth(synthId)
 					;(synth as any)[param.property] = value
 				} else {
-					this.synthIds.forEach((synthId: any) => {
+					this.state.synthIds.forEach((synthId: any) => {
 						const synth = getAudioStore().getSynth(synthId)
 						;(synth as any)[param.property] = value
 					})

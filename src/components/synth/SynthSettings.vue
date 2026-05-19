@@ -26,7 +26,7 @@ function setSynthValue(property: string, value: number | string | boolean) {
 }
 
 function setTranspose(value: number) {
-	synth.transpose = value
+	synth.state.transpose = value
 }
 
 function setMaxPolyphony(value: number) {
@@ -34,9 +34,9 @@ function setMaxPolyphony(value: number) {
 }
 
 function getMaxPolyphony(): number {
-	if (synth.maxPolyphony == Infinity) return 0
+	if (synth.state.maxPolyphony == Infinity) return 0
 
-	return synth.maxPolyphony
+	return synth.state.maxPolyphony
 }
 </script>
 
@@ -73,7 +73,7 @@ function getMaxPolyphony(): number {
 			<span>Octaves:</span>
 			<el-input-number
 				class="control"
-				v-model="synth.octaves"
+				v-model="synth.state.octaves"
 				data-param="Synth Transpose (Octaves)"
 			/>
 		</div>
@@ -81,14 +81,14 @@ function getMaxPolyphony(): number {
 			<span>Semitones:</span>
 			<el-input-number
 				class="control"
-				v-model="synth.semitones"
+				v-model="synth.state.semitones"
 				data-param="Synth Transpose (Semitones)"
 			/>
 		</div>
 		<el-button
 			:icon="RefreshLeft"
 			@click="setTranspose(0)"
-			:disabled="synth.transpose == 0"
+			:disabled="synth.state.transpose == 0"
 			circle
 			text
 		></el-button>
@@ -105,26 +105,17 @@ function getMaxPolyphony(): number {
 				@change="setMaxPolyphony($event)"
 			/>
 		</div>
-		<el-checkbox
-			label="Legato"
-			:model-value="synth.legato"
-			@change="setSynthValue('legato', $event)"
-		/>
-		<el-checkbox
-			label="Glide"
-			:model-value="synth.glide"
-			@change="setSynthValue('glide', $event)"
-		/>
+		<el-checkbox label="Legato" v-model="synth.state.legato" />
+		<el-checkbox label="Glide" v-model="synth.state.glide" />
 		<div class="selectable">
 			<span>Glide Duration (ms):</span>
 			<el-input-number
 				data-param="Synth Glide Amount"
 				class="control"
-				:model-value="synth.glideAmountMs"
+				v-model="synth.state.glideAmountMs"
 				:min="0"
 				:max="1000"
 				:step="50"
-				@change="setSynthValue('glideAmount', $event / 1000)"
 			/>
 		</div>
 		<!-- <div>

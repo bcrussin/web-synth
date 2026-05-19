@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { reactive } from 'vue'
+import { reactive, type Reactive } from 'vue'
 import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import FFT from './FFT'
@@ -7,6 +7,7 @@ import Tuna from 'tunajs'
 import MidiDevice from './MidiDevice'
 import { getAudioStore } from '@/stores/audioStore'
 import SynthParameters from './SynthParameters'
+import SynthState from '../states/SynthState'
 
 export interface SynthOptions {
 	name?: string
@@ -31,12 +32,9 @@ export default class Synth {
 
 	id: UUID = crypto.randomUUID()
 
-	name: string
+	params = new SynthParameters()
 
-	type: string
-	preset: string | undefined
-
-	parameters = new SynthParameters()
+	state: Reactive<SynthState>
 
 	public get volume(): number {
 		return this.inputNode.gain.value
@@ -45,83 +43,12 @@ export default class Synth {
 		this.inputNode.gain.value = value
 	}
 
-	private _maxPolyphony: number
-
-	get maxPolyphony() {
-		return this._maxPolyphony
-	}
-
-	set maxPolyphony(value: number) {
-		if (value <= 0) value = Infinity
-
-		this._maxPolyphony = value
-	}
-
-	legato: boolean
-	_glide!: boolean
-	glideMode: 'speed' | 'duration'
-	glideAmount: number
-
-	get glideAmountMs() {
-		return Math.round(this.glideAmount * 1000)
-	}
-
-	get glide() {
-		return this._glide
-	}
-
-	set glide(enabled: boolean) {
-		this._glide = enabled
-
-		if (enabled) this.legato = true
-	}
-
 	oscillators: { [key: number]: Oscillator } = reactive({})
 	noteQueue: Array<number> = reactive([])
 
-	notes: Set<number> = reactive(new Set<number>())
 	// pressedNotes: Set<number> = reactive(new Set<string>())
 
-	wavetable: Array<number> | null = null
 	periodicWave: PeriodicWave | null = null
-
-	_transpose: number = 0
-	public get transpose(): number {
-		return this._transpose ?? 0
-	}
-	public set transpose(value: number) {
-		if (typeof value !== 'number') return
-
-		this._transpose = value
-		this.updateOscillatorNotes()
-	}
-
-	public get semitones() {
-		let n = this.transpose % 12
-
-		if (n > 11) n -= 12
-		if (n < -11) n += 12
-		return n
-	}
-	public set semitones(val) {
-		const extraOctaves = Math.floor(val / 12)
-		val = ((val % 12) + 12) % 12
-		if (val > 11) val -= 12
-
-		this.transpose = (this.octaves + extraOctaves) * 12 + val
-	}
-
-	get octaves() {
-		let semitones = this.transpose % 12
-
-		if (semitones > 0) return Math.floor(this.transpose / 12)
-		else return Math.ceil(this.transpose / 12)
-	}
-	set octaves(val) {
-		let semitones = this.transpose % 12
-
-		this.transpose = val * 12 + semitones
-	}
 
 	_bypass: boolean = false
 	public get bypass() {
@@ -183,17 +110,9 @@ export default class Synth {
 
 		this.inputNode = Global.context.createGain()
 		this.updateEffectNodes()
-
-		this.type = options.type ?? 'sine'
 		this.volume = options.volume ?? 1
 
-		this._maxPolyphony = options._maxPolyphony ?? Infinity
-		this.legato = options.legato ?? true
-		this.glide = options.glide ?? false
-		this.glideMode = options.glideMode ?? 'speed'
-		this.glideAmount = options.glideAmount ?? 0.1
-
-		this.name = options.name ?? `Synth ${Object.keys(getAudioStore().synths).length + 1}`
+		this.state = reactive(new SynthState(this, options))
 		getAudioStore().addSynth(this)
 	}
 
@@ -329,13 +248,13 @@ export default class Synth {
 	changeTranspose(value: number): void {
 		if (typeof value !== 'number') return
 
-		this.transpose += value
+		this.state.transpose += value
 	}
 
 	setMaxPolyphony(value: number) {
 		if (typeof value !== 'number') return
 
-		this.maxPolyphony = value
+		this.state.maxPolyphony = value
 	}
 
 	/**
@@ -359,7 +278,7 @@ export default class Synth {
 	 * Return the synth's preset name, or wave type if no preset is set.
 	 */
 	getPresetOrType(): string {
-		return this.preset ?? this.type
+		return this.state.preset ?? this.state.type
 	}
 
 	isAudible(): boolean {
@@ -381,7 +300,7 @@ export default class Synth {
 
 	hasFreeNotes(beforeRemoving?: boolean): boolean {
 		const offset = beforeRemoving ? 1 : 0
-		return Object.keys(this.oscillators).length < this._maxPolyphony + offset
+		return Object.keys(this.oscillators).length < this.state.maxPolyphony + offset
 	}
 
 	hasQueuedNotes(): boolean {
@@ -417,7 +336,7 @@ export default class Synth {
 	 * @returns
 	 */
 	playSemitone(semitone: number, volume?: number) {
-		this.notes.add(semitone)
+		this.state.notes.add(semitone)
 
 		// const frequency = Global.getFrequency(transposed.note, transposed.octave)
 		if (semitone == undefined || this.isSemitonePlaying(semitone)) return
@@ -426,7 +345,7 @@ export default class Synth {
 		if (!this.hasFreeNotes()) {
 			const oldest = this.getOldestOscillator()!
 
-			if (this.legato) {
+			if (this.state.legato) {
 				// If legato, change oldest note frequency to new one
 				this.addNoteToQueue(oldest.baseSemitone)
 				this.changeOscillatorNote(oldest, semitone, volume)
@@ -469,7 +388,7 @@ export default class Synth {
 	 * @returns
 	 */
 	stopSemitone(semitone: number) {
-		this.notes.delete(semitone)
+		this.state.notes.delete(semitone)
 
 		if (this.noteQueue.includes(semitone)) {
 			this.removeFromQueue(semitone)
@@ -484,7 +403,7 @@ export default class Synth {
 		if (this.hasFreeNotes(true) && this.hasQueuedNotes()) {
 			const newSemitone = this.noteQueue.pop()!
 
-			if (this.legato) {
+			if (this.state.legato) {
 				// If legato, reuse the released note for the queued frequency
 				this.changeOscillatorNote(oscillator, newSemitone)
 				return
@@ -511,10 +430,10 @@ export default class Synth {
 		// Makes the oscillator act like it was newly created, test for desired functionality
 		oscillator.created = new Date()
 
-		if (this.glide) {
-			oscillator.glideToNote(semitone, this.glideAmount)
+		if (this.state.glide) {
+			oscillator.glideToNote(semitone, this.state.glideAmount)
 
-			if (!!volume) oscillator.glideToVelocity(volume, this.glideAmount)
+			if (!!volume) oscillator.glideToVelocity(volume, this.state.glideAmount)
 		} else {
 			oscillator.setSemitone(semitone)
 
@@ -582,7 +501,7 @@ export default class Synth {
 				note.release()
 				delete this.oscillators[parseFloat(name)]
 			})
-		this.notes.clear()
+		this.state.notes.clear()
 	}
 
 	/**
@@ -608,25 +527,25 @@ export default class Synth {
 	}
 
 	setWaveType(type: string): void {
-		this.preset = undefined
+		this.state.preset = undefined
 
-		if (this.type == type) return
-		this.type = type
+		if (this.state.type == type) return
+		this.state.type = type
 	}
 
 	setPreset(preset?: string) {
-		if (this.preset == preset) return
+		if (this.state.preset == preset) return
 
-		this.type = 'custom'
-		this.preset = preset ?? undefined
+		this.state.type = 'custom'
+		this.state.preset = preset ?? undefined
 	}
 
 	setWavetable(wavetable: Array<number>) {
 		if (wavetable == undefined || wavetable.length <= 0) {
 			wavetable = [0, 1]
-			this.wavetable = new Array(16).fill(0)
+			this.state.wavetable = new Array(16).fill(0)
 		} else {
-			this.wavetable = [...wavetable]
+			this.state.wavetable = [...wavetable]
 		}
 
 		// Presets assume stretch value of 4
@@ -646,7 +565,7 @@ export default class Synth {
 	}
 
 	clearWavetable() {
-		this.wavetable = null
+		this.state.wavetable = null
 		this.periodicWave = null
 	}
 }
