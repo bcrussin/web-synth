@@ -1,9 +1,13 @@
+import { getAudioStore } from '@/stores/audioStore'
 import MidiChannel, { type SerializedMidiChannel, type MidiChannelOptions } from './MidiChannel'
 import MidiDevice from './MidiDevice'
 import MidiManager from './MidiManager'
+import type { SerializedParameter } from './Parameter'
 import type Synth from './Synth'
 import { loadTunaEffect } from './TunaDeserializers'
 import { serializeTunaEffect } from './TunaSerializers'
+import { SynthParam } from './SynthParameters'
+import type Parameter from './Parameter'
 
 // Used to prevent accidental mutation of saved data
 type DeepReadonly<T> = {
@@ -24,12 +28,20 @@ export const CATEGORY_NAMES = {
 	[SynthSerializerCategory.SETTINGS]: 'Settings',
 }
 
+export const SynthParamCategories: Partial<Record<SynthSerializerCategory, SynthParam[]>> = {
+	[SynthSerializerCategory.WAVEFORM]: [
+		SynthParam.Attack,
+		SynthParam.Decay,
+		SynthParam.Sustain,
+		SynthParam.Release,
+	],
+}
+
+export type SerialisedSynthParams = Partial<Record<SynthParam, SerializedParameter>>
+
 export interface SerializedSynth {
+	parameters?: SerialisedSynthParams
 	[SynthSerializerCategory.WAVEFORM]?: {
-		attack?: number
-		decay?: number
-		sustain?: number
-		release?: number
 		preset?: string | undefined
 		type?: string
 		wavetable?: Array<number> | null
@@ -52,12 +64,14 @@ export class SynthSerializer {
 
 		const data: SerializedSynth = {}
 
+		let parameters: SerialisedSynthParams = synth.parameters.serialize() ?? {}
+		if (cateogoriesAreDefined) {
+			parameters = SynthSerializer.filterParams(parameters, categories)
+		}
+		data.parameters = parameters
+
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
 			data[SynthSerializerCategory.WAVEFORM] = {
-				attack: synth.attack,
-				decay: synth.decay,
-				sustain: synth.sustain,
-				release: synth.release,
 				type: synth.type,
 			}
 
@@ -72,9 +86,9 @@ export class SynthSerializer {
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI)) {
-			data[SynthSerializerCategory.MIDI] = MidiManager.getChannelsForSynth(synth).map((channel) =>
-				channel.serialize(),
-			)
+			data[SynthSerializerCategory.MIDI] = getAudioStore()
+				.getMidiChannelsForSynth(synth.id)
+				.map((channel) => channel.serialize())
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.SETTINGS)) {
@@ -94,13 +108,15 @@ export class SynthSerializer {
 	static load(synth: Synth, data: SerializedSynth, categories?: SynthSerializerCategory[]) {
 		const cateogoriesAreDefined = !!categories
 
+		let parameters: SerialisedSynthParams = data.parameters ?? {}
+		if (cateogoriesAreDefined) {
+			parameters = SynthSerializer.filterParams(parameters, categories)
+		}
+		synth.parameters.deserialize(parameters)
+
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
 			const waveformData = data[SynthSerializerCategory.WAVEFORM]
 
-			synth.attack = waveformData?.attack ?? synth.attack
-			synth.decay = waveformData?.decay ?? synth.decay
-			synth.sustain = waveformData?.sustain ?? synth.sustain
-			synth.release = waveformData?.release ?? synth.release
 			synth.type = waveformData?.type ?? synth.type
 
 			if (!!waveformData?.wavetable) {
@@ -130,16 +146,19 @@ export class SynthSerializer {
 			!!data[SynthSerializerCategory.MIDI] &&
 			(!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.MIDI))
 		) {
-			MidiManager.getChannelsForSynth(synth).forEach((channel) => {
-				MidiManager.unregisterChannel(channel)
-			})
+			getAudioStore()
+				.getMidiChannelsForSynth(synth.id)
+				.forEach((channel) => {
+					MidiManager.unregisterChannel(channel)
+				})
 
 			data[SynthSerializerCategory.MIDI].forEach((channelData) => {
-				if (!MidiDevice.DEVICES[channelData.device]) return
+				const midiDevice = getAudioStore().getMidiDevice(channelData.device)
+				if (!midiDevice) return
 
 				let options: MidiChannelOptions = { ...channelData.options, synth }
 
-				const channel = new MidiChannel(MidiDevice.DEVICES[channelData.device], options)
+				const channel = new MidiChannel(midiDevice, options)
 				MidiManager.registerChannel(channel)
 			})
 		}
@@ -183,5 +202,24 @@ export class SynthSerializer {
 			Object.values(SynthSerializerCategory).includes(key),
 		)
 		return categories
+	}
+
+	static filterParams(
+		params: SerialisedSynthParams = {},
+		categories: SynthSerializerCategory[],
+	): SerialisedSynthParams {
+		const result: SerialisedSynthParams = {}
+
+		for (const category of categories) {
+			const categoryParams = SynthParamCategories[category]
+			if (!categoryParams) continue
+
+			for (const categoryParam of categoryParams) {
+				const param = params[categoryParam]
+				if (param) result[categoryParam] = param
+			}
+		}
+
+		return result
 	}
 }

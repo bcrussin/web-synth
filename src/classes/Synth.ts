@@ -1,19 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-	reactive,
-	ref,
-	shallowReactive,
-	shallowRef,
-	triggerRef,
-	watch,
-	type Ref,
-	type ShallowReactive,
-} from 'vue'
+import { reactive } from 'vue'
 import Global from '@/classes/Audio'
 import Oscillator from '@/classes/Oscillator'
 import FFT from './FFT'
 import Tuna from 'tunajs'
 import MidiDevice from './MidiDevice'
+import { getAudioStore } from '@/stores/audioStore'
+import SynthParameters from './SynthParameters'
 
 export interface SynthOptions {
 	name?: string
@@ -32,28 +25,18 @@ export interface SynthOptions {
 }
 
 export default class Synth {
-	static SYNTHS: Ref<{ [key: UUID]: Synth }> = shallowRef({})
 	private static _animationFrameId: number | undefined
 
 	midiDevice: MidiDevice | null // Ref<MidiDevice | null>
 
 	id: UUID = crypto.randomUUID()
 
-	nameRef: Ref<string>
-
-	get name() {
-		return this.nameRef.value
-	}
-	set name(value: string) {
-		this.nameRef.value = value
-	}
+	name: string
 
 	type: string
 	preset: string | undefined
-	attack: number
-	decay: number
-	sustain: number
-	release: number
+
+	parameters = new SynthParameters()
 
 	public get volume(): number {
 		return this.inputNode.gain.value
@@ -62,7 +45,7 @@ export default class Synth {
 		this.inputNode.gain.value = value
 	}
 
-	_maxPolyphony: number
+	private _maxPolyphony: number
 
 	get maxPolyphony() {
 		return this._maxPolyphony
@@ -102,16 +85,14 @@ export default class Synth {
 	wavetable: Array<number> | null = null
 	periodicWave: PeriodicWave | null = null
 
-	_transpose: Ref<number> = ref(0)
+	_transpose: number = 0
 	public get transpose(): number {
-		return this._transpose.value ?? this._transpose ?? 0
+		return this._transpose ?? 0
 	}
 	public set transpose(value: number) {
 		if (typeof value !== 'number') return
 
-		if (typeof this._transpose === 'number') (this._transpose as any) = value
-		else this._transpose.value = value
-
+		this._transpose = value
 		this.updateOscillatorNotes()
 	}
 
@@ -161,10 +142,10 @@ export default class Synth {
 	analyserNode: AnalyserNode
 	tuna: Tuna
 	effects: Tuna.TunaAudioNode[] = reactive([])
-	signalLevel = ref(0)
+	signalLevel = 0
 
 	static updateSignalLevels() {
-		Object.values(Synth.SYNTHS.value).forEach((synth) => {
+		Object.values(getAudioStore().synths).forEach((synth) => {
 			synth?.updateSignalLevel()
 		})
 	}
@@ -212,22 +193,8 @@ export default class Synth {
 		this.glideMode = options.glideMode ?? 'speed'
 		this.glideAmount = options.glideAmount ?? 0.1
 
-		this.attack = 0.001
-		this.release = 0.01
-		this.sustain = 1
-		this.decay = 0.5
-
-		this.nameRef = ref(options.name ?? `Synth ${Object.keys(Synth.SYNTHS.value).length + 1}`)
-		Synth.SYNTHS.value[this.id] = this
-		triggerRef(Synth.SYNTHS)
-	}
-
-	static getSynths(): { [key: UUID]: Synth } {
-		return Synth.SYNTHS.value
-	}
-
-	static getSynth(id: UUID): ShallowReactive<Synth> {
-		return shallowReactive(Synth.SYNTHS.value[id])
+		this.name = options.name ?? `Synth ${Object.keys(getAudioStore().synths).length + 1}`
+		getAudioStore().addSynth(this)
 	}
 
 	updateSignalLevel(): number {
@@ -249,17 +216,16 @@ export default class Synth {
 
 		const smoothing = 0.9
 
-		let smoothed = this.signalLevel.value ?? curvedVolume
+		let smoothed = this.signalLevel ?? curvedVolume
 		smoothed += (curvedVolume - smoothed) * smoothing
 
-		this.signalLevel.value = smoothed < 0.01 ? 0 : smoothed
-		return this.signalLevel.value
+		this.signalLevel = smoothed < 0.01 ? 0 : smoothed
+		return this.signalLevel
 	}
 
 	delete(): void {
 		this.setMidiDevice()
-		delete Synth.SYNTHS.value[this.id]
-		triggerRef(Synth.SYNTHS)
+		getAudioStore().removeSynth(this.id)
 	}
 
 	updateEffectNodes() {
@@ -377,15 +343,15 @@ export default class Synth {
 	 * @param device A MidiDevice object, or a string containing its ID
 	 */
 	setMidiDevice(device?: MidiDevice | string): void {
-		if (typeof device === 'string') device = MidiDevice.DEVICES[device]
+		if (typeof device === 'string') device = getAudioStore().getMidiDevice(device)
 
 		if (device == undefined) {
 			this.midiDevice = null
 			return
 		}
 
-		this.midiDevice?.removeSynth(this.name)
-		device.addSynth(this)
+		this.midiDevice?.removeSynth(this.id)
+		device.addSynth(this.id)
 		this.midiDevice = device
 	}
 
@@ -397,7 +363,7 @@ export default class Synth {
 	}
 
 	isAudible(): boolean {
-		return !this.bypass && (this.signalLevel.value > 0 || Object.keys(this.oscillators).length > 0)
+		return !this.bypass && (this.signalLevel > 0 || Object.keys(this.oscillators).length > 0)
 	}
 
 	isPlaying(): boolean {

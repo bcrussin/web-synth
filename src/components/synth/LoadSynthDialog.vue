@@ -6,6 +6,7 @@ import {
 	SynthSerializerCategory,
 	type SerializedSynth,
 } from '@/classes/SynthSerializer'
+import { useAudioStore } from '@/stores/audioStore'
 import { useSynthStore } from '@/stores/synthStore'
 import { ref, toRaw, watch, type Ref } from 'vue'
 
@@ -14,7 +15,8 @@ const emit = defineEmits<{
 	(e: 'update:model-value', value: boolean): void
 }>()
 
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 watch(
 	() => props.isVisible,
@@ -97,9 +99,9 @@ function load(checkMissingChannels: boolean = true) {
 	if (!!midiData) {
 		midiData.forEach((channel, index) => {
 			// Check if device ID currently exists
-			if (!MidiDevice.DEVICES[channel.device]) {
+			if (!audioStore.getMidiDevice(channel.device)) {
 				// Use existing device if it has the same name as the missing one
-				const deviceWithSameName = MidiDevice.getDeviceByName(channel.deviceName)
+				const deviceWithSameName = audioStore.getMidiDeviceByName(channel.deviceName)
 				if (!!deviceWithSameName) {
 					midiData[index].device = deviceWithSameName.id
 				}
@@ -107,7 +109,7 @@ function load(checkMissingChannels: boolean = true) {
 				// If not, check if an existing device has been assigned to that ID
 				if (!!replacedMidiDevices.value[channel.device]) {
 					midiData[index].device = replacedMidiDevices.value[channel.device]
-				} else if (checkMissingChannels && !MidiDevice.DEVICES[channel.device]) {
+				} else if (checkMissingChannels && !audioStore.getMidiDevice(channel.device)) {
 					// Flag any MIDI devices not accounted for
 					missingDevices.set(channel.device, channel.deviceName ?? channel.device)
 				}
@@ -241,7 +243,7 @@ function resetMidiDeviceReplacement() {
 				<el-select v-model="replacedMidiDevices[key]">
 					<el-option value="" label="None"></el-option>
 					<el-option
-						v-for="device in MidiDevice.DEVICES"
+						v-for="device in audioStore.midiDevices"
 						:value="device.id"
 						:label="device.name"
 					></el-option>

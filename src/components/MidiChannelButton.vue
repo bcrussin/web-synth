@@ -5,20 +5,40 @@ import MidiChannel from '@/classes/MidiChannel'
 import type MidiDevice from '@/classes/MidiDevice'
 import MidiManager from '@/classes/MidiManager'
 import Synth from '@/classes/Synth'
-import { ref, type Ref } from 'vue'
+import { computed, ref, toValue, watch, watchEffect, type Ref } from 'vue'
 
 import { ArrowDown } from '@element-plus/icons-vue'
+import { useAudioStore } from '@/stores/audioStore'
+import { useMidiDevice } from '@/compostables/useMidiDevice'
 
-const props = defineProps<{ device: MidiDevice; synthId: UUID; channelNumber: number }>()
-const synth = Synth.getSynth(props.synthId)
+const props = defineProps<{ synthId: UUID; deviceId: string; channelNumber: number }>()
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const dialogChannel: Ref<MidiChannel | undefined> = ref(undefined)
 const dialogIsNewChannel: Ref<boolean> = ref(false)
-const midiDevice = synth.midiDevice as MidiDevice
+
+const midiDevice = computed(() => audioStore.getMidiDevice(props.deviceId))
+const midiDeviceRef = useMidiDevice(midiDevice.value)
+
+const indicatorStyles = computed(() => {
+	return (channel: number) => {
+		const channelValues = midiDeviceRef.channelValues.value
+		const value = channelValues[channel]
+
+		const style: any = {}
+
+		style.left = 0
+		style.width = value * 100 + '%'
+
+		return style
+	}
+})
+
 const channels = getChannels(props.channelNumber)
 
 function getChannels(channelNumber: number) {
-	return MidiManager.getChannels(props.device, synth, channelNumber)
+	return MidiManager.getChannels(midiDevice.value, synth, channelNumber)
 }
 
 function getFirstChannel(channelNumber: number) {
@@ -27,17 +47,6 @@ function getFirstChannel(channelNumber: number) {
 
 function getChannelProperty(channel: MidiChannel, property: keyof MidiChannelOptions) {
 	return channel?.getProperty(property)
-}
-
-function getIndicatorStyles(channel: number) {
-	const value = props.device.channelValues[channel]
-
-	const style: any = {}
-
-	style.left = 0
-	style.width = value * 100 + '%'
-
-	return style
 }
 
 function channelExists(channelNumber: number) {
@@ -61,7 +70,7 @@ function editChannel(channel?: MidiChannel | number) {
 		return
 	}
 
-	const newChannel = new MidiChannel(props.device, {
+	const newChannel = new MidiChannel(midiDevice.value, {
 		channelNumber: channel ?? 1,
 		synth: synth,
 	})
@@ -97,7 +106,7 @@ function editChannel(channel?: MidiChannel | number) {
 			</template>
 		</el-dropdown>
 
-		<div class="channel-value" :style="getIndicatorStyles(channelNumber)"></div>
+		<div class="channel-value" :style="indicatorStyles(channelNumber)"></div>
 	</div>
 
 	<MidiParamDialog

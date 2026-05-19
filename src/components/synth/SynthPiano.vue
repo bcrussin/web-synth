@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import Global from '@/classes/Audio'
 import Synth from '@/classes/Synth'
+import { useAudioStore } from '@/stores/audioStore'
 import { onMounted, ref, type Ref } from 'vue'
 
 interface PianoKey {
@@ -11,7 +12,8 @@ interface PianoKey {
 }
 
 const props = defineProps<{ synthId: UUID }>()
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const keysContainer = ref<HTMLDivElement | null>(null)
 let resizeObserver: ResizeObserver

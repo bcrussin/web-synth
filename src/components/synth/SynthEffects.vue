@@ -8,6 +8,7 @@ import { vDraggable } from 'vue-draggable-plus'
 import ConvolverEffect from '@/components/synth-effects/ConvolverEffect.vue'
 import OverdriveEffect from '@/components/synth-effects/OverdriveEffect.vue'
 import PhaserEffect from '@/components/synth-effects/PhaserEffect.vue'
+import { useAudioStore } from '@/stores/audioStore'
 
 const effects: { [key: string]: string } = {
 	convolver: 'Reverb',
@@ -18,7 +19,8 @@ const effects: { [key: string]: string } = {
 }
 
 const props = defineProps<{ synthId: UUID }>()
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const selectedEffect = ref(null)
 
