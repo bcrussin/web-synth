@@ -8,8 +8,6 @@ import App from './App.vue'
 import router from './router'
 import ElementPlus from 'element-plus'
 
-import Global from './classes/Audio'
-
 import { useDark, useToggle } from '@vueuse/core'
 
 import { OhVueIcon, addIcons } from 'oh-vue-icons'
@@ -27,8 +25,11 @@ import {
 	MdKeyboardOutlined,
 	MdPiano,
 } from 'oh-vue-icons/icons'
+
+import Global from './classes/Audio'
 import Keyboard from './classes/Keyboard'
 import MidiDevice from './classes/MidiDevice'
+import { useMidiStore } from './stores/midiStore'
 
 addIcons(
 	FaRegularCopy,
@@ -48,9 +49,10 @@ addIcons(
 const isDark = useDark()
 const toggleDark = useToggle(isDark)
 
+const pinia = createPinia()
 const app = createApp(App)
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 
 app.use(ElementPlus, { size: 'small', zIndex: 3000 })

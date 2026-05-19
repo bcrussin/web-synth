@@ -12,9 +12,13 @@ import MidiChannel from '@/classes/MidiChannel'
 import SaveSynthDialog from './SaveSynthDialog.vue'
 import LoadSynthDialog from './LoadSynthDialog.vue'
 import Keyboard from '@/classes/Keyboard'
+import { useSynth } from '@/compostables/useSynth'
+import { useAudioStore } from '@/stores/audioStore'
 
 const props = defineProps<{ synthId: UUID }>()
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
+const synthRef = useSynth(synth)
 
 const selectingElement = ref(false)
 const currentMidiChannel: Ref<MidiChannel | undefined> = ref(undefined)
@@ -85,7 +89,7 @@ function saveSynthName() {
 	const name = pendingSynthName.value.trim()
 
 	if (!!name && name != synth.name) {
-		synth.name = name
+		synthRef.name.value = name
 	} else {
 		pendingSynthName.value = synth.name
 	}
@@ -111,7 +115,7 @@ function saveSynthName() {
 			<div class="dialog-header">
 				<div class="synth-name-container" :id="titleId" :class="titleClass">
 					<h3 v-if="!isEditingName" class="synth-name" @click="editSynthName()">
-						{{ synth.nameRef }}
+						{{ synthRef.name }}
 					</h3>
 
 					<el-input

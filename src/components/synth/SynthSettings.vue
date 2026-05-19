@@ -3,11 +3,13 @@ import '@/assets/main.css'
 
 import MidiDevice from '@/classes/MidiDevice'
 import Synth from '@/classes/Synth'
+import { useAudioStore } from '@/stores/audioStore'
 import { RefreshLeft } from '@element-plus/icons-vue'
 import { computed, ref, watchEffect } from 'vue'
 
 const props = defineProps<{ synthId: UUID }>()
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const midiDevice = ref(synth.midiDevice?.input?.id)
 
@@ -44,7 +46,7 @@ function getMaxPolyphony(): number {
 			<el-select placeholder="Input Device" v-model="midiDevice" @change="setMidiDevice($event)">
 				<el-option label="None" value=""> </el-option>
 				<el-option
-					v-for="device in MidiDevice.DEVICES"
+					v-for="device in audioStore.midiDevices"
 					:key="device.input.name"
 					:label="device.input.name"
 					:value="device.input.id"

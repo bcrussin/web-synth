@@ -1,90 +1,74 @@
-import { reactive, shallowReactive, type Reactive } from 'vue'
 import MidiDevice from './MidiDevice'
 import type Synth from './Synth'
 import type MidiChannel from './MidiChannel'
-
-type MidiChannelLike = MidiChannel | Reactive<MidiChannel>
-
+import { getAudioStore } from '@/stores/audioStore'
 export default class MidiManager {
-	static channelsByDevice = reactive(new Map<string, Map<UUID, Set<MidiChannel>>>())
-	static channelsBySynth = reactive(new Map<UUID, Set<MidiChannel>>())
-	static globalChannels = reactive<Map<string, Set<MidiChannel>>>(new Map())
-
-	static registerChannel(channel: MidiChannelLike) {
+	static registerChannel(channel: MidiChannel) {
 		const deviceName = channel.device.name
 
 		if (channel.isGlobal) {
-			if (!this.globalChannels.has(deviceName)) {
-				this.globalChannels.set(deviceName, new Set())
+			if (!getAudioStore().globalMidiChannels.has(deviceName)) {
+				getAudioStore().globalMidiChannels.set(deviceName, new Set())
 			}
 
-			const deviceChannels = this.globalChannels.get(deviceName)
-			deviceChannels!.add(reactive(channel))
+			const deviceChannels = getAudioStore().globalMidiChannels.get(deviceName)
+			deviceChannels!.add(channel)
 		} else {
-			if (!this.channelsByDevice.has(deviceName)) {
-				this.channelsByDevice.set(deviceName, new Map())
+			if (!getAudioStore().midiChannelsByDevice.has(deviceName)) {
+				getAudioStore().midiChannelsByDevice.set(deviceName, new Map())
 			}
 
-			const deviceSynths = this.channelsByDevice.get(deviceName)
+			const deviceSynths = getAudioStore().midiChannelsByDevice.get(deviceName)
 
-			Object.values(channel.synths).forEach((synth) => {
-				if (!deviceSynths!.has(synth.id)) {
-					this.channelsByDevice.get(deviceName)!.set(synth.id, new Set())
+			for (const synthId of channel.synthIds) {
+				if (!deviceSynths!.has(synthId)) {
+					getAudioStore().midiChannelsByDevice.get(deviceName)!.set(synthId, new Set())
 				}
 
-				const synthChannels = deviceSynths!.get(synth.id)
-				synthChannels!.add(reactive(channel))
+				const synthChannels = deviceSynths!.get(synthId)
+				synthChannels!.add(channel)
 
-				if (!this.channelsBySynth.has(synth.id)) {
-					this.channelsBySynth.set(synth.id, new Set())
+				if (!getAudioStore().midiChannelsBySynth.has(synthId)) {
+					getAudioStore().midiChannelsBySynth.set(synthId, new Set())
 				}
-				this.channelsBySynth.get(synth.id)!.add(reactive(channel))
-			})
+				getAudioStore().midiChannelsBySynth.get(synthId)!.add(channel)
+			}
 		}
 	}
 
-	static unregisterChannel(channel: MidiChannelLike) {
+	static unregisterChannel(channel: MidiChannel) {
 		const deviceName = channel.device.name
 
 		if (channel.isGlobal) {
-			this.globalChannels.delete(deviceName)
+			getAudioStore().globalMidiChannels.delete(deviceName)
 		} else {
-			Object.values(channel.synths).forEach((synth) => {
-				this.channelsByDevice.get(deviceName)?.get(synth.id)?.delete(reactive(channel))
+			for (const synthId of channel.synthIds) {
+				getAudioStore().midiChannelsByDevice.get(deviceName)?.get(synthId)?.delete(channel)
 
-				this.channelsBySynth.get(synth.id)?.delete(reactive(channel))
-			})
+				getAudioStore().midiChannelsBySynth.get(synthId)?.delete(channel)
+			}
 		}
 	}
 
-	static getChannels(device: MidiDevice, synth: Synth, channelNumber: number): MidiChannelLike[] {
+	static getChannels(device: MidiDevice, synth: Synth, channelNumber: number): MidiChannel[] {
 		if (!device) return []
 
-		const allChannels = Array.from(this.channelsByDevice.get(device.name)?.get(synth.id) ?? [])
+		const allChannels = Array.from(
+			getAudioStore().midiChannelsByDevice.get(device.name)?.get(synth.id) ?? [],
+		)
 		return Array.from(allChannels.filter((channel) => channel.channelNumber == channelNumber))
 	}
 
-	static getChannelsForSynth(synth: Synth): Reactive<MidiChannel[]> {
-		return Array.from(this.channelsBySynth.get(synth.id) ?? [])
+	static getChannelsForDevice(device: MidiDevice): MidiChannel[] {
+		return Array.from(
+			getAudioStore().midiChannelsByDevice.get(device.name)?.values() ?? [],
+		).flatMap((synthMap) => Array.from(synthMap.values()))
 	}
 
-	static getChannelsForDevice(device: MidiDevice): Reactive<MidiChannel[]> {
-		return Array.from(this.channelsByDevice.get(device.name)?.values() ?? []).flatMap((synthMap) =>
-			Array.from(synthMap.values()),
-		)
-	}
-
-	static getChannelsForDeviceAndSynth(
-		device: MidiDevice | null,
-		synth: Synth,
-	): Reactive<MidiChannel[]> {
+	static getChannelsForDeviceAndSynth(device: MidiDevice | null, synth: Synth): MidiChannel[] {
 		if (!device) return []
 
-		return Array.from(this.channelsByDevice.get(device.name)?.get(synth.id) ?? [])
-	}
-
-	static getGlobalChannels(device: MidiDevice): Reactive<Set<MidiChannel>> | undefined {
-		return this.globalChannels.get(device.name)
+		return Array.from(getAudioStore().midiChannelsByDevice.get(device.name)?.get(synth.id) ?? [])
 	}
 
 	// static applyGlobalChannel(device: MidiDevice) {

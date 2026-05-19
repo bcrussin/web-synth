@@ -2,17 +2,18 @@
 <script setup lang="ts">
 import '@/assets/main.css'
 
-import Synth from '@/classes/Synth'
 import { onMounted, ref, type Ref } from 'vue'
 import WavetableGraph from '@/components/WavetableGraph.vue'
 import { useInstrumentsStore } from '@/stores/instruments'
-import MidiManager from '@/classes/MidiManager'
-import MidiChannel from '@/classes/MidiChannel'
-import MidiParamDialog from '../MidiParamDialog.vue'
+import { useSynth } from '@/compostables/useSynth'
+import { useAudioStore } from '@/stores/audioStore'
+import type { SynthParam } from '@/classes/SynthParameters'
 
 const props = defineProps<{ selectingElement: any; synthId: UUID }>()
 const emit = defineEmits(['selectElement'])
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
+const synthRef = useSynth(synth)
 
 const wavetableGraphRef = ref<typeof WavetableGraph | null>(null)
 
@@ -34,8 +35,10 @@ function getSynthType(): string {
 	return synth.getPresetOrType()
 }
 
-function setSynthValue(property: string, value: number | string) {
-	synth.setProperty(property, value)
+function setSynthValue(property: SynthParam, value: number | string) {
+	// synth.setProperty(property, value)
+	console.log(synth.parameters, synth.parameters.get(property), value)
+	synth.parameters.get(property)?.setValue(+value)
 }
 
 function setWaveType(value: string): void {
@@ -80,9 +83,8 @@ function getPresets() {
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.attack"
+				v-model="synthRef.parameters.attack.baseValue"
 				data-param="Synth Attack"
-				@input="setSynthValue('attack', $event)"
 			></el-slider>
 		</div>
 
@@ -94,9 +96,8 @@ function getPresets() {
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.decay"
+				v-model="synthRef.parameters.decay.baseValue"
 				data-param="Synth Decay"
-				@input="setSynthValue('decay', $event)"
 			></el-slider>
 		</div>
 
@@ -108,9 +109,8 @@ function getPresets() {
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.sustain"
+				v-model="synthRef.parameters.sustain.baseValue"
 				data-param="Synth Sustain"
-				@input="setSynthValue('sustain', $event)"
 			></el-slider>
 		</div>
 
@@ -123,9 +123,8 @@ function getPresets() {
 				name="release"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.release"
+				v-model="synthRef.parameters.release.baseValue"
 				data-param="Synth Release"
-				@input="setSynthValue('release', $event)"
 			></el-slider>
 		</div>
 	</div>

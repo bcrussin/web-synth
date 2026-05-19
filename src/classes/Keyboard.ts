@@ -5,8 +5,6 @@ import {
 	type Hotkeys,
 	type KeybindNotes,
 } from '@/stores/keybindsStore'
-import type { Store } from 'pinia'
-import Global from './Audio'
 
 export default class Keyboard {
 	static synth: Synth

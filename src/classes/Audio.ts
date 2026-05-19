@@ -1,5 +1,4 @@
 import { useInstrumentsStore } from '@/stores/instruments'
-import Synth from './Synth'
 import { ref, type Ref } from 'vue'
 
 export default class Global {

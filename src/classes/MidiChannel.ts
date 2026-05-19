@@ -28,12 +28,12 @@ export default class MidiChannel {
 	inverted: boolean
 
 	device: MidiDevice
-	synths: SynthMap = {}
+	synthIds: Set<UUID> = new Set()
 	isGlobal: boolean = false
 	channelNumber: number
 
-	get synth() {
-		return Object.values(this.synths)[0]
+	get synthId() {
+		return Object.values(this.synthIds)[0]
 	}
 
 	constructor(device: MidiDevice, options?: MidiChannelOptions) {
@@ -41,7 +41,7 @@ export default class MidiChannel {
 		this.channelNumber = options?.channelNumber ?? 1
 
 		if (!!options?.synth) {
-			this.synths[options.synth.id] = options.synth
+			this.synthIds.add(options.synth.id)
 		}
 
 		this.param = options?.param ?? ''

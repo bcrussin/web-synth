@@ -3,11 +3,13 @@ import Synth from '@/classes/Synth'
 import '@/assets/main.css'
 import { onMounted, ref, watch, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAudioStore } from '@/stores/audioStore'
 
 class InvalidWaveformError extends Error {}
 
 const props = defineProps<{ synthId: UUID }>()
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const wavetable: Ref<number[], number[]> = ref([])
 let ctx: CanvasRenderingContext2D | null | undefined

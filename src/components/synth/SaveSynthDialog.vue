@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import Synth from '@/classes/Synth'
 import { SynthSerializer, SynthSerializerCategory } from '@/classes/SynthSerializer'
+import { useAudioStore } from '@/stores/audioStore'
 import { useSynthStore } from '@/stores/synthStore'
 import { computed, ref, watch } from 'vue'
 
@@ -9,7 +10,8 @@ const emit = defineEmits<{
 	(e: 'update:model-value', value: boolean): void
 }>()
 
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 watch(
 	() => props.isVisible,

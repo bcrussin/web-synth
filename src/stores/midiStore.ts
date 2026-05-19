@@ -2,11 +2,16 @@ import { reactive } from 'vue'
 import { defineStore } from 'pinia'
 
 export interface MIDIParam {
-	displayName: 'Synth Attack'
+	displayName: string
 	type: string
 	property: string
 	min: number
 	max: number
+	step: number
+}
+
+export const getMidiStore = () => {
+	return useMidiStore()
 }
 
 export const useMidiStore = defineStore('midi', {

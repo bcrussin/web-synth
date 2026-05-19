@@ -2,12 +2,14 @@
 <script setup lang="ts">
 import Synth from '@/classes/Synth'
 import MidiManager from '@/classes/MidiManager'
-import { reactive, ref, type Ref } from 'vue'
+import { computed, reactive, ref, watch, type Ref } from 'vue'
 import MidiDevice from '@/classes/MidiDevice'
+import { useAudioStore } from '@/stores/audioStore'
+import { useMidiDevice } from '@/compostables/useMidiDevice'
 
 const props = defineProps<{ synthId: UUID }>()
-const synth = Synth.getSynth(props.synthId)
-
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 if (!synth.midiDevice) throw new Error('No midi device')
 
 function getChannels(channelNumber: number) {
@@ -16,24 +18,24 @@ function getChannels(channelNumber: number) {
 	return MidiManager.getChannels(synth.midiDevice, synth, channelNumber)
 }
 
-const currentDevice: Ref<string> = ref(synth.midiDevice?.id)
+const selectedDevice: Ref<string> = ref(synth.midiDevice?.id)
+const selectedDeviceRef = computed(() => {
+	const device = audioStore.getMidiDevice(selectedDevice.value)
+	return useMidiDevice(device)
+})
 
 function channelExists(channelNumber: number) {
 	return !!getChannels(channelNumber)
 }
-
-function selectDevice(deviceName: string): void {
-	currentDevice.value = deviceName
-}
 </script>
 
 <template>
-	<el-select v-model="currentDevice">
+	<el-select v-model="selectedDevice">
 		<template #label="{ label, value }">
-			<span>{{ MidiDevice.DEVICES[currentDevice].name }}</span>
+			<span>{{ audioStore.getMidiDevice(selectedDevice).name }}</span>
 		</template>
 
-		<el-option v-for="(device, name) in MidiDevice.DEVICES" :value="device.id">
+		<el-option v-for="(device, name) in audioStore.midiDevices" :value="device.id">
 			{{ device.name }}
 		</el-option>
 	</el-select>
@@ -48,10 +50,10 @@ function selectDevice(deviceName: string): void {
 			>
 				<span>{{ channelNumber }}:</span>
 				<MidiChannelButton
-					v-if="MidiDevice.DEVICES[currentDevice] != undefined"
+					v-if="selectedDeviceRef != undefined"
 					:synthId="synth.id"
 					:channelNumber="channelNumber"
-					:device="MidiDevice.DEVICES[currentDevice]"
+					:deviceId="selectedDevice"
 				></MidiChannelButton>
 			</div>
 		</template>

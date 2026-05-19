@@ -4,6 +4,7 @@ import Global from '@/classes/Audio'
 import Synth from '@/classes/Synth'
 import { ref, watchEffect } from 'vue'
 import Tuna from 'tunajs'
+import { useAudioStore } from '@/stores/audioStore'
 
 export interface Overdrive extends Tuna.TunaAudioNode {
 	outputDrive: { gain: { value: number } }
@@ -14,7 +15,8 @@ export interface Overdrive extends Tuna.TunaAudioNode {
 }
 
 const props = defineProps<{ synthId: UUID; effectIndex: number }>()
-const synth = Synth.getSynth(props.synthId)
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 function getEffect() {
 	return synth.getEffect(props.effectIndex) as Overdrive

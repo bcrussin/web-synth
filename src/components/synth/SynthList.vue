@@ -3,9 +3,17 @@ import Synth from '@/classes/Synth'
 import SynthDialog from './SynthDialog.vue'
 
 import Global from '@/classes/Audio'
-import { ref, watch, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
+import { useSynth } from '@/compostables/useSynth'
+import { useAudioStore } from '@/stores/audioStore'
+
+const audioStore = useAudioStore()
 
 const currentSynth: Ref<UUID | undefined> = ref(undefined)
+
+const synthRefs = computed(() =>
+	Object.fromEntries(Object.entries(audioStore.synths).map(([id, synth]) => [id, useSynth(synth)])),
+)
 
 function openDialog(synthId: UUID) {
 	currentSynth.value = synthId
@@ -19,7 +27,7 @@ function addSynth(): void {
 }
 
 function getGlowSize(synth: Synth) {
-	let size = synth.signalLevel.value * 60
+	let size = synth.signalLevel * 60
 	size = Math.min(Math.max(0, size), 40)
 
 	return `${size}px`
@@ -32,7 +40,7 @@ Synth.beginUpdatingSignalLevels()
 	<section id="synths-list" class="horizontal">
 		<el-button
 			class="synth-button"
-			v-for="(synth, id) in Synth.getSynths()"
+			v-for="(synth, id) in audioStore.synths"
 			v-bind:class="{
 				playing: synth.isPlaying(),
 				audible: synth.isAudible(),
@@ -49,7 +57,7 @@ Synth.beginUpdatingSignalLevels()
 			@click="openDialog(id)"
 		>
 			<span class="synth-button-name">
-				{{ synth.nameRef }}
+				{{ synthRefs[id].name }}
 			</span>
 		</el-button>
 

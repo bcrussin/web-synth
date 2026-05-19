@@ -2,7 +2,7 @@
 import Global from './Audio'
 import Synth from './Synth'
 import EnvGen from './EnvGen'
-import { inject } from 'vue'
+import { SynthParam } from './SynthParameters'
 
 export default class Oscillator extends OscillatorNode {
 	created: Date
@@ -62,10 +62,10 @@ export default class Oscillator extends OscillatorNode {
 
 		this.eg = new EnvGen(Global.context, this.gainNode.gain)
 		this.eg.mode = 'ADSR'
-		this.eg.attackTime = synth.attack
-		this.eg.releaseTime = synth.release
-		this.eg.decayTime = synth.decay
-		this.eg.sustainLevel = synth.sustain
+		this.eg.attackTime = synth.parameters.get(SynthParam.Attack).value
+		this.eg.releaseTime = synth.parameters.get(SynthParam.Release).value
+		this.eg.decayTime = synth.parameters.get(SynthParam.Decay).value
+		this.eg.sustainLevel = synth.parameters.get(SynthParam.Sustain).value
 
 		this.emptyEg = new EnvGen(Global.context, this.gainNode.gain)
 		this.emptyEg.mode = 'ASR'
@@ -190,8 +190,11 @@ export default class Oscillator extends OscillatorNode {
 	release(stopNote: boolean = true) {
 		this.envRelease()
 
-		// Magic number currently, otherwise synth stops before release fully plays out
-		const stopDelay = this.synth.release > 0.005 ? this.synth.release * 5 : 0.01
+		// TODO: Magic number currently, otherwise synth stops before release fully plays out
+		const stopDelay =
+			this.synth.parameters.get(SynthParam.Release).value > 0.005
+				? this.synth.parameters.get(SynthParam.Release).value * 5
+				: 0.01
 		this.stop(Global.context.currentTime + stopDelay)
 	}
 
