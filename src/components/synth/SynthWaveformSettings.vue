@@ -84,7 +84,7 @@ function getPresets() {
 				:show-tooltip="false"
 				class="control envelope-slider"
 				v-model="synth.params.get(SynthParam.Attack).baseValue"
-				data-param="Synth Attack"
+				:data-param="SynthParam.Attack"
 			></el-slider>
 		</div>
 
@@ -97,7 +97,7 @@ function getPresets() {
 				:show-tooltip="false"
 				class="control envelope-slider"
 				v-model="synth.params.get(SynthParam.Decay).baseValue"
-				data-param="Synth Decay"
+				:data-param="SynthParam.Decay"
 			></el-slider>
 		</div>
 
@@ -110,7 +110,7 @@ function getPresets() {
 				:show-tooltip="false"
 				class="control envelope-slider"
 				v-model="synth.params.get(SynthParam.Sustain).baseValue"
-				data-param="Synth Sustain"
+				:data-param="SynthParam.Sustain"
 			></el-slider>
 		</div>
 
@@ -124,7 +124,7 @@ function getPresets() {
 				:show-tooltip="false"
 				class="control envelope-slider"
 				v-model="synth.params.get(SynthParam.Release).baseValue"
-				data-param="Synth Release"
+				:data-param="SynthParam.Release"
 			></el-slider>
 		</div>
 	</div>

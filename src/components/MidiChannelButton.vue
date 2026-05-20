@@ -1,21 +1,25 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
-import type { MidiChannelOptions } from '@/classes/MidiChannel'
-import MidiChannel from '@/classes/MidiChannel'
+import MidiChannel, {
+	type IMidiAssignment,
+	type MidiAssignmentFields,
+} from '@/classes/MidiAssignment'
 import type MidiDevice from '@/classes/MidiDevice'
 import MidiManager from '@/classes/MidiManager'
 import Synth from '@/classes/Synth'
-import { computed, ref, toValue, watch, watchEffect, type Ref } from 'vue'
+import { computed, ref, toValue, watch, watchEffect, type Reactive, type Ref } from 'vue'
 
 import { ArrowDown } from '@element-plus/icons-vue'
 import { useAudioStore } from '@/stores/audioStore'
 import { useMidiDevice } from '@/compostables/useMidiDevice'
+import MidiAssignment from '@/classes/MidiAssignment'
+import { SynthParam } from '@/classes/SynthParameters'
 
 const props = defineProps<{ synthId: UUID; deviceId: string; channelNumber: number }>()
 const audioStore = useAudioStore()
 const synth = audioStore.getSynth(props.synthId)
 
-const dialogChannel: Ref<MidiChannel | undefined> = ref(undefined)
+const dialogChannel: Ref<IMidiAssignment | undefined> = ref(undefined)
 const dialogIsNewChannel: Ref<boolean> = ref(false)
 
 const midiDevice = computed(() => audioStore.getMidiDevice(props.deviceId))
@@ -35,42 +39,35 @@ const indicatorStyles = computed(() => {
 	}
 })
 
-const channels = getChannels(props.channelNumber)
+const channelAssignments = computed(() => {
+	const a = audioStore.getMidiAssignments({
+		deviceId: props.deviceId,
+		synthId: synth.id,
+		channel: props.channelNumber,
+	})
+	console.log(a)
+	return a
+})
 
-function getChannels(channelNumber: number) {
-	return MidiManager.getChannels(midiDevice.value, synth, channelNumber)
-}
+const firstAssignment = computed(() => channelAssignments.value?.[0])
+// function getChannelAssignments(channelNumber: number): IMidiAssignment[] {
+// 	return audioStore.getMidiAssignments({
+// 		deviceId: props.deviceId,
+// 		synthId: synth.id,
+// 		channel: channelNumber,
+// 	})
+// 	// return MidiManager.getChannels(midiDevice.value, synth, channelNumber)
+// }
 
-function getFirstChannel(channelNumber: number) {
-	return getChannels(channelNumber)?.[0]
-}
-
-function getChannelProperty(channel: MidiChannel, property: keyof MidiChannelOptions) {
-	return channel?.getProperty(property)
-}
-
-function channelExists(channelNumber: number) {
-	return !!getChannels(channelNumber)
-}
-
-function getExistingChannels(): MidiChannel[] {
-	const channels = []
-
-	for (let i = 0; i < 16; i++) {
-		if (getChannels(i)?.length > 0) channels.push(getChannels(i)![0])
-	}
-
-	return channels
-}
-
-function editChannel(channel?: MidiChannel | number) {
+function editChannel(channel?: IMidiAssignment | number) {
 	if (!!channel && typeof channel !== 'number') {
 		dialogIsNewChannel.value = false
 		dialogChannel.value = channel
 		return
 	}
 
-	const newChannel = new MidiChannel(midiDevice.value, {
+	const newChannel = new MidiAssignment(midiDevice.value, {
+		parameter: SynthParam.Attack,
 		channelNumber: channel ?? 1,
 		synth: synth,
 	})
@@ -83,25 +80,25 @@ function editChannel(channel?: MidiChannel | number) {
 <template>
 	<div class="channel-button-container">
 		<el-button
-			v-if="getChannels(channelNumber)?.length <= 1"
+			v-if="channelAssignments?.length <= 1"
 			class="channel-button"
-			@click="editChannel(getFirstChannel(channelNumber) ?? channelNumber)"
-			>{{ getFirstChannel(channelNumber)?.param || 'None' }}</el-button
+			@click="editChannel(firstAssignment ?? channelNumber)"
+			>{{ firstAssignment?.parameter || 'None' }}</el-button
 		>
 
 		<el-dropdown v-else class="channel-button" @command="editChannel" trigger="click">
 			<el-button class="channel-button"
-				>{{ getChannels(channelNumber).length }} Params
+				>{{ channelAssignments.length }} Params
 				<el-icon class="el-icon--right"><ArrowDown /></el-icon
 			></el-button>
 
 			<template #dropdown>
 				<el-dropdown-item
-					v-for="channel in getChannels(channelNumber)"
+					v-for="channel in channelAssignments"
 					:key="channel.channelNumber"
 					:value="channel"
 					:command="channel"
-					>{{ channel.param }}</el-dropdown-item
+					>{{ channel.parameter }}</el-dropdown-item
 				>
 			</template>
 		</el-dropdown>
@@ -111,7 +108,8 @@ function editChannel(channel?: MidiChannel | number) {
 
 	<MidiParamDialog
 		v-if="dialogChannel"
-		:channel="dialogChannel"
+		:assignment="dialogChannel"
+		:synthId="synth.id"
 		:isNewChannel="dialogIsNewChannel"
 		@update:model-value="() => (dialogChannel = undefined)"
 	></MidiParamDialog>

@@ -1,8 +1,9 @@
-import { reactive } from 'vue'
+import { reactive, unref } from 'vue'
 import { defineStore } from 'pinia'
-import type MidiChannel from '@/classes/MidiChannel'
 import type Synth from '@/classes/Synth'
 import type MidiDevice from '@/classes/MidiDevice'
+import type { IMidiAssignment, MidiAssignmentFilters } from '@/classes/MidiAssignment'
+import type MidiAssignment from '@/classes/MidiAssignment'
 
 export const getAudioStore = () => {
 	return useAudioStore()
@@ -14,9 +15,10 @@ export const useAudioStore = defineStore('audio', {
 
 		midiDevices: {} as { [key: string]: MidiDevice },
 
-		midiChannelsByDevice: new Map<string, Map<UUID, Set<MidiChannel>>>(),
-		midiChannelsBySynth: new Map<UUID, Set<MidiChannel>>(),
-		globalMidiChannels: new Map<string, Set<MidiChannel>>(),
+		midiChannelsByDevice: new Map<string, Map<UUID, Set<IMidiAssignment>>>(),
+		midiChannelsBySynth: new Map<UUID, Set<IMidiAssignment>>(),
+		midiAssignments: new Map<UUID, IMidiAssignment>(),
+		globalMidiChannels: new Map<string, Set<IMidiAssignment>>(),
 	}),
 
 	getters: {
@@ -25,13 +27,32 @@ export const useAudioStore = defineStore('audio', {
 		getMidiDeviceByName: (state) => (name: string) =>
 			Object.values(state.midiDevices).find((device) => device.name == name),
 		getMidiChannelsForSynth: (state) => {
-			return (synthId: UUID): MidiChannel[] => {
+			return (synthId: UUID): IMidiAssignment[] => {
 				return Array.from(state.midiChannelsBySynth.get(synthId) ?? [])
 			}
 		},
 		getGlobalChannels: (state) => {
-			return (device: MidiDevice): Set<MidiChannel> | undefined => {
+			return (device: MidiDevice): Set<IMidiAssignment> | undefined => {
 				return state.globalMidiChannels.get(device.name)
+			}
+		},
+
+		getMidiAssignments: (state) => {
+			return (filters?: MidiAssignmentFilters): IMidiAssignment[] => {
+				// console.log(unref([...state.midiAssignments.values()]), filters)
+				return [...state.midiAssignments.values()].filter((assignment) => {
+					if (filters?.deviceId && assignment.device.id !== filters.deviceId) {
+						// console.log(assignment.device.id, filters.deviceId)
+						return false
+					}
+					if (filters?.synthId && assignment.synth.id !== filters.synthId) {
+						// console.log(assignment.synth.id, filters.synthId)
+						return false
+					}
+					if (filters?.channel && assignment.channelNumber !== filters.channel) return false
+
+					return true
+				})
 			}
 		},
 	},
@@ -48,6 +69,12 @@ export const useAudioStore = defineStore('audio', {
 		},
 		removeMidiDevice(id: string) {
 			delete this.midiDevices[id]
+		},
+		addMidiAssignment(midiAssignment: MidiAssignment) {
+			this.midiAssignments.set(midiAssignment.id, midiAssignment)
+		},
+		removeMidiAssignment(assignmentId: UUID) {
+			this.midiAssignments.delete(assignmentId)
 		},
 	},
 })

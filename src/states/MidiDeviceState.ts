@@ -1,9 +1,9 @@
-import type MidiChannel from '@/classes/MidiChannel'
+import type MidiAssignment from '@/classes/MidiAssignment'
 import type MidiDevice from '@/classes/MidiDevice'
 
-interface SynthChannelParams {
+interface SynthMidiAssignments {
 	[synthId: UUID]: {
-		[channel: number]: MidiChannel
+		[channel: number]: MidiAssignment
 	}
 }
 
@@ -12,8 +12,9 @@ export default class MidiDeviceState {
 
 	synthIds: Set<UUID>
 
+	midiAssignments: MidiAssignment[]
+
 	channelValues: number[]
-	channelSettings: SynthChannelParams
 	pitchBend: number
 	velocityCurve: number | null = null
 
@@ -22,7 +23,7 @@ export default class MidiDeviceState {
 
 		this.pitchBend = 0
 		this.channelValues = new Array(16).fill(0)
-		this.channelSettings = {}
+		this.midiAssignments = []
 
 		this.synthIds = new Set()
 	}
