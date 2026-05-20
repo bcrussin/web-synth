@@ -17,10 +17,34 @@ export default class SynthParameters {
 	}
 
 	initDefaults() {
-		this.register({ id: SynthParam.Attack, baseValue: 0.005, min: 0.001, max: 0.5 })
-		this.register({ id: SynthParam.Decay, baseValue: 0.01, min: 0, max: 1 })
-		this.register({ id: SynthParam.Sustain, baseValue: 1, min: 0, max: 1 })
-		this.register({ id: SynthParam.Release, baseValue: 0.001, min: 0.001, max: 0.5 })
+		this.register({
+			id: SynthParam.Attack,
+			displayName: 'Synth Attack',
+			baseValue: 0.005,
+			min: 0.001,
+			max: 0.5,
+		})
+		this.register({
+			id: SynthParam.Decay,
+			displayName: 'Synth Decay',
+			baseValue: 0.01,
+			min: 0,
+			max: 1,
+		})
+		this.register({
+			id: SynthParam.Sustain,
+			displayName: 'Synth Sustain',
+			baseValue: 1,
+			min: 0,
+			max: 1,
+		})
+		this.register({
+			id: SynthParam.Release,
+			displayName: 'Synth Release',
+			baseValue: 0.001,
+			min: 0.001,
+			max: 0.5,
+		})
 	}
 
 	register(options: ParameterOptions) {

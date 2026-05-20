@@ -8,12 +8,13 @@ import SynthPiano from './SynthPiano.vue'
 import SynthMidiSettings from './SynthMidiSettings.vue'
 import { nextTick, ref, type Ref } from 'vue'
 import MidiManager from '@/classes/MidiManager'
-import MidiChannel from '@/classes/MidiChannel'
+import MidiChannel from '@/classes/MidiAssignment'
 import SaveSynthDialog from './SaveSynthDialog.vue'
 import LoadSynthDialog from './LoadSynthDialog.vue'
 import Keyboard from '@/classes/Keyboard'
 import { useSynth } from '@/compostables/useSynth'
 import { useAudioStore } from '@/stores/audioStore'
+import type { SynthParam } from '@/classes/SynthParameters'
 
 const props = defineProps<{ synthId: UUID }>()
 const audioStore = useAudioStore()
@@ -40,13 +41,20 @@ function deleteSynth(close: () => void) {
 function selectElement(target?: HTMLElement) {
 	if (target == undefined) return
 
-	const existingChannels = MidiManager.getChannelsForDeviceAndSynth(synth.midiDevice, synth)
+	const parameter = target.getAttribute('data-param') as SynthParam
+
+	if (parameter == null) return
+
+	const existingChannels = audioStore.getMidiAssignments({
+		deviceId: synth.midiDevice?.id,
+		synthId: synth.id,
+	})
 
 	if (!!synth.midiDevice) {
 		currentMidiChannel.value = new MidiChannel(synth.midiDevice, {
 			channelNumber: Math.min(existingChannels.length + 1, 16),
 			synth: synth,
-			param: target.getAttribute('data-param') ?? undefined,
+			parameter: parameter,
 		})
 	}
 }
@@ -205,7 +213,8 @@ function saveSynthName() {
 
 		<MidiParamDialog
 			v-if="currentMidiChannel"
-			:channel="currentMidiChannel"
+			:assignment="currentMidiChannel"
+			:synthId="synth.id"
 			:isNewChannel="true"
 			@update:model-value="() => (currentMidiChannel = undefined)"
 		></MidiParamDialog>

@@ -2,6 +2,7 @@ import type { SynthParam } from './SynthParameters'
 
 export interface ParameterOptions {
 	id: SynthParam
+	displayName: string
 	baseValue: number
 	min: number
 	max: number
@@ -22,6 +23,7 @@ type Listener = (value: number) => void
 
 export default class Parameter {
 	id: SynthParam
+	displayName: string
 	min: number
 	max: number
 	step?: number
@@ -48,6 +50,8 @@ export default class Parameter {
 
 	constructor(options: ParameterOptions) {
 		this.id = options.id
+		this.displayName = options.displayName
+
 		this.min = options.min
 		this.max = options.max
 

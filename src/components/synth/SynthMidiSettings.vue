@@ -12,11 +12,11 @@ const audioStore = useAudioStore()
 const synth = audioStore.getSynth(props.synthId)
 if (!synth.midiDevice) throw new Error('No midi device')
 
-function getChannels(channelNumber: number) {
-	if (!synth.midiDevice) return []
+// function getChannels(channelNumber: number) {
+// 	if (!synth.midiDevice) return []
 
-	return MidiManager.getChannels(synth.midiDevice, synth, channelNumber)
-}
+// 	return MidiManager.getChannels(synth.midiDevice, synth, channelNumber)
+// }
 
 const selectedDevice: Ref<string> = ref(synth.midiDevice?.id)
 const selectedDeviceRef = computed(() => {
@@ -24,9 +24,14 @@ const selectedDeviceRef = computed(() => {
 	return useMidiDevice(device)
 })
 
-function channelExists(channelNumber: number) {
-	return !!getChannels(channelNumber)
-}
+// const channelExists = computed(() => {
+// 	return (channel: number) =>
+// 		audioStore.getMidiAssignments({
+// 			synthId: synth.id,
+// 			deviceId: selectedDevice.value,
+// 			channel: channel,
+// 		}).length > 0
+// })
 </script>
 
 <template>
@@ -42,12 +47,7 @@ function channelExists(channelNumber: number) {
 	<span class="section-label">Channel Settings:</span>
 	<div class="channel-params-list">
 		<template v-for="channelNumber in 16" :key="channelNumber">
-			<div
-				class="channel-param"
-				v-if="channelExists(channelNumber)"
-				:channelProperties="1"
-				:key="channelNumber"
-			>
+			<div class="channel-param" :channelProperties="1">
 				<span>{{ channelNumber }}:</span>
 				<MidiChannelButton
 					v-if="selectedDeviceRef != undefined"

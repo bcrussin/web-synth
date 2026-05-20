@@ -1,5 +1,5 @@
 import { getAudioStore } from '@/stores/audioStore'
-import MidiChannel, { type SerializedMidiChannel, type MidiChannelOptions } from './MidiChannel'
+import MidiChannel, { type SerializedMidiChannel, type MidiChannelOptions } from './MidiAssignment'
 import MidiDevice from './MidiDevice'
 import MidiManager from './MidiManager'
 import type { SerializedParameter } from './Parameter'
