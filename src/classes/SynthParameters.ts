@@ -1,50 +1,26 @@
+import initSynthParameters from '@/utilities/initSynthParameters'
 import type { ParameterOptions, SerializedParameter } from './Parameter'
 import Parameter from './Parameter'
 import type { SerialisedSynthParams } from './SynthSerializer'
+import type Synth from './Synth'
 
 export enum SynthParam {
 	Attack = 'attack',
 	Sustain = 'sustain',
 	Decay = 'decay',
 	Release = 'release',
+	TransposeSemitones = 'transposeSemitones',
+	TransposeOctaves = 'transposeOctaves',
 }
 
 export default class SynthParameters {
-	params = new Map<SynthParam, Parameter>()
+	params: Map<SynthParam, Parameter>
+	readonly synth: Synth
 
-	constructor() {
-		this.initDefaults()
-	}
-
-	initDefaults() {
-		this.register({
-			id: SynthParam.Attack,
-			displayName: 'Synth Attack',
-			baseValue: 0.005,
-			min: 0.001,
-			max: 0.5,
-		})
-		this.register({
-			id: SynthParam.Decay,
-			displayName: 'Synth Decay',
-			baseValue: 0.01,
-			min: 0,
-			max: 1,
-		})
-		this.register({
-			id: SynthParam.Sustain,
-			displayName: 'Synth Sustain',
-			baseValue: 1,
-			min: 0,
-			max: 1,
-		})
-		this.register({
-			id: SynthParam.Release,
-			displayName: 'Synth Release',
-			baseValue: 0.001,
-			min: 0.001,
-			max: 0.5,
-		})
+	constructor(synth: Synth) {
+		this.synth = synth
+		this.params = new Map<SynthParam, Parameter>()
+		initSynthParameters(synth, this)
 	}
 
 	register(options: ParameterOptions) {

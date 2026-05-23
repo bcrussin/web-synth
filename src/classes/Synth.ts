@@ -32,7 +32,7 @@ export default class Synth {
 
 	id: UUID = crypto.randomUUID()
 
-	params = new SynthParameters()
+	params: SynthParameters
 
 	state: Reactive<SynthState>
 
@@ -113,6 +113,7 @@ export default class Synth {
 		this.volume = options.volume ?? 1
 
 		this.state = reactive(new SynthState(this, options))
+		this.params = new SynthParameters(this)
 		getAudioStore().addSynth(this)
 	}
 

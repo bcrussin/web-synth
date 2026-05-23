@@ -35,12 +35,6 @@ function getSynthType(): string {
 	return synth.getPresetOrType()
 }
 
-function setSynthValue(property: SynthParam, value: number | string) {
-	// synth.setProperty(property, value)
-	console.log(synth.params, synth.params.get(property), value)
-	synth.params.get(property)?.setValue(+value)
-}
-
 function setWaveType(value: string): void {
 	const option = getPresets().find((preset) => preset.value == value)
 	if (option.isPreset) {

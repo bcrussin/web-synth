@@ -19,6 +19,7 @@ export default class Oscillator extends OscillatorNode {
 	lowPassFilter: BiquadFilterNode
 	eg: any
 	emptyEg: any
+	env: any
 
 	get velocity() {
 		return this.velocityNode.gain.value
@@ -191,10 +192,10 @@ export default class Oscillator extends OscillatorNode {
 		this.envRelease()
 
 		// TODO: Magic number currently, otherwise synth stops before release fully plays out
-		const stopDelay =
-			this.synth.params.get(SynthParam.Release).value > 0.005
-				? this.synth.params.get(SynthParam.Release).value * 5
-				: 0.01
+		const stopDelay = Math.max(0.2, this.synth.params.get(SynthParam.Release).value * 5)
+		// this.synth.params.get(SynthParam.Release).value > 0
+		// 	? this.synth.params.get(SynthParam.Release).value * 5
+		// 	: 0.01
 		this.stop(Global.context.currentTime + stopDelay)
 	}
 
