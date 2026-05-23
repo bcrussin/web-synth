@@ -85,6 +85,7 @@ function load(checkMissingChannels: boolean = true) {
 
 	switch (currentTab.value) {
 		case Tab.SAVED:
+			console.log(toRaw(synthPresets[synthName.value]))
 			data = structuredClone(toRaw(synthPresets[synthName.value]))
 			break
 		case Tab.PASTE_DATA:

@@ -7,6 +7,9 @@ export interface ParameterOptions {
 	min: number
 	max: number
 	step?: number
+
+	get?: (value: number) => number
+	set?: (value: number) => number
 }
 
 export interface SerializedParameter {
@@ -28,8 +31,12 @@ export default class Parameter {
 	max: number
 	step?: number
 
+	get?: (value: number) => number
+	set?: (value: number) => number
+
 	private _baseValue!: number
 	get baseValue() {
+		if (this.get) return this.get(this._baseValue)
 		return this._baseValue
 	}
 	set baseValue(baseValue: number) {
@@ -40,6 +47,7 @@ export default class Parameter {
 
 	private _value!: number
 	get value() {
+		if (this.get) return this.get(this._value)
 		return this._value
 	}
 	set value(baseValue: number) {
@@ -57,7 +65,31 @@ export default class Parameter {
 
 		this.step = options.step
 
+		this.get = options.get
+		this.set = options.set
 		this.setValue(options.baseValue)
+	}
+
+	isMin() {
+		return this.value === this.min
+	}
+
+	isMax() {
+		return this.value === this.max
+	}
+
+	setValue(value: number) {
+		if (this.set) {
+			this._baseValue = this.set(value)
+		} else {
+			this._baseValue = value
+		}
+
+		this._value = this._baseValue // TODO: Check whether this can be removed when LFO support added
+
+		for (const listener of this.listeners) {
+			listener(value)
+		}
 	}
 
 	subscribe(listener: Listener, initial: boolean = false) {
@@ -66,15 +98,6 @@ export default class Parameter {
 		if (initial) listener(this.value)
 
 		return () => this.listeners.delete(listener)
-	}
-
-	setValue(value: number) {
-		this._baseValue = value
-		this._value = value // TODO: Check whether this can be removed when LFO support added
-
-		for (const listener of this.listeners) {
-			listener(value)
-		}
 	}
 
 	serialize() {

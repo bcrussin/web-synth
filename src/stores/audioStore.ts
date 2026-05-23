@@ -41,14 +41,8 @@ export const useAudioStore = defineStore('audio', {
 			return (filters?: MidiAssignmentFilters): IMidiAssignment[] => {
 				// console.log(unref([...state.midiAssignments.values()]), filters)
 				return [...state.midiAssignments.values()].filter((assignment) => {
-					if (filters?.deviceId && assignment.device.id !== filters.deviceId) {
-						// console.log(assignment.device.id, filters.deviceId)
-						return false
-					}
-					if (filters?.synthId && assignment.synth.id !== filters.synthId) {
-						// console.log(assignment.synth.id, filters.synthId)
-						return false
-					}
+					if (filters?.deviceId && assignment.device.id !== filters.deviceId) return false
+					if (filters?.synthId && assignment.synth.id !== filters.synthId) return false
 					if (filters?.channel && assignment.channelNumber !== filters.channel) return false
 
 					return true

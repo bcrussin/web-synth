@@ -44,7 +44,7 @@ const selectedDeviceRef = computed(() => {
 			{{ device.name }}
 		</el-option>
 	</el-select>
-	<span class="section-label">Channel Settings:</span>
+	<span class="section-label">Channel Assignments:</span>
 	<div class="channel-params-list">
 		<template v-for="channelNumber in 16" :key="channelNumber">
 			<div class="channel-param" :channelProperties="1">

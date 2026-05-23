@@ -1,5 +1,8 @@
 import { getAudioStore } from '@/stores/audioStore'
-import MidiChannel, { type SerializedMidiChannel, type MidiChannelOptions } from './MidiAssignment'
+import MidiChannel, {
+	type SerializedMidiAssignment,
+	type MidiAssignmentOptions,
+} from './MidiAssignment'
 import MidiDevice from './MidiDevice'
 import MidiManager from './MidiManager'
 import type { SerializedParameter } from './Parameter'
@@ -8,6 +11,8 @@ import { loadTunaEffect } from './TunaDeserializers'
 import { serializeTunaEffect } from './TunaSerializers'
 import { SynthParam } from './SynthParameters'
 import type Parameter from './Parameter'
+import MidiAssignment from './MidiAssignment'
+import { toRaw, toValue } from 'vue'
 
 // Used to prevent accidental mutation of saved data
 type DeepReadonly<T> = {
@@ -47,7 +52,7 @@ export interface SerializedSynth {
 		wavetable?: Array<number> | null
 	}
 	[SynthSerializerCategory.EFFECTS]?: any[]
-	[SynthSerializerCategory.MIDI]?: SerializedMidiChannel[]
+	[SynthSerializerCategory.MIDI]?: SerializedMidiAssignment[]
 	[SynthSerializerCategory.SETTINGS]?: {
 		transpose?: number
 		volume?: number
@@ -64,7 +69,7 @@ export class SynthSerializer {
 
 		const data: SerializedSynth = {}
 
-		let parameters: SerialisedSynthParams = synth.parameters.serialize() ?? {}
+		let parameters: SerialisedSynthParams = synth.params.serialize() ?? {}
 		if (cateogoriesAreDefined) {
 			parameters = SynthSerializer.filterParams(parameters, categories)
 		}
@@ -72,11 +77,12 @@ export class SynthSerializer {
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
 			data[SynthSerializerCategory.WAVEFORM] = {
-				type: synth.type,
+				type: synth.state.type,
 			}
 
-			if (!!synth.preset) data.waveform.preset = synth.preset
-			if (synth.type === 'custom' && !!synth.wavetable) data.waveform.wavetable = synth.wavetable
+			if (!!synth.state.preset) data.waveform.preset = synth.state.preset
+			if (synth.state.type === 'custom' && !!synth.state.wavetable)
+				data.waveform.wavetable = synth.state.wavetable
 		}
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.EFFECTS)) {
@@ -94,15 +100,15 @@ export class SynthSerializer {
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.SETTINGS)) {
 			data[SynthSerializerCategory.SETTINGS] = {
 				volume: synth.volume,
-				transpose: synth.transpose,
-				maxPolyphony: synth.maxPolyphony,
-				legato: synth.legato,
-				glide: synth.glide,
-				glideAmount: synth.glideAmount,
+				transpose: synth.state.transpose,
+				maxPolyphony: synth.state.maxPolyphony,
+				legato: synth.state.legato,
+				glide: synth.state.glide,
+				glideAmount: synth.state.glideAmount,
 			}
 		}
 
-		return data
+		return toRaw(data)
 	}
 
 	static load(synth: Synth, data: SerializedSynth, categories?: SynthSerializerCategory[]) {
@@ -112,12 +118,12 @@ export class SynthSerializer {
 		if (cateogoriesAreDefined) {
 			parameters = SynthSerializer.filterParams(parameters, categories)
 		}
-		synth.parameters.deserialize(parameters)
+		synth.params.deserialize(parameters)
 
 		if (!cateogoriesAreDefined || categories.includes(SynthSerializerCategory.WAVEFORM)) {
 			const waveformData = data[SynthSerializerCategory.WAVEFORM]
 
-			synth.type = waveformData?.type ?? synth.type
+			synth.state.type = waveformData?.type ?? synth.state.type
 
 			if (!!waveformData?.wavetable) {
 				synth.setWavetable(waveformData.wavetable)
@@ -148,18 +154,18 @@ export class SynthSerializer {
 		) {
 			getAudioStore()
 				.getMidiChannelsForSynth(synth.id)
-				.forEach((channel) => {
-					MidiManager.unregisterChannel(channel)
+				.forEach((assignment) => {
+					getAudioStore().removeMidiAssignment(assignment.id)
 				})
 
 			data[SynthSerializerCategory.MIDI].forEach((channelData) => {
 				const midiDevice = getAudioStore().getMidiDevice(channelData.device)
 				if (!midiDevice) return
 
-				let options: MidiChannelOptions = { ...channelData.options, synth }
+				let options: MidiAssignmentOptions = { ...channelData.options, synth }
 
-				const channel = new MidiChannel(midiDevice, options)
-				MidiManager.registerChannel(channel)
+				const assignment = new MidiAssignment(midiDevice, options)
+				getAudioStore().addMidiAssignment(assignment)
 			})
 		}
 
@@ -170,11 +176,11 @@ export class SynthSerializer {
 			const settingsData = data[SynthSerializerCategory.SETTINGS]
 
 			synth.volume = settingsData?.volume ?? synth.volume
-			synth.transpose = settingsData?.transpose ?? synth.transpose
-			synth.maxPolyphony = settingsData?.maxPolyphony ?? synth.maxPolyphony
-			synth.legato = settingsData?.legato ?? synth.legato
-			synth.glide = settingsData?.glide ?? synth.glide
-			synth.glideAmount = settingsData?.glideAmount ?? synth.glideAmount
+			synth.state.transpose = settingsData?.transpose ?? synth.state.transpose
+			synth.state.maxPolyphony = settingsData?.maxPolyphony ?? synth.state.maxPolyphony
+			synth.state.legato = settingsData?.legato ?? synth.state.legato
+			synth.state.glide = settingsData?.glide ?? synth.state.glide
+			synth.state.glideAmount = settingsData?.glideAmount ?? synth.state.glideAmount
 		}
 	}
 

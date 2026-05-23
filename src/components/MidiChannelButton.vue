@@ -39,15 +39,13 @@ const indicatorStyles = computed(() => {
 	}
 })
 
-const channelAssignments = computed(() => {
-	const a = audioStore.getMidiAssignments({
+const channelAssignments = computed(() =>
+	audioStore.getMidiAssignments({
 		deviceId: props.deviceId,
 		synthId: synth.id,
 		channel: props.channelNumber,
-	})
-	console.log(a)
-	return a
-})
+	}),
+)
 
 const firstAssignment = computed(() => channelAssignments.value?.[0])
 // function getChannelAssignments(channelNumber: number): IMidiAssignment[] {
