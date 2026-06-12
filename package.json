@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@tsconfig/node22": "^22.0.0",
+    "@types/audioworklet": "^0.0.100",
     "@types/node": "^22.10.7",
     "@types/tunajs": "^1.0.3",
     "@vitejs/plugin-vue": "^5.2.1",

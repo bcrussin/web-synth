@@ -5,16 +5,34 @@ export default function initSynthParameters(synth: Synth, params: SynthParameter
 	params.register({
 		id: SynthParam.Attack,
 		displayName: 'Synth Attack',
-		baseValue: 0.005,
-		min: 0.001,
-		max: 0.5,
+		baseValue: 1,
+		min: 1,
+		max: 1000,
+		step: 10,
+	})
+	params.register({
+		id: SynthParam.AttackCurve,
+		displayName: 'Synth Attack Curve',
+		baseValue: 1,
+		min: 0.1,
+		max: 5,
+		step: 0.1,
 	})
 	params.register({
 		id: SynthParam.Decay,
 		displayName: 'Synth Decay',
-		baseValue: 0.01,
-		min: 0,
-		max: 1,
+		baseValue: 1,
+		min: 1,
+		max: 1000,
+		step: 10,
+	})
+	params.register({
+		id: SynthParam.DecayCurve,
+		displayName: 'Synth Decay Curve',
+		baseValue: 1,
+		min: 0.1,
+		max: 5,
+		step: 0.1,
 	})
 	params.register({
 		id: SynthParam.Sustain,
@@ -26,9 +44,18 @@ export default function initSynthParameters(synth: Synth, params: SynthParameter
 	params.register({
 		id: SynthParam.Release,
 		displayName: 'Synth Release',
-		baseValue: 0.02,
-		min: 0.001,
-		max: 0.5,
+		baseValue: 1,
+		min: 1,
+		max: 1000,
+		step: 10,
+	})
+	params.register({
+		id: SynthParam.ReleaseCurve,
+		displayName: 'Synth Release Curve',
+		baseValue: 1,
+		min: 0.1,
+		max: 5,
+		step: 0.1,
 	})
 
 	params.register({

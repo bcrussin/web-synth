@@ -6,7 +6,7 @@ import FFT from './FFT'
 import Tuna from 'tunajs'
 import MidiDevice from './MidiDevice'
 import { getAudioStore } from '@/stores/audioStore'
-import SynthParameters from './SynthParameters'
+import SynthParameters, { SynthParam } from './SynthParameters'
 import SynthState from '../states/SynthState'
 
 export interface SynthOptions {

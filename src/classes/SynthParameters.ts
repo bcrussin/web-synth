@@ -6,9 +6,13 @@ import type Synth from './Synth'
 
 export enum SynthParam {
 	Attack = 'attack',
-	Sustain = 'sustain',
+	AttackCurve = 'attackCurve',
 	Decay = 'decay',
+	DecayCurve = 'decayCurve',
+	Sustain = 'sustain',
 	Release = 'release',
+	ReleaseCurve = 'releaseCurve',
+
 	TransposeSemitones = 'transposeSemitones',
 	TransposeOctaves = 'transposeOctaves',
 }

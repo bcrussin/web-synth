@@ -58,8 +58,8 @@ app.use(router)
 app.use(ElementPlus, { size: 'small', zIndex: 3000 })
 app.component('v-icon', OhVueIcon)
 
-Global.initialize(new AudioContext())
-Keyboard.initialize()
-MidiDevice.initialize()
-
-app.mount('#app')
+Global.initialize(new AudioContext()).then(() => {
+	Keyboard.initialize()
+	MidiDevice.initialize()
+	app.mount('#app')
+})

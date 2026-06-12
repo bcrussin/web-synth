@@ -48,6 +48,9 @@ importers:
       '@tsconfig/node22':
         specifier: ^22.0.0
         version: 22.0.2
+      '@types/audioworklet':
+        specifier: ^0.0.100
+        version: 0.0.100
       '@types/node':
         specifier: ^22.10.7
         version: 22.18.0
@@ -1293,6 +1296,9 @@ packages:
 
   '@tsconfig/node22@22.0.2':
     resolution: {integrity: sha512-Kmwj4u8sDRDrMYRoN9FDEcXD8UpBSaPQQ24Gz+Gamqfm7xxn+GBR7ge/Z7pK8OXNGyUzbSwJj+TH6B+DS/epyA==}
+
+  '@types/audioworklet@0.0.100':
+    resolution: {integrity: sha512-mWt4Z5CWi0CupDnSYWJgx6dw61XUk9JSRGrM9F/YNrpOoY/0XG+sxP+8rAjQq80H4febOe8PrzGmmN/X3w8LsQ==}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -4661,6 +4667,8 @@ snapshots:
       yjs: 13.6.29
 
   '@tsconfig/node22@22.0.2': {}
+
+  '@types/audioworklet@0.0.100': {}
 
   '@types/estree@1.0.8': {}
 

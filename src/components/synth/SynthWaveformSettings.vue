@@ -72,9 +72,9 @@ function getPresets() {
 		<div class="selectable">
 			<span>Attack:</span>
 			<el-slider
-				:min="0.01"
-				:max="0.4"
-				:step="0.05"
+				:min="synth.params.get(SynthParam.Attack).min"
+				:max="synth.params.get(SynthParam.Attack).max"
+				:step="synth.params.get(SynthParam.Attack).step"
 				:show-tooltip="false"
 				class="control envelope-slider"
 				v-model="synth.params.get(SynthParam.Attack).baseValue"
@@ -85,8 +85,8 @@ function getPresets() {
 		<div class="selectable">
 			<span>Decay:</span>
 			<el-slider
-				:min="0"
-				:max="1"
+				:min="synth.params.get(SynthParam.Decay).min"
+				:max="synth.params.get(SynthParam.Decay).max"
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
@@ -98,8 +98,8 @@ function getPresets() {
 		<div class="selectable">
 			<span>Sustain:</span>
 			<el-slider
-				:min="0"
-				:max="1"
+				:min="synth.params.get(SynthParam.Sustain).min"
+				:max="synth.params.get(SynthParam.Sustain).max"
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
@@ -111,8 +111,8 @@ function getPresets() {
 		<div class="selectable">
 			<span>Release:</span>
 			<el-slider
-				:min="0.01"
-				:max="0.5"
+				:min="synth.params.get(SynthParam.Release).min"
+				:max="synth.params.get(SynthParam.Release).max"
 				:step="0.05"
 				name="release"
 				:show-tooltip="false"

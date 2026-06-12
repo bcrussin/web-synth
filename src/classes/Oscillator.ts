@@ -1,8 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Global from './Audio'
 import Synth from './Synth'
-import EnvGen from './EnvGen'
 import { SynthParam } from './SynthParameters'
+import Envelope, { getSynthEnvelope } from './Envelope'
+import { EnvelopeNode } from './EnvelopeNode'
 
 export default class Oscillator extends OscillatorNode {
 	created: Date
@@ -15,11 +16,14 @@ export default class Oscillator extends OscillatorNode {
 
 	// volumeNode: GainNode
 	velocityNode: GainNode
-	gainNode: GainNode
+	// gainNode: GainNode
+	envelopeNode: EnvelopeNode
 	lowPassFilter: BiquadFilterNode
-	eg: any
-	emptyEg: any
-	env: any
+	// eg: any
+	// emptyEg: any
+
+	// env: Envelope
+	// emptyEnv: ConstantSourceNode
 
 	get velocity() {
 		return this.velocityNode.gain.value
@@ -44,14 +48,13 @@ export default class Oscillator extends OscillatorNode {
 		this.velocityNode.gain.value = 1
 		this.velocityNode.connect(synth.inputNode)
 
-		this.gainNode = Global.context.createGain()
-		this.gainNode.gain.value = 0
-		this.gainNode.connect(this.velocityNode)
+		this.envelopeNode = new EnvelopeNode(getSynthEnvelope(synth))
+		this.envelopeNode.node.connect(this.velocityNode)
 
 		this.lowPassFilter = Global.context.createBiquadFilter()
 		this.lowPassFilter.type = 'lowpass'
 		this.lowPassFilter.frequency.setTargetAtTime(2000, Global.context.currentTime, 0)
-		this.lowPassFilter.connect(this.gainNode)
+		this.lowPassFilter.connect(this.envelopeNode.node)
 
 		this.connect(this.lowPassFilter)
 
@@ -60,42 +63,14 @@ export default class Oscillator extends OscillatorNode {
 		} else {
 			this.type = (synth.state.type as OscillatorType) ?? 'sine'
 		}
-
-		this.eg = new EnvGen(Global.context, this.gainNode.gain)
-		this.eg.mode = 'ADSR'
-		this.eg.attackTime = synth.params.get(SynthParam.Attack).value
-		this.eg.releaseTime = synth.params.get(SynthParam.Release).value
-		this.eg.decayTime = synth.params.get(SynthParam.Decay).value
-		this.eg.sustainLevel = synth.params.get(SynthParam.Sustain).value
-
-		this.emptyEg = new EnvGen(Global.context, this.gainNode.gain)
-		this.emptyEg.mode = 'ASR'
-		this.emptyEg.attackTime = 0.01
-		this.emptyEg.releaseTime = 0.05
 	}
 
-	getEnv(empty: boolean = false) {
-		if (empty) {
-			return this.emptyEg
-		}
-
-		return this.eg
+	envAttack(): void {
+		this.envelopeNode.triggerOn()
 	}
 
-	gateOff(): void {
-		this.disconnect()
-	}
-
-	gateOn(): void {
-		this.connect(this.gainNode)
-	}
-
-	envAttack(skipEnv: boolean = false): void {
-		this.getEnv(skipEnv).gateOn()
-	}
-
-	envRelease(skipEnv: boolean = false): void {
-		this.getEnv(skipEnv).gateOff()
+	envRelease(): void {
+		this.envelopeNode.triggerOff()
 	}
 
 	semitonesToFrequencyOffset(semitones: number) {
@@ -184,8 +159,8 @@ export default class Oscillator extends OscillatorNode {
 		this.velocityNode.gain.value = volume ?? 1
 
 		this.setFrequency(this.semitoneToFrequency(semitone))
-		this.envAttack()
 		this.start()
+		this.envAttack()
 	}
 
 	release(stopNote: boolean = true) {

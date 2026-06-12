@@ -62,9 +62,8 @@ function getMaxPolyphony(): number {
 				:step="0.1"
 				name="volume"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.volume"
 				data-param="Synth Volume"
-				@input="setSynthValue('volume', $event)"
+				v-model="synth.volume"
 			></el-slider>
 		</div>
 

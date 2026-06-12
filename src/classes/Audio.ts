@@ -1,6 +1,12 @@
 import { useInstrumentsStore } from '@/stores/instruments'
 import { ref, type Ref } from 'vue'
 
+import envelopeProcessorUrl from '@/classes/EnvelopeProcessor?url'
+
+export const AudioWorkers = {
+	EnvelopeProcessor: envelopeProcessorUrl,
+}
+
 export default class Global {
 	static _context: AudioContext
 
@@ -47,8 +53,10 @@ export default class Global {
 
 	static WAVE_TYPES: Array<string> = ['sine', 'sawtooth', 'triangle']
 
-	static initialize(audioContext: AudioContext) {
+	static async initialize(audioContext: AudioContext) {
 		Global.context = audioContext
+
+		await audioContext.audioWorklet.addModule(AudioWorkers.EnvelopeProcessor)
 
 		Global.volumeNode = Global.context.createGain()
 		Global.volumeNode.connect(Global.context.destination)
