@@ -3,40 +3,40 @@ import '@/assets/main.css'
 
 import MidiDevice from '@/classes/MidiDevice'
 import Synth from '@/classes/Synth'
-import { ref, watchEffect } from 'vue'
+import { useAudioStore } from '@/stores/audioStore'
+import { RefreshLeft } from '@element-plus/icons-vue'
+import { computed, ref, watchEffect } from 'vue'
 
-const props = defineProps<{ synth: Synth }>()
+const props = defineProps<{ synthId: UUID }>()
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
-const midiDevice = ref(props.synth.midiDevice?.input?.id)
+const midiDevice = ref(synth.midiDevice?.input?.id)
 
 watchEffect(() => {
-	midiDevice.value = props.synth.midiDevice?.input?.id
+	midiDevice.value = synth.midiDevice?.input?.id
 })
 
 function setMidiDevice(id: string) {
-	props.synth.setMidiDevice(id)
+	synth.setMidiDevice(id)
 }
 
 function setSynthValue(property: string, value: number | string | boolean) {
-	props.synth.setProperty(property, value)
-}
-
-function changeTranspose(value: number) {
-	props.synth.changeTranspose(value)
+	synth.setProperty(property, value)
 }
 
 function setTranspose(value: number) {
-	props.synth.setTranspose(value)
+	synth.state.transpose = value
 }
 
 function setMaxPolyphony(value: number) {
-	props.synth.setMaxPolyphony(value)
+	synth.setMaxPolyphony(value)
 }
 
 function getMaxPolyphony(): number {
-	if (props.synth.maxPolyphony == Infinity) return 0
+	if (synth.state.maxPolyphony == Infinity) return 0
 
-	return props.synth.maxPolyphony
+	return synth.state.maxPolyphony
 }
 </script>
 
@@ -46,7 +46,7 @@ function getMaxPolyphony(): number {
 			<el-select placeholder="Input Device" v-model="midiDevice" @change="setMidiDevice($event)">
 				<el-option label="None" value=""> </el-option>
 				<el-option
-					v-for="device in MidiDevice.DEVICES"
+					v-for="device in audioStore.midiDevices"
 					:key="device.input.name"
 					:label="device.input.name"
 					:value="device.input.id"
@@ -62,20 +62,36 @@ function getMaxPolyphony(): number {
 				:step="0.1"
 				name="volume"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.volume"
 				data-param="Synth Volume"
-				@input="setSynthValue('volume', $event)"
+				v-model="synth.volume"
 			></el-slider>
 		</div>
-		<div>
-			<span>Transpose Octaves:</span>
+
+		<el-divider content-position="left">Transpose</el-divider>
+		<div class="transpose-input selectable">
+			<span>Octaves:</span>
 			<el-input-number
-				:model-value="props.synth.transpose"
-				:min="-4"
-				:max="4"
-				@change="setTranspose"
+				class="control"
+				v-model="synth.state.octaves"
+				data-param="Synth Transpose (Octaves)"
 			/>
 		</div>
+		<div class="transpose-input selectable">
+			<span>Semitones:</span>
+			<el-input-number
+				class="control"
+				v-model="synth.state.semitones"
+				data-param="Synth Transpose (Semitones)"
+			/>
+		</div>
+		<el-button
+			:icon="RefreshLeft"
+			@click="setTranspose(0)"
+			:disabled="synth.state.transpose == 0"
+			circle
+			text
+		></el-button>
+
 		<el-divider content-position="left">Polyphony</el-divider>
 		<div class="selectable">
 			<span>Max Voices:</span>
@@ -88,33 +104,34 @@ function getMaxPolyphony(): number {
 				@change="setMaxPolyphony($event)"
 			/>
 		</div>
-		<el-checkbox
-			label="Legato"
-			:model-value="props.synth.legato"
-			@change="setSynthValue('legato', $event)"
-		/>
-		<el-checkbox
-			label="Glide"
-			:model-value="props.synth.glide"
-			@change="setSynthValue('glide', $event)"
-		/>
+		<el-checkbox label="Legato" v-model="synth.state.legato" />
+		<el-checkbox label="Glide" v-model="synth.state.glide" />
 		<div class="selectable">
 			<span>Glide Duration (ms):</span>
 			<el-input-number
 				data-param="Synth Glide Amount"
 				class="control"
-				:model-value="props.synth.glideAmountMs"
+				v-model="synth.state.glideAmountMs"
 				:min="0"
 				:max="1000"
 				:step="50"
-				@change="setSynthValue('glideAmount', $event / 1000)"
 			/>
 		</div>
 		<!-- <div>
 			<span>Transpose:</span>
 			<el-button @click="changeTranspose(-1)">-</el-button>
-			<span>{{ props.synth.transpose }}</span>
+			<span>{{ synth.transpose }}</span>
 			<el-button @click="changeTranspose(1)">+</el-button>
 		</div> -->
 	</div>
 </template>
+
+<style scoped>
+.transpose-input .el-input-number {
+	width: fit-content;
+}
+
+.transpose-input :deep(.el-input__inner) {
+	width: 4ch; /* 3 digits + minus sign + a bit of breathing room */
+}
+</style>

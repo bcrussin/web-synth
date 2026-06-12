@@ -1,68 +1,69 @@
 <!-- eslint-disable @typescript-eslint/no-explicit-any -->
 <script setup lang="ts">
 import type MidiDevice from '@/classes/MidiDevice'
-import type { MidiChannelOptions } from '@/classes/MidiChannel'
-import MidiChannel from '@/classes/MidiChannel'
+import MidiChannel from '@/classes/MidiAssignment'
 import type Synth from '@/classes/Synth'
 import { useMidiStore } from '@/stores/midiStore'
-import { ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import MidiManager from '@/classes/MidiManager'
+import { SynthParam } from '@/classes/SynthParameters'
+import { useAudioStore } from '@/stores/audioStore'
+import type MidiAssignment from '@/classes/MidiAssignment'
 
-const props = withDefaults(defineProps<{ channel: MidiChannel; isNewChannel?: boolean }>(), {
-	isNewChannel: false,
-})
+const props = withDefaults(
+	defineProps<{ assignment: MidiAssignment; synthId: UUID; isNewChannel?: boolean }>(),
+	{
+		isNewChannel: false,
+	},
+)
 const midiStore = useMidiStore()
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const dialogVisible = ref(true)
 
-const midiDevice = props.channel.device as MidiDevice
-const settings = getChannelSettings()
+// const oututMinMaxArray = computed(() => [props.assignment.outputMin, props.assignment.outputMax])
 
-function getChannelSettings(): MidiChannel {
-	return props.channel //MidiManager.getChannel(props.synth.midiDevice, props.synth, props.channel)!
-}
+// function getChannelMinMax() {
+// 	const settings = getChannelSettings()
 
-function setChannelProperty(property: keyof MidiChannelOptions, value: any) {
-	props.channel.setProperty(property, value)
-	// if (getChannelSettings() == undefined) return
+// 	return [settings.min, settings.max]
+// }
 
-	// getChannelSettings()?.setProperty(property, value)
-}
+// function updateChannelMinMax(minMax: [number, number]) {
+// 	const data = {
+// 		min: minMax[0],
+// 		max: minMax[1],
+// 	} as MidiChannelOptions
 
-function getChannelMinMax() {
-	const settings = getChannelSettings()
-
-	return [settings.min, settings.max]
-}
-
-function updateChannelMinMax(minMax: [number, number]) {
-	const data = {
-		min: minMax[0],
-		max: minMax[1],
-	} as MidiChannelOptions
-
-	// getChannelSettings()?.setProperties(data)
-	props.channel.setProperties(data)
-}
+// 	// getChannelSettings()?.setProperties(data)
+// 	props.channel.setProperties(data)
+// }
 
 function save() {
-	if (props.channel.param == undefined) return
+	if (props.assignment.parameter == undefined) return
 
-	MidiManager.registerChannel(props.channel)
+	// MidiManager.registerChannel(props.channel)
+	audioStore.addMidiAssignment(props.assignment)
 	dialogVisible.value = false
 }
 
 function deleteChannel() {
-	if (props.channel.param == undefined) return
+	if (props.assignment.parameter == undefined) return
 
-	MidiManager.unregisterChannel(props.channel)
+	// MidiManager.unregisterChannel(props.channel)
+	audioStore.removeMidiAssignment(props.assignment.id)
 	dialogVisible.value = false
+}
+
+function assignDevice(deviceId: string) {
+	props.assignment.device = audioStore.getMidiDevice(deviceId)
 }
 </script>
 
 <template>
 	<el-dialog
-		:title="`Channel ${channel.channelNumber}`"
+		:title="`Channel ${assignment.channelNumber}`"
 		modal
 		:model-value="dialogVisible"
 		:show-close="true"
@@ -72,38 +73,47 @@ function deleteChannel() {
 		}"
 	>
 		<div class="flex-stretch">
-			<div class="control-item" id="channel-select">
-				<span>Channel:</span>
+			<div class="control-item" id="device-select">
+				<span>Device:</span>
 				<el-select
-					:model-value="settings.channelNumber"
-					@change="setChannelProperty('channelNumber', $event)"
+					:model-value="assignment.device.id"
+					@change="assignDevice($event)"
 					class="channel-dropdown"
 				>
+					<el-option
+						v-for="device in audioStore.midiDevices"
+						:key="device.id"
+						:label="device.name"
+						:value="device.id"
+					>
+					</el-option>
+				</el-select>
+			</div>
+
+			<div class="control-item" id="channel-select">
+				<span>Channel:</span>
+				<el-select v-model="assignment.channelNumber" class="channel-dropdown">
 					<el-option v-for="channel in 16" :key="channel" :value="channel"
 						>{{ channel }}
 					</el-option>
 				</el-select>
 			</div>
-
-			<div class="control-item">
-				<span>Linked Parameter:</span>
-				<el-select
-					:model-value="settings.param"
-					@change="setChannelProperty('param', $event)"
-					class="channel-dropdown"
-					placeholder="None"
-				>
-					<el-option value="" v-if="props.isNewChannel"> None </el-option>
-					<el-option
-						v-for="param in midiStore.params"
-						:key="param.displayName"
-						:label="param.displayName"
-						:value="param.displayName"
-					>
-					</el-option>
-				</el-select>
-			</div>
 		</div>
+
+		<div class="control-item">
+			<span>Linked Parameter:</span>
+			<el-select v-model="assignment.parameter" class="channel-dropdown" placeholder="None">
+				<el-option value="" v-if="props.isNewChannel"> None </el-option>
+				<el-option
+					v-for="param in synth.params.all()"
+					:key="param.id"
+					:label="param.displayName"
+					:value="param.id"
+				>
+				</el-option>
+			</el-select>
+		</div>
+
 		<div class="control-item">
 			<span>Output Range:</span>
 
@@ -112,11 +122,10 @@ function deleteChannel() {
 					range
 					:min="0"
 					:max="1"
-					:model-value="getChannelMinMax()"
+					v-model="assignment.outputMinMax"
 					:step="0.05"
-					@input="updateChannelMinMax($event)"
 				></el-slider>
-				<el-checkbox class="fixed-width" size="large" v-model="settings.inverted"
+				<el-checkbox class="fixed-width" size="large" v-model="assignment.inverted"
 					>Inverted</el-checkbox
 				>
 			</div>
@@ -126,7 +135,9 @@ function deleteChannel() {
 			<!-- New Channel Options -->
 			<div v-if="props.isNewChannel">
 				<el-button @click="() => (dialogVisible = false)">Cancel</el-button>
-				<el-button type="primary" @click="save()" :disabled="!props.channel.param">Save</el-button>
+				<el-button type="primary" @click="save()" :disabled="!props.assignment.parameter"
+					>Save</el-button
+				>
 			</div>
 
 			<!-- Existing Channel Options -->

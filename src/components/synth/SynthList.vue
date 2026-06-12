@@ -3,39 +3,62 @@ import Synth from '@/classes/Synth'
 import SynthDialog from './SynthDialog.vue'
 
 import Global from '@/classes/Audio'
-import { ref, type Ref } from 'vue'
+import { computed, ref, watch, type Ref } from 'vue'
+import { useSynth } from '@/compostables/useSynth'
+import { useAudioStore } from '@/stores/audioStore'
 
-const currentSynth: Ref<string | undefined> = ref(undefined)
-const settingsDialogs = new Set<string>()
+const audioStore = useAudioStore()
 
-function openDialog(synth: Synth) {
-	currentSynth.value = synth.name
-	// settingsDialogs.add(synth.name)
+const currentSynth: Ref<UUID | undefined> = ref(undefined)
+
+// const synthRefs = computed(() =>
+// 	Object.fromEntries(Object.entries(audioStore.synths).map(([id, synth]) => [id, useSynth(synth)])),
+// )
+
+function openDialog(synthId: UUID) {
+	currentSynth.value = synthId
 }
 function closeDialog() {
 	currentSynth.value = undefined
-	// this.settingsDialogs = this.settingsDialogs.filter((dialog) => dialog.id !== id)
 }
 
 function addSynth(): void {
 	const synth = new Synth()
-	console.log(Synth.getSynths())
 }
+
+function getGlowSize(synth: Synth) {
+	let size = synth.signalLevel * 60
+	size = Math.min(Math.max(0, size), 40)
+
+	return `${size}px`
+}
+
+Synth.beginUpdatingSignalLevels()
 </script>
 
 <template>
 	<section id="synths-list" class="horizontal">
 		<el-button
 			class="synth-button"
-			v-for="(synth, name) in Synth.getSynths()"
-			v-bind:class="{ playing: synth.isPlaying(), suspended: Global.suspended.value }"
-			:key="name"
+			v-for="(synth, id) in audioStore.synths"
+			v-bind:class="{
+				playing: synth.isPlaying(),
+				audible: synth.isAudible(),
+				bypassed: synth.bypass,
+				suspended: Global.suspended.value,
+			}"
+			:style="{
+				'--glow-size': getGlowSize(synth),
+			}"
+			:key="id"
 			plain
 			round
 			size="default"
-			@click="openDialog(synth)"
+			@click="openDialog(id)"
 		>
-			{{ name }}
+			<span class="synth-button-name">
+				{{ synth.state.name }}
+			</span>
 		</el-button>
 
 		<el-button round size="default" @click="addSynth"> + </el-button>
@@ -44,8 +67,8 @@ function addSynth(): void {
 	<SynthDialog
 		v-if="currentSynth"
 		:key="currentSynth"
-		:synth="Synth.getSynth(currentSynth)"
-		@update:model-value="(val) => closeDialog()"
+		:synthId="currentSynth"
+		@update:model-value="() => closeDialog()"
 	/>
 </template>
 
@@ -57,38 +80,38 @@ function addSynth(): void {
 }
 
 .synth-button {
+	--accent-color: var(--playing-color);
+
 	outline: 2px solid transparent;
-	transition: outline-color 0.2s;
+	transition:
+		outline-color 0.2s,
+		color 0.2s;
+
+	.synth-button-name {
+		max-width: 32ch;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }
 
 .synth-button.playing {
-	outline-color: var(--playing-color);
-	box-shadow: 0 0 20px var(--playing-color);
+	outline-color: var(--accent-color);
+	color: var(--accent-color);
 	transition: outline-color 0s;
 }
 
-.synth-button.playing.suspended {
-	outline-color: var(--suspended-color);
-	box-shadow: 0 0 20px var(--suspended-color);
-	transition: outline-color 0s;
+.synth-button.audible {
+	box-shadow: 0 0 var(--glow-size) var(--accent-color);
 }
 
-/* .synth-button {
-  padding: 2px 4px;
-  border: 3px solid transparent;
-  border-radius: 8px;
-  white-space: nowrap;
-  transition:
-    border-color 0.3s,
-    box-shadow 0.3s;
+.synth-button.suspended {
+	--accent-color: var(--suspended-color);
 }
 
-.synth-button.playing {
-  --playing-color: rgb(40, 188, 40);
-  box-shadow: 0 0 8px 2px var(--playing-color);
-  border-color: var(--playing-color);
-  transition-duration: 0s;
-} */
+.synth-button.bypassed {
+	border-style: dashed;
+	opacity: 0.8;
+}
 </style>
 
 <script lang="ts">
@@ -102,8 +125,7 @@ export default {
 	},
 	methods: {
 		openDialog(synth: Synth) {
-			console.log(this.settingsDialogs)
-			this.settingsDialogs.add(synth.name)
+			this.settingsDialogs.add(synth.state.name)
 		},
 		closeDialog(id: string, isVisible: boolean) {
 			if (!isVisible) {
@@ -113,7 +135,6 @@ export default {
 		},
 		addSynth(): void {
 			const synth = new Synth()
-			console.log(Synth.getSynths())
 		},
 	},
 }

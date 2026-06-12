@@ -3,8 +3,13 @@ import Synth from '@/classes/Synth'
 import '@/assets/main.css'
 import { onMounted, ref, watch, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useAudioStore } from '@/stores/audioStore'
 
-const props = defineProps<{ synth: Synth }>()
+class InvalidWaveformError extends Error {}
+
+const props = defineProps<{ synthId: UUID }>()
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
 
 const wavetable: Ref<number[], number[]> = ref([])
 let ctx: CanvasRenderingContext2D | null | undefined
@@ -13,14 +18,14 @@ const canvasRef = ref<HTMLCanvasElement | null>(null)
 defineExpose({ wavetable, resizeWavetable, setTransparent })
 
 watch(
-	() => props.synth.type,
+	() => synth.type,
 	(newType: string | null) => {
 		setTransparent()
 	},
 )
 
 watch(
-	() => props.synth.wavetable,
+	() => synth.wavetable,
 	(newWaveTable: number[] | null) => {
 		if (!!newWaveTable) {
 			wavetable.value = newWaveTable
@@ -30,8 +35,8 @@ watch(
 )
 
 onMounted(() => {
-	if (!!props.synth.wavetable) {
-		wavetable.value = props.synth.wavetable
+	if (!!synth.wavetable) {
+		wavetable.value = synth.wavetable
 		resizeWavetable()
 	} else {
 		wavetable.value = new Array(length).fill(0)
@@ -60,7 +65,7 @@ function resizeWavetable(size?: number) {
 	}
 
 	render()
-	props.synth.setWavetable(wavetable.value)
+	synth.setWavetable(wavetable.value)
 }
 
 function render() {
@@ -91,8 +96,8 @@ function edit(e: MouseEvent | Touch) {
 
 	render()
 
-	props.synth.setWavetable(wavetable.value)
-	props.synth.setWaveType('custom')
+	synth.setWavetable(wavetable.value)
+	synth.setWaveType('custom')
 	// setWaveType("custom");
 }
 
@@ -109,7 +114,7 @@ function onTouchMove(e: TouchEvent) {
 function setTransparent(isTransparent?: boolean) {
 	if (canvasRef.value == undefined) return
 
-	isTransparent = isTransparent ?? !(!!props.synth.preset || props.synth.type == 'custom')
+	isTransparent = isTransparent ?? !(!!synth.preset || synth.type == 'custom')
 
 	if (isTransparent) {
 		canvasRef.value.classList.add('transparent')
@@ -124,30 +129,59 @@ function copyWavetable() {
 
 function pasteWavetable() {
 	navigator.clipboard.readText().then((clipboard) => {
+		const originalWavetable = synth.wavetable
+		const originalWaveType = synth.type
+
 		try {
 			if (!clipboard.startsWith('[')) clipboard = '[' + clipboard
 			if (!clipboard.endsWith(']')) clipboard = clipboard + ']'
 
 			const parsed = JSON.parse(clipboard)
+
 			if (Array.isArray(parsed)) {
-				props.synth.setWavetable(parsed)
-				props.synth.setWaveType('custom')
+				const parsedNumeric = parseWavetable(parsed)
+
+				if (!parsedNumeric) throw new InvalidWaveformError('Array must contain numbers only')
+
+				synth.setWavetable(parsedNumeric)
+				synth.setWaveType('custom')
 			}
 		} catch (err) {
-			console.log(err)
-			showPasteError()
-			return
+			if (err instanceof InvalidWaveformError) {
+				showPasteError(err.message)
+			} else {
+				console.error(err)
+				showPasteError()
+
+				// Restore original wave data if something goes wrong
+				if (!!originalWavetable) synth.setWavetable(originalWavetable)
+				if (!!originalWaveType) synth.setWaveType(originalWaveType)
+			}
 		}
 	})
 }
 
-function saveWavetable() {}
-function exportWavetable() {}
-function importWavetable() {}
+function parseWavetable(data: any[]): number[] | null {
+	const values: number[] = []
 
-function showPasteError() {
+	const isValid = data.every((value) => {
+		const number = Number(value)
+		if (!Number.isFinite(number)) return false
+
+		values.push(number)
+		return true
+	})
+
+	if (!isValid) return null
+
+	return values
+}
+
+function showPasteError(message?: string) {
+	message = message ?? 'Invalid waveform data in clipboard'
+
 	ElMessage.error({
-		message: 'Invalid waveform data in clipboard',
+		message: message,
 	})
 }
 </script>
@@ -168,25 +202,6 @@ function showPasteError() {
 			<el-button id="paste-wavetable" @click="pasteWavetable()">
 				<v-icon name="md-contentpaste-round" scale="0.8"></v-icon>
 			</el-button>
-
-			<!-- More Options -->
-			<el-dropdown id="wavetable-more" trigger="click">
-				<el-button>
-					<v-icon name="fa-ellipsis-h" scale="0.8"></v-icon>
-				</el-button>
-
-				<template #dropdown>
-					<el-dropdown-item @click="saveWavetable()">
-						<v-icon name="hi-database" scale="0.8"></v-icon> Save Locally
-					</el-dropdown-item>
-					<el-dropdown-item @click="importWavetable()">
-						<v-icon name="fa-upload" scale="0.8"></v-icon> Import from File
-					</el-dropdown-item>
-					<el-dropdown-item @click="exportWavetable()">
-						<v-icon name="fa-download" scale="0.8"></v-icon> Save to File
-					</el-dropdown-item>
-				</template>
-			</el-dropdown>
 		</div>
 	</div>
 </template>

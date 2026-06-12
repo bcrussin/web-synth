@@ -1,32 +1,31 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Synth, { type SynthOptions } from './Synth'
 import Global from './Audio'
-import { useMidiStore, type MIDIParam } from '@/stores/midiStore'
-import { reactive } from 'vue'
-import MidiChannel, { type MidiChannelOptions } from './MidiChannel'
+import { getMidiStore, useMidiStore, type MIDIParam } from '@/stores/midiStore'
+import MidiChannel, {
+	type IMidiAssignment,
+	type MidiAssignmentFields,
+	type MidiAssignmentFilters,
+	type MidiAssignmentOptions,
+} from './MidiAssignment'
 import MidiManager from './MidiManager'
-
-interface SynthParams {
-	[synthName: string]: {
-		[channel: number]: MidiChannel
-	}
-}
+import { getAudioStore } from '@/stores/audioStore'
+import MidiDeviceState from '@/states/MidiDeviceState'
+import { reactive, type Reactive } from 'vue'
+import type MidiAssignment from './MidiAssignment'
 
 export default class MidiDevice {
-	static DEVICES: { [key: string]: MidiDevice } = {}
 	static DEFAULTS = {
 		velocityCurve: 1,
 	}
 
-	static STORE: any
+	get id() {
+		return this.input.id
+	}
 
 	input: MIDIInput
-	synths: Synth[]
 
-	channelValues: number[]
-	channelSettings: SynthParams
-	pitchBend: number
-	velocityCurve: number | null = null
+	state: Reactive<MidiDeviceState>
 
 	get name(): string {
 		return this.input.name ?? ''
@@ -34,19 +33,13 @@ export default class MidiDevice {
 
 	constructor(input: MIDIInput) {
 		this.input = input
-		this.pitchBend = 0
-		this.channelValues = reactive(new Array(16).fill(0))
-		this.channelSettings = reactive({})
-
-		this.synths = []
+		this.state = reactive(new MidiDeviceState(this))
 		const synth = new Synth({ name: input?.name ?? undefined, midiDevice: this })
 		this.addSynth(synth)
 	}
 
 	static async initialize() {
-		this.STORE = useMidiStore()
-		await this.STORE.fetchParams()
-
+		await getMidiStore().fetchParams()
 		MidiDevice.requestDevices()
 	}
 
@@ -58,7 +51,7 @@ export default class MidiDevice {
 	static success(midiAccess: MIDIAccess) {
 		midiAccess.inputs.forEach((input) => {
 			const device = new MidiDevice(input)
-			MidiDevice.DEVICES[input.id] = device
+			getAudioStore().addMidiDevice(device)
 
 			device.startCapturing()
 		})
@@ -103,107 +96,130 @@ export default class MidiDevice {
 			case 144: // noteOn
 				if (velocity > 0) {
 					velocity = this.mapVelocityToCurve(velocity)
-					this.synths.forEach((synth) =>
-						synth.playNote(noteLetter, octave, MidiDevice.mapToRange(velocity, 0, 127, 0, 1)),
-					)
+					for (const synthId of this.state.synthIds) {
+						const synth = getAudioStore().getSynth(synthId)
+						synth.playNote(noteLetter, octave, MidiDevice.mapToRange(velocity, 0, 127, 0, 1))
+					}
 				} else {
-					this.synths.forEach((synth) => synth.stopNote(noteLetter, octave))
+					for (const synthId of this.state.synthIds) {
+						const synth = getAudioStore().getSynth(synthId)
+						synth.stopNote(noteLetter, octave)
+					}
 				}
 				break
 			case 128: // noteOff
-				this.synths.forEach((synth) => synth.stopNote(noteLetter, octave))
+				for (const synthId of this.state.synthIds) {
+					const synth = getAudioStore().getSynth(synthId)
+					synth.stopNote(noteLetter, octave)
+				}
 				break
 		}
 
 		if (command >= 224 && command <= 239) {
-			this.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
-			this.synths.forEach((synth) => synth.updateFrequencies())
+			this.state.pitchBend = MidiDevice.mapToRange(note + velocity * 128, 0, 16383, -2, 2)
+			for (const synthId of this.state.synthIds) {
+				const synth = getAudioStore().getSynth(synthId)
+				synth.updateOscillatorFrequencies()
+			}
 		}
 
 		if (command == 176) {
-			const channels = MidiManager.getChannelsForDevice(this)
 			const channelNumber = note
+			const midiAssignments = getAudioStore().getMidiAssignments({
+				deviceId: this.id,
+				channel: channelNumber,
+			})
 
-			channels.forEach((channel: MidiChannel) => {
-				if (channel.channelNumber == channelNumber) {
-					const percent = velocity / 127
+			const percent = velocity / 127
+			this.state.channelValues[channelNumber] = percent
 
-					this.channelValues[channelNumber] = percent
-					this.setParam(channel, percent, channel.synth)
-				}
+			midiAssignments.forEach((assignment) => {
+				this.setParam(assignment, percent, assignment.synth.id)
 			})
 		}
 	}
 
 	mapVelocityToCurve(velocity: number) {
-		const curve = this.velocityCurve ?? MidiDevice.DEFAULTS.velocityCurve
+		const curve = this.state.velocityCurve ?? MidiDevice.DEFAULTS.velocityCurve
 
 		const velocityMapped = 127 * Math.pow(velocity / 127, curve)
 		return velocityMapped
 	}
 
-	addSynth(synth: Synth | string) {
-		if (typeof synth === 'string') synth = Synth.getSynth(synth)
+	addSynth(synth: Synth | UUID) {
+		if (typeof synth === 'string') synth = getAudioStore().getSynth(synth)
 
 		if (synth == undefined) return
 
-		this.synths.push(synth)
+		this.state.synthIds.add(synth.id)
 	}
 
-	removeSynth(name: string): void {
-		this.synths = this.synths.filter((synth) => synth.name != name)
+	removeSynth(id: UUID): void {
+		this.state.synthIds.delete(id)
 	}
 
-	getChannelProperties(synthName: string, channel: number) {
-		return this.channelSettings[synthName][channel]
+	getMidiAssignments(filters: MidiAssignmentFilters): Reactive<MidiAssignment[]> {
+		return this.state.midiAssignments.filter((assignment) => {
+			if (filters.synthId && assignment.synth.id !== filters.synthId) return false
+			if (filters.channel && assignment.channelNumber !== filters.channel) return false
+			return true
+		})
 	}
 
-	getChannelProperty(synthName: string, channel: number, property: keyof MidiChannelOptions) {
-		return this.channelSettings[synthName][channel].getProperty(property)
-	}
+	// getMidiAssignment(synthId: UUID, channel: number, property: keyof MidiAssignmentFields) {
+	// 	return this.state.midiAssignments[synthId][channel][property]
+	// }
 
-	setChannelProperty<K extends keyof MidiChannelOptions>(
-		synth: Synth,
-		channel: number,
-		property: K,
-		value: MidiChannelOptions[K],
-	) {
-		if (this.channelSettings[synth.name] == undefined) {
-			console.log(`Synth ${synth.name} has no data for channel ${channel}`)
-			return //this.channelSettings[synth.name] = {}
-		}
+	// setChannelProperty<K extends keyof MidiAssignmentFields>(
+	// 	synthId: UUID,
+	// 	channel: number,
+	// 	property: K,
+	// 	value: MidiAssignmentFields[K],
+	// ) {
+	// 	if (this.getMidiAssignments({synthId: synthId}) == undefined) {
+	// 		console.error(`Synth has no data for channel ${channel}`)
+	// 		return //this.channelSettings[synth.name] = {}
+	// 	}
 
-		this.channelSettings[synth.name][channel].setProperty(property, value)
-	}
+	// 	this.getMidiAssignment(synthId, channel).setProperty(property, value)
+	// }
 
-	setChannelProperties(synth: Synth, channel: number, data: MidiChannelOptions) {
-		if (this.channelSettings[synth.name] == undefined) {
-			console.log(`Synth ${synth.name} has no data for channel ${channel}`)
-			return //this.channelSettings[synth.name] = {}
-		}
+	// setChannelProperties(synth: Synth, channel: number, data: MidiChannelOptions) {
+	// 	if (this.state.channelSettings[synth.id] == undefined) {
+	// 		console.error(`Synth ${synth.state.name} has no data for channel ${channel}`)
+	// 		return //this.channelSettings[synth.name] = {}
+	// 	}
 
-		this.channelSettings[synth.name][channel].setProperties(data)
-	}
+	// 	this.state.channelSettings[synth.id][channel].setProperties(data)
+	// }
 
-	setParam(channelProps: MidiChannel, percent: number, synth?: Synth) {
-		const param = MidiDevice.STORE.getParam(channelProps.param)
-		if (param == undefined) return
+	setParam(assignment: IMidiAssignment, percent: number, synthId: UUID) {
+		const synth = getAudioStore().getSynth(synthId)
+		const parameter = synth.params.get(assignment.parameter)
 
-		if (channelProps.inverted) percent = 1 - percent
-		percent = Global.mapToRange(percent, 0, 1, channelProps.min, channelProps.max)
+		if (parameter == undefined) return
 
-		let value = percent * param.max + param.min
-		if (!!param.step) value = Math.round(value / param.step) * param.step
+		if (assignment.inverted) percent = 1 - percent
+		percent = Global.mapToRange(percent, 0, 1, assignment.outputMin, assignment.outputMax)
 
-		switch (param.type) {
-			case 'synth':
-				if (!!synth) {
-					;(synth as any)[param.property] = value
-				} else {
-					this.synths.forEach((synth: any) => (synth[param.property] = value))
-				}
-				break
-		}
+		let value = percent * (parameter.max - parameter.min) + parameter.min
+		if (!!parameter.step) value = Math.round(value / parameter.step) * parameter.step
+
+		synth.params.set(parameter.id, value)
+
+		// switch (parameter.type) {
+		// 	case 'synth':
+		// 		if (!!synthId) {
+		// 			const synth = getAudioStore().getSynth(synthId)
+		// 			;(synth as any)[param.property] = value
+		// 		} else {
+		// 			this.state.synthIds.forEach((synthId: any) => {
+		// 				const synth = getAudioStore().getSynth(synthId)
+		// 				;(synth as any)[param.property] = value
+		// 			})
+		// 		}
+		// 		break
+		// }
 	}
 
 	resolve(path: string | string[], obj = self, separator = '.') {

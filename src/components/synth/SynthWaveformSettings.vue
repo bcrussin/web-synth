@@ -2,16 +2,18 @@
 <script setup lang="ts">
 import '@/assets/main.css'
 
-import Synth from '@/classes/Synth'
 import { onMounted, ref, type Ref } from 'vue'
 import WavetableGraph from '@/components/WavetableGraph.vue'
 import { useInstrumentsStore } from '@/stores/instruments'
-import MidiManager from '@/classes/MidiManager'
-import MidiChannel from '@/classes/MidiChannel'
-import MidiParamDialog from '../MidiParamDialog.vue'
+import { useSynth } from '@/compostables/useSynth'
+import { useAudioStore } from '@/stores/audioStore'
+import { SynthParam } from '@/classes/SynthParameters'
 
-const props = defineProps<{ selectingElement: any; synth: Synth }>()
+const props = defineProps<{ selectingElement: any; synthId: UUID }>()
 const emit = defineEmits(['selectElement'])
+const audioStore = useAudioStore()
+const synth = audioStore.getSynth(props.synthId)
+// const synthRef = useSynth(synth)
 
 const wavetableGraphRef = ref<typeof WavetableGraph | null>(null)
 
@@ -30,25 +32,21 @@ const wavetableSizeMarks = {
 }
 
 function getSynthType(): string {
-	return props.synth.getPresetOrType()
-}
-
-function setSynthValue(property: string, value: number | string) {
-	props.synth.setProperty(property, value)
+	return synth.getPresetOrType()
 }
 
 function setWaveType(value: string): void {
 	const option = getPresets().find((preset) => preset.value == value)
 	if (option.isPreset) {
 		const instrument = presets.getInstrument(option.value)
-		props.synth.setWavetable(instrument.wavetable)
-		props.synth.setPreset(option.value)
-		props.synth.setProperty('attack', instrument.attack)
-		props.synth.setProperty('decay', instrument.decay)
-		props.synth.setProperty('sustain', instrument.sustain)
-		props.synth.setProperty('release', instrument.release)
+		synth.setWavetable(instrument.wavetable)
+		synth.setPreset(option.value)
+		synth.setProperty('attack', instrument.attack)
+		synth.setProperty('decay', instrument.decay)
+		synth.setProperty('sustain', instrument.sustain)
+		synth.setProperty('release', instrument.release)
 	} else {
-		props.synth.setWaveType(option.value)
+		synth.setWaveType(option.value)
 	}
 }
 
@@ -65,32 +63,6 @@ function getPresets() {
 
 	return [...properties, ...presetOptions]
 }
-
-// function controlSelected(e: Event) {
-//   if (props.selectingElement) {
-//     console.log(e)
-//     const target = e.target as HTMLElement
-//     const control = target.querySelector('.control')
-//     emit('selectElement', control)
-//   }
-// }
-
-// onMounted(() => {
-//   const elements = document.querySelectorAll('.selectable')
-//   elements.forEach((element) => {
-//     element.addEventListener('click', controlSelected)
-//   })
-// })
-
-// function getPresets() {
-//   const presetOptions: any = { label: 'Presets', items: [] }
-
-//   Object.entries(presets.instruments).forEach(([name, data]: [string, any]) => {
-//     presetOptions.items.push({ name: data.displayName, value: name, isPreset: true })
-//   })
-
-//   return [{ label: 'Wave Types', items: properties }, presetOptions]
-// }
 </script>
 
 <template>
@@ -100,63 +72,59 @@ function getPresets() {
 		<div class="selectable">
 			<span>Attack:</span>
 			<el-slider
-				:min="0.01"
-				:max="0.4"
-				:step="0.05"
+				:min="synth.params.get(SynthParam.Attack).min"
+				:max="synth.params.get(SynthParam.Attack).max"
+				:step="synth.params.get(SynthParam.Attack).step"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.attack"
-				data-param="Synth Attack"
-				@input="setSynthValue('attack', $event)"
+				v-model="synth.params.get(SynthParam.Attack).baseValue"
+				:data-param="SynthParam.Attack"
 			></el-slider>
 		</div>
 
 		<div class="selectable">
 			<span>Decay:</span>
 			<el-slider
-				:min="0"
-				:max="1"
+				:min="synth.params.get(SynthParam.Decay).min"
+				:max="synth.params.get(SynthParam.Decay).max"
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.decay"
-				data-param="Synth Decay"
-				@input="setSynthValue('decay', $event)"
+				v-model="synth.params.get(SynthParam.Decay).baseValue"
+				:data-param="SynthParam.Decay"
 			></el-slider>
 		</div>
 
 		<div class="selectable">
 			<span>Sustain:</span>
 			<el-slider
-				:min="0"
-				:max="1"
+				:min="synth.params.get(SynthParam.Sustain).min"
+				:max="synth.params.get(SynthParam.Sustain).max"
 				:step="0.05"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.sustain"
-				data-param="Synth Sustain"
-				@input="setSynthValue('sustain', $event)"
+				v-model="synth.params.get(SynthParam.Sustain).baseValue"
+				:data-param="SynthParam.Sustain"
 			></el-slider>
 		</div>
 
 		<div class="selectable">
 			<span>Release:</span>
 			<el-slider
-				:min="0"
-				:max="0.5"
+				:min="synth.params.get(SynthParam.Release).min"
+				:max="synth.params.get(SynthParam.Release).max"
 				:step="0.05"
 				name="release"
 				:show-tooltip="false"
 				class="control envelope-slider"
-				v-bind:model-value="synth?.release"
-				data-param="Synth Release"
-				@input="setSynthValue('release', $event)"
+				v-model="synth.params.get(SynthParam.Release).baseValue"
+				:data-param="SynthParam.Release"
 			></el-slider>
 		</div>
 	</div>
 
 	<div id="wavetable-container">
-		<WavetableGraph ref="wavetableGraphRef" :synth="synth"></WavetableGraph>
+		<WavetableGraph ref="wavetableGraphRef" :synthId="synth.id"></WavetableGraph>
 
 		<div id="settings-footer" class="flex horizontal">
 			<el-select id="wavetable-presets" :model-value="getSynthType()" @change="setWaveType($event)">
@@ -182,35 +150,6 @@ function getPresets() {
 		</div>
 	</div>
 </template>
-
-<!-- <script lang="ts">
-export default {
-  props: {
-    synth: Synth,
-  },
-  data() {
-    return {
-      properties: [
-        { name: 'Sine', value: 'sine' },
-        { name: 'Sawtooth', value: 'sawtooth' },
-        { name: 'Triangle', value: 'triangle' },
-      ],
-    }
-  },
-  methods: {
-    setSynthValue(property: string, value: number | string) {
-      if (this.synth == undefined) return
-
-      this.synth.setProperty(property, value)
-    },
-    setWaveType(option: { name: string; value: string }): void {
-      if (this.synth == undefined) return
-
-      this.synth.setWaveType(option.value)
-    },
-  },
-}
-</script> -->
 
 <style scoped>
 #wavetable-container {

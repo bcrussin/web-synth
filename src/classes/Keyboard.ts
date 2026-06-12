@@ -5,8 +5,6 @@ import {
 	type Hotkeys,
 	type KeybindNotes,
 } from '@/stores/keybindsStore'
-import type { Store } from 'pinia'
-import Global from './Audio'
 
 export default class Keyboard {
 	static synth: Synth
@@ -88,7 +86,9 @@ export default class Keyboard {
 	}
 
 	static keyDown(e: KeyboardEvent) {
-		if (document.activeElement instanceof HTMLInputElement) return
+		const disabledElementTypes = [HTMLInputElement, HTMLTextAreaElement, HTMLSelectElement]
+
+		if (disabledElementTypes.some((t) => document.activeElement instanceof t)) return
 
 		if (e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return
 
@@ -101,11 +101,11 @@ export default class Keyboard {
 				return
 		}
 
-		const key = Keyboard.keyToNote(e.key.toUpperCase())
-		if (e.repeat || key == undefined) return
+		const note = Keyboard.keyToNote(e.key.toUpperCase())
+		if (e.repeat || note == undefined) return
 
-		const freq = Keyboard.synth.playNote(key[0], key[1])
-		if (!!freq) this.pressed[e.key] = freq
+		const semitone = Keyboard.synth.playNote(note[0], note[1])
+		if (!!semitone) this.pressed[e.key] = semitone
 
 		e.preventDefault()
 	}
@@ -119,14 +119,13 @@ export default class Keyboard {
 				return
 		}
 
-		const key = Keyboard.keyToNote(e.key.toUpperCase())
-		if (e.repeat || key == undefined) return
+		const note = Keyboard.keyToNote(e.key.toUpperCase())
+		if (e.repeat || note == undefined) return
 
-		console.log(!!this.pressed[e.key], e.key)
 		if (!!this.pressed[e.key]) {
-			Keyboard.synth.stopFrequency(this.pressed[e.key])
+			Keyboard.synth.stopSemitone(this.pressed[e.key])
 		} else {
-			Keyboard.synth.stopNote(key[0], key[1])
+			Keyboard.synth.stopNote(note[0], note[1])
 		}
 
 		e.preventDefault()

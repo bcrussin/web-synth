@@ -1,9 +1,10 @@
 # Web Synthesizer
+![web-synth-thumbnail](https://github.com/user-attachments/assets/73667cbe-2c07-49da-b749-92618f2b7a94)
 
 The goal of this project is to provide a customizable synthesizer that supports mouse, keyboard, and MIDI control. Future plans include custom LFOs and key bindings.
 Most web-based synths do not provide a high level of control (especially in regards to key bindings), so this project aims to provide as custom an experience as possible.
 
-Only a list of synthesizers are available on page load. One is created for keyboard control and the rest correspond to detected MIDI devices. Clicking on one will open a modal containing waveform/effect/synth settings and a playable piano roll.
+On initial page load, one synth is created for keyboard control and additional synths are created for detected MIDI devices. Clicking one will open a modal containing a variety of adjustable parameters and a playable piano roll.
 
 #### Mouse/Keyboard Control
 
@@ -13,7 +14,15 @@ A mouse may also be used to play notes, simply by clicking on the piano within a
 
 #### MIDI Control
 
-Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth. Only note velocity, pitch bends, and assignable MIDI channels (work in progress) are currently supported.
+Browsers that support the Web MIDI API (Firefox, Chrome/Chromium) allow the use of MIDI devices to control the synth.
+
+_Current MIDI features:_
+- Playing notes (with velocity support)
+- Pitch bends
+- Assignable MIDI channels
+   - Each device can assign up to 16 channels per synth
+   - Channels are linked to synth parameters
+   - _**Supported parameters:** Volume, Attack, Decay, Sustain, Release, Glide Speed, Max Polyphony_
 
 # Credits
 
@@ -27,26 +36,10 @@ This project utilitzes the Web Audio API and Web MIDI API.
 
 - - -
 
-## Project Setup
+# Screenshots
 
-```sh
-npm install
-```
-
-### Compile and Hot-Reload for Development
-
-```sh
-npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
-```
+| | |
+| -- | -- |
+| ![web-synth-effects](https://github.com/user-attachments/assets/f9e1e629-1a15-43ac-873d-f130ca9ae016) | ![web-synth-load-preset](https://github.com/user-attachments/assets/f0cc052e-fc60-44a0-9793-a2b3a9dd2135) |
+| ![web-synth-midi-channels](https://github.com/user-attachments/assets/9b8d982f-a43b-4bea-97e8-af23d4febfc4) | ![web-synth-midi-channel-detail](https://github.com/user-attachments/assets/10aab9eb-12d9-489f-9f7d-5ab8c3ca9f46) |
+| ![web-synth-settings](https://github.com/user-attachments/assets/2bbe1b29-e75c-4906-8fe7-165b51b0ff86) | |

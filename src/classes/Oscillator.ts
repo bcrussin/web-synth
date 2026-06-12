@@ -1,24 +1,40 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import Global from './Audio'
 import Synth from './Synth'
-import EnvGen from './EnvGen'
-import { inject } from 'vue'
+import { SynthParam } from './SynthParameters'
+import Envelope, { getSynthEnvelope } from './Envelope'
+import { EnvelopeNode } from './EnvelopeNode'
 
 export default class Oscillator extends OscillatorNode {
 	created: Date
 	synth: Synth
+
+	baseSemitone: number
+
 	frequencyValue: number
 	frequencyOffset: number
 
 	// volumeNode: GainNode
 	velocityNode: GainNode
-	gainNode: GainNode
+	// gainNode: GainNode
+	envelopeNode: EnvelopeNode
 	lowPassFilter: BiquadFilterNode
-	eg: any
-	emptyEg: any
+	// eg: any
+	// emptyEg: any
+
+	// env: Envelope
+	// emptyEnv: ConstantSourceNode
+
+	get velocity() {
+		return this.velocityNode.gain.value
+	}
+
+	set velocity(value: number) {
+		this.velocityNode.gain.value = value
+	}
 
 	constructor(synth: Synth) {
-		super(Global.CONTEXT)
+		super(Global.context)
 
 		this.created = new Date()
 		this.synth = synth
@@ -26,62 +42,35 @@ export default class Oscillator extends OscillatorNode {
 		this.frequencyValue = 0
 		this.frequencyOffset = 0
 
-		this.velocityNode = Global.CONTEXT.createGain()
+		this.baseSemitone = 0
+
+		this.velocityNode = Global.context.createGain()
 		this.velocityNode.gain.value = 1
 		this.velocityNode.connect(synth.inputNode)
 
-		this.gainNode = Global.CONTEXT.createGain()
-		this.gainNode.gain.value = 0
-		this.gainNode.connect(this.velocityNode)
+		this.envelopeNode = new EnvelopeNode(getSynthEnvelope(synth))
+		this.envelopeNode.node.connect(this.velocityNode)
 
-		this.lowPassFilter = Global.CONTEXT.createBiquadFilter()
+		this.lowPassFilter = Global.context.createBiquadFilter()
 		this.lowPassFilter.type = 'lowpass'
-		this.lowPassFilter.frequency.setTargetAtTime(2000, Global.CONTEXT.currentTime, 0)
-		this.lowPassFilter.connect(this.gainNode)
+		this.lowPassFilter.frequency.setTargetAtTime(2000, Global.context.currentTime, 0)
+		this.lowPassFilter.connect(this.envelopeNode.node)
 
 		this.connect(this.lowPassFilter)
 
-		if (!!this.synth.periodicWave && !Global.WAVE_TYPES.includes(synth.type)) {
+		if (!!this.synth.periodicWave && !Global.WAVE_TYPES.includes(synth.state.type)) {
 			this.setPeriodicWave(this.synth.periodicWave)
 		} else {
-			this.type = (synth.type as OscillatorType) ?? 'sine'
+			this.type = (synth.state.type as OscillatorType) ?? 'sine'
 		}
-
-		this.eg = new EnvGen(Global.CONTEXT, this.gainNode.gain)
-		this.eg.mode = 'ADSR'
-		this.eg.attackTime = synth.attack
-		this.eg.releaseTime = synth.release
-		this.eg.decayTime = synth.decay
-		this.eg.sustainLevel = synth.sustain
-
-		this.emptyEg = new EnvGen(Global.CONTEXT, this.gainNode.gain)
-		this.emptyEg.mode = 'ASR'
-		this.emptyEg.attackTime = 0.01
-		this.emptyEg.releaseTime = 0.05
 	}
 
-	getEnv(empty: boolean = false) {
-		if (empty) {
-			return this.emptyEg
-		}
-
-		return this.eg
+	envAttack(): void {
+		this.envelopeNode.triggerOn()
 	}
 
-	gateOff(): void {
-		this.disconnect()
-	}
-
-	gateOn(): void {
-		this.connect(this.gainNode)
-	}
-
-	envAttack(skipEnv: boolean = false): void {
-		this.getEnv(skipEnv).gateOn()
-	}
-
-	envRelease(skipEnv: boolean = false): void {
-		this.getEnv(skipEnv).gateOff()
+	envRelease(): void {
+		this.envelopeNode.triggerOff()
 	}
 
 	semitonesToFrequencyOffset(semitones: number) {
@@ -94,8 +83,14 @@ export default class Oscillator extends OscillatorNode {
 		}
 
 		if (!!this.synth.midiDevice) {
-			this.frequencyOffset = this.semitonesToFrequencyOffset(this.synth.midiDevice.pitchBend)
+			this.frequencyOffset = this.semitonesToFrequencyOffset(this.synth.midiDevice.state.pitchBend)
 		}
+	}
+
+	setSemitone(semitone?: number) {
+		if (semitone != undefined) this.baseSemitone = semitone
+
+		this.setFrequency(this.semitoneToFrequency(this.baseSemitone))
 	}
 
 	setFrequency(frequency?: number) {
@@ -108,26 +103,48 @@ export default class Oscillator extends OscillatorNode {
 		this.frequency.value = frequency + this.frequencyOffset
 	}
 
+	noteToFrequency(note: string, octave: number) {
+		const transposed = Global.transposeNote(note, octave, this.synth.state.transpose)
+		const frequency = Global.noteToFrequency(transposed.note, transposed.octave)
+
+		return frequency
+	}
+
+	semitoneToFrequency(semitone: number) {
+		const frequency = Global.semitoneToFrequency(semitone + this.synth.state.transpose)
+
+		return frequency
+	}
+
+	glideToNote(semitone: number, duration: number) {
+		this.baseSemitone = semitone
+
+		this.glideToFrequency(this.semitoneToFrequency(semitone), duration)
+	}
+
 	glideToFrequency(frequency: number, duration: number) {
 		this.setFrequencyValueAndOffset()
 
-		this.frequency.setValueAtTime(this.frequency.value, Global.CONTEXT.currentTime)
-		this.frequency.cancelScheduledValues(Global.CONTEXT.currentTime + 0.001)
+		this.frequency.setValueAtTime(this.frequency.value, Global.context.currentTime)
+		this.frequency.cancelScheduledValues(Global.context.currentTime + 0.001)
 		this.frequency.linearRampToValueAtTime(
 			frequency + this.frequencyOffset,
-			Global.CONTEXT.currentTime + duration,
+			Global.context.currentTime + duration,
 		)
 		this.frequencyValue = frequency
 	}
 
+	/**
+	 * Quickly glide to the given velocity without clipping
+	 */
 	setVelocity(velocity: number) {
-		this.velocityNode.gain.value = velocity
+		this.glideToVelocity(velocity, 0.05)
 	}
 
 	glideToVelocity(velocity: number, duration: number) {
-		this.velocityNode.gain.setValueAtTime(this.velocityNode.gain.value, Global.CONTEXT.currentTime)
-		this.velocityNode.gain.cancelScheduledValues(Global.CONTEXT.currentTime + 0.001)
-		this.velocityNode.gain.linearRampToValueAtTime(velocity, Global.CONTEXT.currentTime + duration)
+		this.velocityNode.gain.setValueAtTime(this.velocityNode.gain.value, Global.context.currentTime)
+		this.velocityNode.gain.cancelScheduledValues(Global.context.currentTime + 0.001)
+		this.velocityNode.gain.linearRampToValueAtTime(velocity, Global.context.currentTime + duration)
 	}
 
 	startNote(frequency?: number, volume?: number) {
@@ -136,19 +153,25 @@ export default class Oscillator extends OscillatorNode {
 		this.start()
 	}
 
-	attack(frequency?: number, volume?: number) {
+	attack(semitone: number, volume?: number) {
+		this.baseSemitone = semitone
+
 		this.velocityNode.gain.value = volume ?? 1
-		this.setFrequency(frequency)
-		this.envAttack()
+
+		this.setFrequency(this.semitoneToFrequency(semitone))
 		this.start()
+		this.envAttack()
 	}
 
 	release(stopNote: boolean = true) {
 		this.envRelease()
 
-		// Magic number currently, otherwise synth stops before release fully plays out
-		const stopDelay = this.synth.release > 0.005 ? this.synth.release * 5 : 0.01
-		this.stop(Global.CONTEXT.currentTime + stopDelay)
+		// TODO: Magic number currently, otherwise synth stops before release fully plays out
+		const stopDelay = Math.max(0.2, this.synth.params.get(SynthParam.Release).value * 5)
+		// this.synth.params.get(SynthParam.Release).value > 0
+		// 	? this.synth.params.get(SynthParam.Release).value * 5
+		// 	: 0.01
+		this.stop(Global.context.currentTime + stopDelay)
 	}
 
 	stopNote() {
